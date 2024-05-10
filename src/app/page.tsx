@@ -16,7 +16,6 @@ export default function Home() {
       address: beef.address,
       wager: beef.params.wager,
     })) ?? [];
-  console.log("isLoadingBeefs", isLoadingBeefs);
   return (
     <Container>
       <Typography variant="h1">Home</Typography>
