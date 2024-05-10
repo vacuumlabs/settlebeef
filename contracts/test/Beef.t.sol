@@ -22,7 +22,8 @@ contract BeefTest is Test {
             settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
-            arbiters: arbiters
+            arbiters: arbiters,
+            joinDeadline: block.timestamp + 7 days
         });
         Beef beefImpl = new Beef();
         beef = Beef(Clones.clone(address(beefImpl)));

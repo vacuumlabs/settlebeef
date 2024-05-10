@@ -25,7 +25,8 @@ contract SlaughterhouseTest is Test {
             settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
-            arbiters: arbiters
+            arbiters: arbiters,
+            joinDeadline: block.timestamp + 7 days
         });
         Beef beef = Beef(slaughterhouse.packageBeef{value: params.wager}(params));
         assertTrue(address(beef) != address(0), "Beef not packaged");

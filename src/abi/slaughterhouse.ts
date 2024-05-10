@@ -19,6 +19,38 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
+    name: "beefs",
+    inputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getBeefs",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address[]",
+        internalType: "address[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "packageBeef",
     inputs: [
       {
@@ -60,6 +92,11 @@ export const slaughterhouseAbi = [
             name: "arbiters",
             type: "address[]",
             internalType: "address[]",
+          },
+          {
+            name: "joinDeadline",
+            type: "uint256",
+            internalType: "uint256",
           },
         ],
       },
