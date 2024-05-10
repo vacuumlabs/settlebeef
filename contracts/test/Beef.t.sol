@@ -13,7 +13,7 @@ contract BeefTest is Test {
             owner: address(this),
             wager: 1000,
             foe: address(0),
-            duration: 30 days,
+            deadline: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
             arbiters: arbiters
