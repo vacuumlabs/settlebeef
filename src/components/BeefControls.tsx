@@ -83,7 +83,7 @@ const ArbiterButton = ({
 }: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : [],
+    connectedAddress ? [connectedAddress] : []
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);
@@ -103,10 +103,13 @@ const ArbiterButton = ({
   ) {
     return (
       <Stack direction="row" spacing={2}>
-        <Button onClick={() => settleMutation.mutate(true)}>
+        <Button variant="contained" onClick={() => settleMutation.mutate(true)}>
           Settle In Favour 🧑‍⚖️{" "}
         </Button>
-        <Button onClick={() => settleMutation.mutate(false)}>
+        <Button
+          variant="contained"
+          onClick={() => settleMutation.mutate(false)}
+        >
           Settle Against 🧑‍⚖️{" "}
         </Button>
       </Stack>
@@ -138,7 +141,9 @@ const FoeButton = ({
       Nothing to do
     </Button>
   ) : (
-    <Button onClick={() => joinBeefMutation.mutate()}>Join Beef</Button>
+    <Button variant="contained" onClick={() => joinBeefMutation.mutate()}>
+      Join Beef
+    </Button>
   );
 };
 
@@ -148,7 +153,7 @@ const OwnerButton = ({
 }: ButtonProps & { canWithdraw: boolean }) => {
   const withdrawMutation = useWithdrawRaw(id);
   return canWithdraw ? (
-    <Button onClick={() => withdrawMutation.mutate()} variant="outlined">
+    <Button onClick={() => withdrawMutation.mutate()} variant="contained">
       Withdraw Raw Beef
     </Button>
   ) : (
