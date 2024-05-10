@@ -4,6 +4,7 @@ import AmountInput from "@/components/AmoutInput";
 import { isValidEmail } from "@/utils/validations";
 import {
   Button,
+  CircularProgress,
   Container,
   MenuItem,
   Select,
@@ -19,6 +20,7 @@ import { ArbiterAccount } from "@/types";
 import { usePrivy } from "@privy-io/react-auth";
 import NotLoggedIn from "@/components/NotLoggedIn";
 import { enqueueSnackbar } from "notistack";
+import { useRouter } from "next/navigation";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -38,7 +40,8 @@ export type NewBeefFormValues = {
 };
 
 const NewBeefPage = () => {
-  const { mutate } = useAddBeef();
+  const { mutate, isPending } = useAddBeef();
+  const router = useRouter();
   const { authenticated } = usePrivy();
   const form = useForm<NewBeefFormValues>({
     defaultValues: {
@@ -62,6 +65,7 @@ const NewBeefPage = () => {
     mutate(values, {
       onSuccess: () => {
         enqueueSnackbar("Beef added", { variant: "success" });
+        router.push("/");
       },
     });
   });
@@ -219,12 +223,14 @@ const NewBeefPage = () => {
           </Stack>
         ))}
         <Button
+          disabled={isPending}
           onClick={addBeef}
           type="submit"
           sx={{ mb: 10, mt: 5, alignSelf: "center" }}
           variant="contained"
         >
-          Add new Beef
+          Start Beef
+          {isPending && <CircularProgress size={20} sx={{ ml: 2 }} />}
         </Button>
       </Stack>
     </Container>
