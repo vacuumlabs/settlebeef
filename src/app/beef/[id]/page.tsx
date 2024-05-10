@@ -3,14 +3,19 @@
 import React, { useContext } from "react";
 import { useBeef, useGetArbiterStatuses } from "../../../hooks/queries";
 import {
+  Box,
   Container,
   Paper,
   Skeleton,
   Stack,
   Step,
+  StepConnector,
+  StepIconProps,
   StepLabel,
   Stepper,
   Typography,
+  stepConnectorClasses,
+  styled,
 } from "@mui/material";
 import { redirect } from "next/navigation";
 import { Address, formatEther } from "viem";
@@ -26,14 +31,70 @@ type BeefDetailPageProps = {
 };
 
 let steps = [
-  "Beef creation 🥩",
-  "Arbiters attendance 🧑‍⚖️",
-  "Foe joining 🐄",
-  "Beef cooking 👨‍🍳",
-  "Beef settling 🧑‍⚖️",
-  "Beef ready to serve 🍽️",
-  "Beef served 😋",
+  { icon: "🥩", text: "Beef creation" },
+  { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+  { icon: "🐄", text: "Foe joining" },
+  { icon: "👨‍🍳", text: "Beef cooking" },
+  { icon: "🧑‍⚖️", text: "Beef settling" },
+  { icon: "🍽️", text: "Beef ready to serve" },
+  { icon: "😋", text: "Beef served" },
 ];
+
+const BeefStepConnector = styled(StepConnector)(({ theme }) => ({
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 30,
+    left: "calc(-50% + 30px)",
+    right: "calc(50% + 30px)",
+  },
+  [`&.${stepConnectorClasses.active}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  [`&.${stepConnectorClasses.completed}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: "#784af4",
+    },
+  },
+  [`& .${stepConnectorClasses.line}`]: {
+    borderColor:
+      theme.palette.mode === "dark"
+        ? theme.palette.grey[800]
+        : theme.palette.grey[400],
+    borderTopWidth: 3,
+    borderRadius: 1,
+  },
+}));
+
+function StepIcon(props: StepIconProps) {
+  const { icon, completed } = props;
+  return (
+    <Box
+      sx={(theme) => ({
+        bgcolor: completed
+          ? theme.palette.primary.main
+          : theme.palette.grey[100],
+        width: 60,
+        height: 60,
+        borderRadius: "100%",
+        alignContent: "center",
+        textAlign: "center",
+      })}
+    >
+      <Typography
+        variant="h4"
+        sx={{
+          justifyContent: "center",
+          color: "white",
+          textShadow:
+            "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;",
+        }}
+      >
+        {steps[(icon as number) - 1]?.icon}
+      </Typography>
+    </Box>
+  );
+}
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
@@ -91,7 +152,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       step = 1;
     } else {
       steps = steps.slice(0, 2);
-      steps.push("Beef rotten 🤢");
+      steps.push({ icon: "🤢", text: "Beef rotten" });
       step = 2;
     }
   } else {
@@ -114,7 +175,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             resultNo <= arbiters.length / 2
           ) {
             steps = steps.slice(0, 5);
-            steps.push("Beef rotten 🤢");
+            steps.push({ icon: "🤢", text: "Beef rotten" });
           }
           if (/*served*/ false) {
             step = 6;
@@ -151,12 +212,17 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             {truncateAddress(owner)} 🥊 vs 🥊 {truncateAddress(foe)}
           </Typography>
 
-          <Stepper activeStep={step} alternativeLabel sx={{ width: "100%" }}>
+          <Stepper
+            activeStep={step}
+            alternativeLabel
+            sx={{ width: "100%" }}
+            connector={<BeefStepConnector />}
+          >
             {steps.map((label, index) => (
-              <Step key={label}>
-                <StepLabel>
+              <Step key={label.text}>
+                <StepLabel StepIconComponent={StepIcon}>
                   <Stack>
-                    <Typography>{label}</Typography>
+                    <Typography>{label.text}</Typography>
                     {index === step && deadline != null && (
                       <Typography>
                         <Countdown deadline={deadline} />
