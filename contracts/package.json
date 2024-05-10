@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "deploy": "bash -c 'source .env && forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast --private-key $DEPLOYER_PK'",
+    "deploy": "bash -c 'source .env && forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "deploy:localhost": "bash -c 'source .env && forge script script/Deploy.s.sol:Deploy --broadcast --private-key $LOCALCHAIN_DEPLOYER_PK --fork-url http://localhost:8545'"
   },
   "author": "",
