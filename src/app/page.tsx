@@ -17,6 +17,7 @@ import { useContext } from "react";
 export default function Home() {
   const { client } = useContext(SmartAccountClientContext);
   const { data: beefs, isPending: isLoadingBeefs } = useGetBeefs();
+
   const beefsListData =
     beefs?.map((beef) => ({
       title: beef.params.title,
@@ -47,7 +48,7 @@ export default function Home() {
     client && beefs
       ? beefs
           .filter((beef) =>
-            beef.params.arbiters.includes(client.account.address),
+            beef.params.arbiters.includes(client.account.address)
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -65,7 +66,7 @@ export default function Home() {
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="h3">My Beef List 🥩📝</Typography>
               <Link href="/beef/new" style={{ textDecoration: "none" }}>
-                <Button variant="outline">New beef</Button>
+                <Button variant="outlined">New beef</Button>
               </Link>
             </Stack>
             <Typography variant="h5">As owner 🤴</Typography>
@@ -107,7 +108,7 @@ export default function Home() {
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h3">Beef List 🥩📝</Typography>
             <Link href="/beef/new" style={{ textDecoration: "none" }}>
-              <Button variant="outline">New beef</Button>
+              <Button variant="outlined">New beef</Button>
             </Link>
           </Stack>
           {isLoadingBeefs ? (

@@ -10,7 +10,7 @@ import { SmartAccountClientContextProvider } from "./SmartAccountClientContext";
 import { http } from "viem";
 import { activeChain } from "@/utils/chain";
 import { injected } from "wagmi/connectors";
-import { WagmiProvider, createConfig } from "wagmi";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { ellipsizeText } from "@/utils/general";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { ThemeProvider } from "@mui/material";
@@ -28,6 +28,16 @@ export const handleError = (error: Error | undefined) => {
     { variant: "error" }
   );
 };
+
+const zdAppId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || "";
+
+export const wagmiConfig = createConfig({
+  chains: [activeChain],
+  connectors: [injected()],
+  transports: {
+    [activeChain.id]: http(`https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`),
+  },
+});
 
 const Providers = ({ children }: ProvidersProps) => {
   const queryClient = new QueryClient({
@@ -47,38 +57,27 @@ const Providers = ({ children }: ProvidersProps) => {
     }),
   });
 
-  const zdAppId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || "";
-  const config = createConfig({
-    chains: [activeChain],
-    connectors: [injected()],
-    transports: {
-      [activeChain.id]: http(
-        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`
-      ),
-    },
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={config}>
-        <PrivyProvider
-          appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
-          config={{
-            embeddedWallets: {
-              createOnLogin: "all-users",
-            },
-            defaultChain: activeChain,
-            supportedChains: [activeChain],
-          }}
-        >
+      <PrivyProvider
+        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
+        config={{
+          embeddedWallets: {
+            createOnLogin: "users-without-wallets",
+          },
+          defaultChain: activeChain,
+          supportedChains: [activeChain],
+        }}
+      >
+        <WagmiProvider config={wagmiConfig}>
           <SmartAccountClientContextProvider>
             <ThemeProvider theme={theme}>
               {children}
               <SnackbarProvider />
             </ThemeProvider>
           </SmartAccountClientContextProvider>
-        </PrivyProvider>
-      </WagmiProvider>
+        </WagmiProvider>
+      </PrivyProvider>
     </QueryClientProvider>
   );
 };

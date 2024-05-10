@@ -1349,6 +1349,11 @@
     ts-case-convert "^2.0.2"
     type-fest "^3.6.1"
 
+"@privy-io/wagmi@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@privy-io/wagmi/-/wagmi-0.2.4.tgz#9d428b32578ce1198f51dff258059913f8bcc73d"
+  integrity sha512-Dmpk/R9/X64lrAvncHd9R8pGqmpfkRAPbKvXAmba+KtzAcXTBdXDTx3q+iOY+zagyIK1nU6y05z8Oo5D5mfNKQ==
+
 "@rushstack/eslint-patch@^1.3.3":
   version "1.10.2"
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.10.2.tgz#053f1540703faa81dea2966b768ee5581c66aeda"

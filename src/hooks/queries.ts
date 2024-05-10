@@ -5,17 +5,14 @@ import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
 
 export const useBeef = (id: string): Beef | null | undefined => {
-  if (!id.startsWith("0x")) {
-    return undefined;
-  }
-
   const { data, isError } = useReadContract({
     abi: beefAbi,
     address: id as Address,
     functionName: "getInfo",
+    query: {
+      enabled: id.startsWith("0x"),
+    },
   });
-
-  console.log("beef", data);
 
   if (isError) {
     return undefined;
@@ -44,7 +41,7 @@ const useGetBeefsArray = () => {
 
 export const useGetBeefs = () => {
   const { data: beefAddresses } = useGetBeefsArray();
-  console.log("beefAddresses", beefAddresses);
+
   const query = useReadContracts({
     contracts:
       beefAddresses?.map(
@@ -53,7 +50,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const,
+          }) as const
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -64,14 +61,14 @@ export const useGetBeefs = () => {
       beefAddresses &&
       query.data?.map((beef, index) => ({
         ...beef,
-        address: beefAddresses[index],
+        address: beefAddresses[index]!,
       })),
   };
 };
 
 export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddresses: Address[],
+  arbiterAddresses: Address[]
 ) => {
   const { data } = useReadContracts({
     contracts: [
@@ -98,13 +95,13 @@ export const useGetArbiterStatuses = (
         .reduce(
           (acc, curr, idx) => {
             if (idx % 2 === 0) {
-              acc.push([curr]);
+              acc.push([curr] as unknown as [boolean, bigint]);
             } else {
-              acc[acc.length - 1].push(curr);
+              acc[acc.length - 1]?.push(curr);
             }
             return acc;
           },
-          [] as Array<[boolean, bigint]>,
+          [] as Array<[boolean, bigint]>
         )
         .map(([hasAttended, hasSettled]) => ({
           hasAttended,
