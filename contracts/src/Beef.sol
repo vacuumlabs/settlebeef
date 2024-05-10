@@ -18,9 +18,9 @@ contract Beef is OwnableUpgradeable {
         address[] arbiters;
     }
 
-    uint256 constant settlingDuration = 30 days;
-    uint256 constant joinDuration = 7 days;
-    uint256 constant arbitersRequiredCount = 3;
+    uint256 public constant settlingDuration = 30 days;
+    uint256 public constant joinDuration = 7 days;
+    uint256 public constant arbitersRequiredCount = 3;
 
     // @notice Address of the foe - the counterparty to the beef.
     address public foe;
@@ -40,7 +40,7 @@ contract Beef is OwnableUpgradeable {
     bool public cooking;
     uint128 public resultYes;
     uint128 public resultNo;
-    uint256 attendCount;
+    uint256 public attendCount;
     mapping(address => bool) public hasSettled;
     mapping(address => bool) public hasAttended;
 
