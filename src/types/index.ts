@@ -15,4 +15,5 @@ export type Beef = {
   deadline: UnixTimestamp;
   arbiters: Address[];
   result: bigint;
+  isCooking: boolean;
 };
