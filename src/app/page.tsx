@@ -7,7 +7,7 @@ import { useContext } from "react";
 export default function Home() {
   const { client } = useContext(SmartAccountClientContext);
   return (
-    <Box>
+    <Box mt={8}>
       <Typography variant="h1">Home</Typography>
       <Typography variant="body1">
         {client ? "Connected" : "Not connected"}
