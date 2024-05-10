@@ -17,17 +17,16 @@ import { DateTime } from "luxon";
 
 type ButtonProps = {
   id: Address;
-  enabled: boolean;
   client: SmartAccountClient;
 };
 
-const ArbiterButton = ({ client, id, enabled }: ButtonProps) => {
+const ArbiterButton = ({ client, id }: ButtonProps) => {
   const arbiterStatus = useGetArbiterStatus(id, client.account.address);
   const settleMutation = useSettleBeef(id, client);
   const attendMutation = useArbiterAttend(id, client);
 
   if (!arbiterStatus) {
-    return <Button disabled={!enabled}>Nothing to do</Button>;
+    return <Button disabled>Nothing to do</Button>;
   }
 
   const { hasSettled, hasAttended } = arbiterStatus;
@@ -53,7 +52,6 @@ const FoeButton = ({
   id,
   value,
   hasJoined,
-  enabled,
 }: ButtonProps & { value: bigint; hasJoined: boolean }) => {
   const joinBeefMutation = useJoinBeef(id, value, client);
 
@@ -62,9 +60,7 @@ const FoeButton = ({
       Nothing to do
     </Button>
   ) : (
-    <Button onClick={() => joinBeefMutation.mutate()} disabled={!enabled}>
-      Join Beef
-    </Button>
+    <Button onClick={() => joinBeefMutation.mutate()}>Join Beef</Button>
   );
 };
 
@@ -72,15 +68,10 @@ const OwnerButton = ({
   client,
   id,
   canWithdraw,
-  enabled,
 }: ButtonProps & { canWithdraw: boolean }) => {
   const withdrawMutation = useWithdrawRaw(id, client);
   return canWithdraw ? (
-    <Button
-      disabled={!enabled}
-      onClick={() => withdrawMutation.mutate()}
-      variant="outlined"
-    >
+    <Button onClick={() => withdrawMutation.mutate()} variant="outlined">
       Withdraw Raw Beef
     </Button>
   ) : (
@@ -117,12 +108,11 @@ const BeefControls = ({
   return (
     client && (
       <Stack direction="row" spacing={2}>
-        <ArbiterButton {...{ id, client }} enabled={isUserArbiter} />
-        <FoeButton
-          {...{ id, client, hasJoined: isCooking, value: wager }}
-          enabled={isUserFoe}
-        />
-        <OwnerButton {...{ id, client, canWithdraw }} enabled={isUserOwner} />
+        {isUserArbiter && <ArbiterButton {...{ id, client }} />}
+        {isUserFoe && (
+          <FoeButton {...{ id, client, hasJoined: isCooking, value: wager }} />
+        )}
+        {isUserOwner && <OwnerButton {...{ id, client, canWithdraw }} />}
       </Stack>
     )
   );
