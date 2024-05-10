@@ -15,6 +15,10 @@ contract Slaughterhouse {
         beefImplementation = address(new Beef());
     }
 
+    function getBeefs() public view returns (address[] memory) {
+        return beefs;
+    }
+
     function packageBeef(Beef.ConstructorParams memory params) public payable returns (address) {
         address beef = Clones.clone(beefImplementation);
         Beef(beef).initialize{value: msg.value}(params);

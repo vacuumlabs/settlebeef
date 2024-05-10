@@ -16,10 +16,18 @@ contract Beef is OwnableUpgradeable {
         string title;
         string description;
         address[] arbiters;
+        uint256 joinDeadline;
+    }
+
+    struct BeefInfo {
+        ConstructorParams params;
+        bool cooking;
+        uint128 resultYes;
+        uint128 resultNo;
+        uint256 attendCount;
     }
 
     uint256 public constant settlingDuration = 30 days;
-    uint256 public constant joinDuration = 7 days;
     uint256 public constant arbitersRequiredCount = 3;
 
     // @notice Address of the foe - the counterparty to the beef.
@@ -112,13 +120,39 @@ contract Beef is OwnableUpgradeable {
         if (params.arbiters.length != arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
-        (wager, foe, settleStart, title, description, arbiters) =
-            (params.wager, params.foe, params.settleStart, params.title, params.description, params.arbiters);
-        joinDeadline = block.timestamp + joinDuration;
+        (wager, foe, settleStart, title, description, arbiters, joinDeadline) = (
+            params.wager,
+            params.foe,
+            params.settleStart,
+            params.title,
+            params.description,
+            params.arbiters,
+            params.joinDeadline
+        );
 
         __Ownable_init(params.owner);
 
         emit BeefCreated(params.owner, foe, wager, settleStart, title, description, arbiters);
+    }
+
+    // @notice Get the current information about beef.
+    function getInfo() public view returns (BeefInfo memory) {
+        return BeefInfo({
+            params: ConstructorParams({
+                owner: owner(),
+                wager: wager,
+                foe: foe,
+                settleStart: settleStart,
+                title: title,
+                description: description,
+                arbiters: arbiters,
+                joinDeadline: joinDeadline
+            }),
+            cooking: cooking,
+            resultYes: resultYes,
+            resultNo: resultNo,
+            attendCount: attendCount
+        });
     }
 
     // @notice Owner can set the arbiters, if beef is still raw.
@@ -140,8 +174,8 @@ contract Beef is OwnableUpgradeable {
         if (msg.value != wager) {
             revert BeefInvalidWager(wager, msg.value);
         }
-        if (block.timestamp >= joinDuration) {
-            revert BeefIsRotten(joinDuration, block.timestamp);
+        if (block.timestamp >= joinDeadline) {
+            revert BeefIsRotten(joinDeadline, block.timestamp);
         }
         if (attendCount < arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(attendCount, arbitersRequiredCount);
@@ -198,8 +232,8 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Withdraw the wager if beef had raw for too long.
     function withdrawRaw() public isNotCooking {
-        if (block.timestamp < joinDuration) {
-            revert BeefNotRotten(joinDuration, block.timestamp);
+        if (block.timestamp < joinDeadline) {
+            revert BeefNotRotten(joinDeadline, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance);
         emit BeefWithdrawn(cooking);
