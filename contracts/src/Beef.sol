@@ -53,6 +53,7 @@ contract Beef is OwnableUpgradeable {
     mapping(address arbiter => uint256 result) public hasSettled;
     mapping(address arbiter => bool) public hasAttended;
 
+    error BeefAlreadyGone();
     error BeefArbiterAlreadyAttended(address sender);
     error BeefArbiterAlreadySettled(address sender);
     error BeefInvalidArbitersCount(uint256 providedCount, uint256 requiredCount);
@@ -209,6 +210,9 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Serve the beef to the winner.
     function serveBeef() public {
+        if (address(this).balance == 0) {
+            revert BeefAlreadyGone();
+        }
         if (resultYes <= arbiters.length / 2 && resultNo <= arbiters.length / 2) {
             revert BeefNotSettled(resultYes, resultNo, arbiters.length / 2);
         }
@@ -223,6 +227,9 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
     function withdrawRotten() public {
+        if (address(this).balance == 0) {
+            revert BeefAlreadyGone();
+        }
         if (!cooking || block.timestamp < settleStart + settlingDuration) {
             revert BeefNotRotten(settleStart + settlingDuration, block.timestamp);
         }
@@ -233,6 +240,9 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Withdraw the wager if beef had raw for too long.
     function withdrawRaw() public isNotCooking {
+        if (address(this).balance == 0) {
+            revert BeefAlreadyGone();
+        }
         if (block.timestamp < joinDeadline) {
             revert BeefNotRotten(joinDeadline, block.timestamp);
         }
