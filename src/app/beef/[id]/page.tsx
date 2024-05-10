@@ -33,7 +33,7 @@ type BeefDetailPageProps = {
 let steps = [
   { icon: "🥩", text: "Beef creation" },
   { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-  { icon: "🐄", text: "Foe joining" },
+  { icon: "🤺", text: "Foe joining" },
   { icon: "👨‍🍳", text: "Beef cooking" },
   { icon: "🧑‍⚖️", text: "Beef settling" },
   { icon: "🍽️", text: "Beef ready to serve" },
@@ -146,6 +146,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
 
   let step = 0;
   let deadline: Date | undefined;
+  let isRotten = false;
   const now = new Date().getTime();
   if (attendCount < arbiters.length) {
     if (now < joinDeadline * 1000n) {
@@ -155,6 +156,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       steps = steps.slice(0, 2);
       steps.push({ icon: "🤢", text: "Beef rotten" });
       step = 2;
+      isRotten = true;
     }
   } else {
     step = 2;
@@ -177,6 +179,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           ) {
             steps = steps.slice(0, 5);
             steps.push({ icon: "🤢", text: "Beef rotten" });
+            isRotten = true;
           }
           if (/*served*/ false) {
             step = 6;
@@ -210,20 +213,40 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             sx={{ width: "100%" }}
             connector={<BeefStepConnector />}
           >
-            {steps.map((label, index) => (
-              <Step key={label.text}>
-                <StepLabel StepIconComponent={StepIcon}>
-                  <Stack>
-                    <Typography>{label.text}</Typography>
-                    {index === step && deadline != null && (
-                      <Typography>
-                        <Countdown deadline={deadline} />
-                      </Typography>
-                    )}
-                  </Stack>
-                </StepLabel>
-              </Step>
-            ))}
+            {steps.map((label, index) => {
+              const stepTimeInSeconds =
+                index === 2
+                  ? Number(joinDeadline)
+                  : index === 3
+                    ? Number(settleStart)
+                    : index === 4
+                      ? Number(settleStart + BigInt(60 * 60 * 24 * 30))
+                      : null;
+
+              const stepDate = stepTimeInSeconds
+                ? new Date(1000 * stepTimeInSeconds).toDateString()
+                : null;
+              return (
+                <Step key={label.text}>
+                  <StepLabel StepIconComponent={StepIcon}>
+                    <Stack>
+                      <Typography>{label.text}</Typography>
+                      {stepDate && !isRotten && (
+                        <Stack>
+                          <Typography variant="body2">Deadline</Typography>
+                          <Typography variant="body2">{stepDate}</Typography>
+                        </Stack>
+                      )}
+                      {index === step && deadline != null && (
+                        <Typography>
+                          <Countdown deadline={deadline} />
+                        </Typography>
+                      )}
+                    </Stack>
+                  </StepLabel>
+                </Step>
+              );
+            })}
           </Stepper>
 
           <Stack gap={1} alignItems={"stretch"}>
