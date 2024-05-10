@@ -1,10 +1,10 @@
 import React from "react";
 import { Stack } from "@mui/material";
-import BeefRow from "./BeefRow";
+import BeefRow, { BeefRowProps } from "./BeefRow";
 import { Beef } from "@/types";
 
 type BeefListProps = {
-  beefs: Beef[];
+  beefs: BeefRowProps[];
 };
 
 const BeefList = ({ beefs }: BeefListProps) => {

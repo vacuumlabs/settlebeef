@@ -23,7 +23,7 @@ export const handleError = (error: Error | undefined) => {
 
   enqueueSnackbar(
     error ? ellipsizeText(error.message, 100) : "Uh oh! Something went wrong.",
-    { variant: "error" },
+    { variant: "error" }
   );
 };
 
@@ -45,13 +45,13 @@ const Providers = ({ children }: ProvidersProps) => {
     }),
   });
 
-  const zdAppId = process.env.NEXT_PUBLIC_ZERODEV_APP_ID || "";
+  const zdAppId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || "";
   const config = createConfig({
     chains: [activeChain],
     connectors: [injected()],
     transports: {
       [activeChain.id]: http(
-        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`,
+        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`
       ),
     },
   });
