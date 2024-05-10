@@ -18,14 +18,14 @@ export const ZERODEV_PAYMASTER_RPC =
   "https://rpc.zerodev.app/api/v2/paymaster/55689498-0691-431a-8afd-5bfc31f232e0";
 
 export const createSmartAccountClient = async (
-  embeddedWallet: ConnectedWallet
+  embeddedWallet: ConnectedWallet,
 ) => {
   await embeddedWallet.switchChain(activeChain.id);
 
   const eip1193provider = await embeddedWallet.getEthereumProvider();
 
   const smartAccountSigner = await providerToSmartAccountSigner(
-    eip1193provider as any
+    eip1193provider as any,
   );
 
   // Create a ZeroDev ECDSA validator from the `smartAccountSigner` from above and your `publicClient`

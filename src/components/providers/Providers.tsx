@@ -21,7 +21,7 @@ const Providers = ({ children }: ProvidersProps) => {
     connectors: [injected()],
     transports: {
       [activeChain.id]: http(
-        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`
+        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`,
       ),
     },
   });
