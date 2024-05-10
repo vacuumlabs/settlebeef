@@ -31,8 +31,11 @@ contract Beef is Ownable {
     uint256 public settleCount;
     string public title;
     string public description;
+    uint256 attendCount;
     mapping(address => bool) public hasSettled;
+    mapping(address => bool) public hasAttended;
 
+    error BeefArbiterAlreadyAttended(address sender);
     error BeefArbiterAlreadySettled(address sender);
     error BeefInvalidArbitersCount(uint256 providedCount, uint256 requiredCount);
     error BeefInvalidWager(uint256 declaredWager, uint256 providedWager);
@@ -89,6 +92,14 @@ contract Beef is Ownable {
     //     arbiters = _arbiters;
     // }
 
+    function arbiterAttend() public onlyArbiter {
+        if (hasAttended[msg.sender]) {
+            revert BeefArbiterAlreadyAttended(msg.sender);
+        }
+        hasAttended[msg.sender] = true;
+        ++attendCount;
+    }
+
     // @notice Foe can join the beef, paying the wager.
     function joinBeef() public payable onlyFoe isNotCooking {
         if (msg.value != wager) {
@@ -96,6 +107,9 @@ contract Beef is Ownable {
         }
         if (block.timestamp >= joinDuration) {
             revert BeefIsRotten(joinDuration, block.timestamp);
+        }
+        if (attendCount < arbitersRequiredCount) {
+            revert BeefInvalidArbitersCount(attendCount, arbitersRequiredCount);
         }
         deadline = block.timestamp + duration;
     }
