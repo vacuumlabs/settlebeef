@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract Beef is Ownable {
+contract Beef is OwnableUpgradeable {
     using Address for address;
 
     struct ConstructorParams {
@@ -84,7 +85,12 @@ contract Beef is Ownable {
         _;
     }
 
-    constructor(ConstructorParams memory params) payable Ownable(params.owner) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(ConstructorParams memory params) public payable initializer {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
         }
@@ -94,6 +100,8 @@ contract Beef is Ownable {
         (wager, foe, settleStart, title, description, arbiters) =
             (params.wager, params.foe, params.settleStart, params.title, params.description, params.arbiters);
         joinDeadline = block.timestamp + joinDuration;
+
+        __Ownable_init(params.owner);
     }
 
     // @notice Owner can set the arbiters, if beef is still raw.
