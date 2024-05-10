@@ -19,6 +19,7 @@ contract Beef is Ownable {
 
     uint256 constant arbiteringDuration = 30 days;
     uint256 constant joinDuration = 7 days;
+    uint256 constant arbitersRequiredCount = 3;
 
     address public foe;
     address[] public arbiters;
@@ -33,6 +34,7 @@ contract Beef is Ownable {
     mapping(address => bool) public hasSettled;
 
     error BeefArbiterAlreadySettled(address sender);
+    error BeefInvalidArbitersCount(uint256 providedCount, uint256 requiredCount);
     error BeefInvalidWager(uint256 declaredWager, uint256 providedWager);
     error BeefisNotCooking(uint256 deadline, uint256 timestamp);
     error BeefIsRotten(uint256 deadline, uint256 timestamp);
@@ -73,6 +75,9 @@ contract Beef is Ownable {
     constructor(ConstructorParams memory params) payable Ownable(params.owner) {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
+        }
+        if (params.arbiters.length != arbitersRequiredCount) {
+            revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
         (wager, foe, duration, title, description, arbiters) =
             (params.wager, params.foe, params.duration, params.title, params.description, params.arbiters);
