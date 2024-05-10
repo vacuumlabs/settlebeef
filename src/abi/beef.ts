@@ -182,7 +182,7 @@ export const beefAbi = [
     name: "hasAttended",
     inputs: [
       {
-        name: "",
+        name: "arbiter",
         type: "address",
         internalType: "address",
       },
@@ -201,16 +201,16 @@ export const beefAbi = [
     name: "hasSettled",
     inputs: [
       {
-        name: "",
+        name: "arbiter",
         type: "address",
         internalType: "address",
       },
     ],
     outputs: [
       {
-        name: "",
-        type: "bool",
-        internalType: "bool",
+        name: "result",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
