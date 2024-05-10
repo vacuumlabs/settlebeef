@@ -16,7 +16,7 @@ import { parseIsoDateToTimestamp } from "@/utils/general";
 
 export const useArbiterAttend = (
   beefId: Address,
-  client: SmartAccountClient
+  client: SmartAccountClient,
 ) => {
   return useMutation({
     mutationFn: async () => {
@@ -60,7 +60,7 @@ export const useSettleBeef = (beefId: Address, client: SmartAccountClient) => {
 export const useJoinBeef = (
   beefId: Address,
   value: bigint,
-  client: SmartAccountClient
+  client: SmartAccountClient,
 ) => {
   return useMutation({
     mutationFn: async () => {
@@ -137,7 +137,7 @@ export const useAddBeef = () => {
                 address: value,
                 type: "email" as const,
               },
-            ]
+            ],
       )
       .map(getUserGeneratedAddress);
 

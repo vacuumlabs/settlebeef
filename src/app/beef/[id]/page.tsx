@@ -8,6 +8,8 @@ import { Address, formatEther } from "viem";
 import { truncateAddress } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
+import { usePrivy } from "@privy-io/react-auth";
+import NotLoggedIn from "@/components/NotLoggedIn";
 
 type BeefDetailPageProps = {
   params: {
@@ -15,6 +17,7 @@ type BeefDetailPageProps = {
   };
 };
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
+  const { authenticated } = usePrivy();
   const { client } = useContext(SmartAccountClientContext);
   const { id } = params;
   const beef = useBeef(id);
@@ -30,7 +33,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const isUserFoe = address === foe;
   const isUserOwner = address === owner;
 
-  return (
+  return authenticated ? (
     <Container sx={{ pt: 4 }}>
       <Paper elevation={2} square>
         <Stack p={4} spacing={2}>
@@ -65,6 +68,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         </Stack>
       </Paper>
     </Container>
+  ) : (
+    <NotLoggedIn />
   );
 };
 

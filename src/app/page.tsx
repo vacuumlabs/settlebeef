@@ -3,7 +3,7 @@
 import BeefList from "@/components/BeefList";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { useGetBeefs } from "@/hooks/queries";
-import { Box, Container, Typography } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { useContext } from "react";
 
 export default function Home() {
