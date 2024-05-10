@@ -3,6 +3,12 @@ import type { Address, Beef } from "../types";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
+import { useContext } from "react";
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "./queryKeys";
+import { wagmiConfig } from "@/components/providers/Providers";
+import { getBalance } from "wagmi/actions";
 
 export const useBeef = (id: string): Beef | null | undefined => {
   const { data, isError } = useReadContract({
@@ -50,7 +56,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const,
+          }) as const
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -68,7 +74,7 @@ export const useGetBeefs = () => {
 
 export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddresses: Address[],
+  arbiterAddresses: Address[]
 ) => {
   const { data } = useReadContracts({
     contracts: [
@@ -101,11 +107,24 @@ export const useGetArbiterStatuses = (
             }
             return acc;
           },
-          [] as Array<[boolean, bigint]>,
+          [] as Array<[boolean, bigint]>
         )
         .map(([hasAttended, hasSettled]) => ({
           hasAttended,
           hasSettled,
         }))
     : undefined;
+};
+
+export const useBalance = () => {
+  const { connectedAddress } = useContext(SmartAccountClientContext);
+
+  return useQuery({
+    queryKey: [queryKeys.balance, connectedAddress],
+    queryFn: () =>
+      getBalance(wagmiConfig, {
+        address: connectedAddress!,
+      }),
+    enabled: !!connectedAddress,
+  });
 };
