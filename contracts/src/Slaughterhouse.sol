@@ -8,7 +8,7 @@ import {Beef} from "./Beef.sol";
 contract Slaughterhouse {
     address public beefImplementation;
 
-    event BeefPackaged(address beef);
+    event BeefPackaged(address indexed beef, address indexed owner, address indexed foe);
 
     constructor() {
         beefImplementation = address(new Beef());
@@ -17,7 +17,7 @@ contract Slaughterhouse {
     function packageBeef(Beef.ConstructorParams memory params) public payable returns (address) {
         address clone = Clones.clone(beefImplementation);
         Beef(clone).initialize{value: msg.value}(params);
-        emit BeefPackaged(clone);
+        emit BeefPackaged(clone, params.owner, params.foe);
         return clone;
     }
 }
