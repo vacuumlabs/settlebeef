@@ -4,20 +4,12 @@ import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { useContext } from "react";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import { useBalance, useEnsName } from "wagmi";
+import { useBalance } from "wagmi";
 import { formatEther } from "viem";
-import { ensConfig } from "./providers/Providers";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
   const { connectedAddress, setClient } = useContext(SmartAccountClientContext);
-  const { data: ensName } = useEnsName({
-    address: connectedAddress,
-    config: ensConfig,
-    query: {
-      enabled: connectedAddress != null,
-    },
-  });
 
   const { login } = useLogin();
 
