@@ -4,8 +4,8 @@ import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { useContext } from "react";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import { useBalance } from "wagmi";
 import { formatEther } from "viem";
+import { useBalance } from "@/hooks/queries";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
