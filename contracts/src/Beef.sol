@@ -14,16 +14,18 @@ contract Beef is Ownable {
         uint256 duration;
         string title;
         string description;
+        address[] arbiters;
     }
 
     uint256 constant arbiteringDuration = 30 days;
+    uint256 constant joinDuration = 7 days;
 
     address public foe;
     address[] public arbiters;
     uint256 public wager;
     uint256 public duration;
     uint256 public deadline;
-    string public bet;
+    uint256 public joinDeadline;
     int256 public result;
     uint256 public settleCount;
     string public title;
@@ -32,8 +34,7 @@ contract Beef is Ownable {
 
     error BeefArbiterAlreadySettled(address sender);
     error BeefInvalidWager(uint256 declaredWager, uint256 providedWager);
-    error BeefIsRaw(uint256 deadline, uint256 timestamp);
-    error BeefIsCooking();
+    error BeefisNotCooking(uint256 deadline, uint256 timestamp);
     error BeefIsRotten(uint256 deadline, uint256 timestamp);
     error BeefNotArbiter(address sender);
     error BeefNotFoe(address declaredFoe, address sender);
@@ -62,7 +63,7 @@ contract Beef is Ownable {
         _;
     }
 
-    modifier isRaw() {
+    modifier isNotCooking() {
         if (deadline != 0) {
             revert BeefNotRaw();
         }
@@ -70,22 +71,26 @@ contract Beef is Ownable {
     }
 
     constructor(ConstructorParams memory params) payable Ownable(params.owner) {
-        (wager, foe, duration, title, description) =
-            (params.wager, params.foe, params.duration, params.title, params.description);
-        if (msg.value != wager) {
-            revert BeefInvalidWager(wager, msg.value);
+        if (msg.value != params.wager) {
+            revert BeefInvalidWager(params.wager, msg.value);
         }
+        (wager, foe, duration, title, description, arbiters) =
+            (params.wager, params.foe, params.duration, params.title, params.description, params.arbiters);
+        joinDeadline = block.timestamp + joinDuration;
     }
 
     // @notice Owner can set the arbiters, if beef is still raw.
-    function setArbiters(address[] memory _arbiters) public onlyOwner isRaw {
-        arbiters = _arbiters;
-    }
+    // function setArbiters(address[] memory _arbiters) public onlyOwner isNotCooking {
+    //     arbiters = _arbiters;
+    // }
 
     // @notice Foe can join the beef, paying the wager.
-    function joinBeef() public payable onlyFoe isRaw {
+    function joinBeef() public payable onlyFoe isNotCooking {
         if (msg.value != wager) {
             revert BeefInvalidWager(wager, msg.value);
+        }
+        if (block.timestamp >= joinDuration) {
+            revert BeefIsRotten(joinDuration, block.timestamp);
         }
         deadline = block.timestamp + duration;
     }
@@ -94,9 +99,9 @@ contract Beef is Ownable {
     // @param verdict True if outcome is according to the description, false otherwise.
     function settleBeef(bool verdict) public onlyArbiter {
         if (block.timestamp < deadline) {
-            revert BeefIsRaw(deadline, block.timestamp);
+            revert BeefisNotCooking(deadline, block.timestamp);
         }
-        if (block.timestamp > deadline + arbiteringDuration) {
+        if (block.timestamp >= deadline + arbiteringDuration) {
             revert BeefIsRotten(deadline + arbiteringDuration, block.timestamp);
         }
         if (hasSettled[msg.sender]) {
@@ -121,12 +126,20 @@ contract Beef is Ownable {
         }
     }
 
-    // @notice Withdraw the wagers if beef had rotten.
-    function withdraw() public {
-        if (block.timestamp < deadline + arbiteringDuration) {
+    // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
+    function withdrawRotten() public {
+        if (deadline != 0 && block.timestamp < deadline + arbiteringDuration) {
             revert BeefNotRotten(deadline + arbiteringDuration, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance / 2);
         payable(foe).transfer(address(this).balance / 2);
+    }
+
+    // @notice Withdraw the wager if beef had raw for too long.
+    function withdrawRaw() public isNotCooking {
+        if (block.timestamp < joinDuration) {
+            revert BeefNotRotten(joinDuration, block.timestamp);
+        }
+        payable(owner()).transfer(address(this).balance);
     }
 }
