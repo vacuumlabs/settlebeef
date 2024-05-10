@@ -1,14 +1,21 @@
 import { AppBar, Toolbar, Typography } from "@mui/material";
 import React from "react";
 import LoginButton from "./LoginButton";
+import Link from "next/link";
 
 const Header = () => {
   return (
     <AppBar>
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Decobie
-        </Typography>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <Typography
+            variant="h6"
+            component="span"
+            sx={{ flexGrow: 1, color: "white" }}
+          >
+            Decobie
+          </Typography>
+        </Link>
         <LoginButton />
       </Toolbar>
     </AppBar>
