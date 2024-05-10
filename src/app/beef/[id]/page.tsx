@@ -24,7 +24,6 @@ type BeefDetailPageProps = {
   };
 };
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
-  const { authenticated } = usePrivy();
   const { client } = useContext(SmartAccountClientContext);
   const { id } = params;
   console.log(id);
@@ -59,7 +58,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const isUserFoe = address === foe;
   const isUserOwner = address === owner;
 
-  return authenticated ? (
+  return (
     <Container sx={{ pt: 4 }}>
       <Paper elevation={2} square>
         <Stack p={4} spacing={2}>
@@ -97,8 +96,6 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         </Stack>
       </Paper>
     </Container>
-  ) : (
-    <NotLoggedIn />
   );
 };
 
