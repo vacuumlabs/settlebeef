@@ -15,8 +15,8 @@ import Link from "next/link";
 import { useContext } from "react";
 
 export default function Home() {
-  const { client } = useContext(SmartAccountClientContext);
-  const { data: beefs, isPending: isLoadingBeefs } = useGetBeefs();
+  const { connectedAddress } = useContext(SmartAccountClientContext);
+  const { data: beefs, isLoading: isLoadingBeefs } = useGetBeefs();
 
   const beefsListData =
     beefs?.map((beef) => ({
@@ -25,9 +25,13 @@ export default function Home() {
       wager: beef.params.wager,
     })) ?? [];
   const myBeefsOwner =
-    client && beefs
+    connectedAddress && beefs
       ? beefs
-          .filter((beef) => beef.params.owner === client.account.address)
+          .filter(
+            (beef) =>
+              beef.params.owner.toLowerCase() ===
+              connectedAddress.toLowerCase(),
+          )
           .map((beef) => ({
             title: beef.params.title,
             address: beef.address,
@@ -35,9 +39,12 @@ export default function Home() {
           }))
       : [];
   const myBeefsFoe =
-    client && beefs
+    connectedAddress && beefs
       ? beefs
-          .filter((beef) => beef.params.foe === client.account.address)
+          .filter(
+            (beef) =>
+              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase(),
+          )
           .map((beef) => ({
             title: beef.params.title,
             address: beef.address,
@@ -45,10 +52,12 @@ export default function Home() {
           }))
       : [];
   const myBeefsArbiter =
-    client && beefs
+    connectedAddress && beefs
       ? beefs
           .filter((beef) =>
-            beef.params.arbiters.includes(client.account.address)
+            beef.params.arbiters
+              .map((it) => it.toLowerCase())
+              .includes(connectedAddress.toLowerCase()),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -60,7 +69,7 @@ export default function Home() {
   return (
     <Container>
       {/* My beefs */}
-      {client && (
+      {connectedAddress && (
         <Paper elevation={2} square>
           <Stack p={4} spacing={2}>
             <Stack direction="row" justifyContent="space-between">

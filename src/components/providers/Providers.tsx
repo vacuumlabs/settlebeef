@@ -25,7 +25,7 @@ export const handleError = (error: Error | undefined) => {
 
   enqueueSnackbar(
     error ? ellipsizeText(error.message, 100) : "Uh oh! Something went wrong.",
-    { variant: "error" }
+    { variant: "error" },
   );
 };
 

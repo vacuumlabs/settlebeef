@@ -1,7 +1,7 @@
 type HexString = `0x${string}`;
 
 export type Address = HexString;
-type UnixTimestamp = bigint;
+export type UnixTimestamp = bigint;
 
 // Beef is a disagreement that two people have.
 // It is also a type of meat that comes from cows.
