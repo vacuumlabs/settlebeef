@@ -9,8 +9,10 @@ import { useGetArbiterStatuses } from "@/hooks/queries";
 import {
   useArbiterAttend,
   useJoinBeef,
+  useServeBeef,
   useSettleBeef,
   useWithdrawRaw,
+  useWithdrawRotten,
 } from "@/hooks/mutations";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { DateTime } from "luxon";
@@ -18,6 +20,28 @@ import { DateTime } from "luxon";
 type ButtonProps = {
   id: Address;
 };
+
+const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
+  const { isCooking, joinDeadline, settleStart, resultYes, resultNo, arbiters } = beef
+
+  const canWithdrawRaw = !isCooking && parseIsoDateToTimestamp(DateTime.now().toISODate()) > joinDeadline
+  const canWithdrawRotten = isCooking && parseIsoDateToTimestamp(DateTime.now().toISODate()) > settleStart + BigInt(30 * 24 * 60 * 60)
+  const canServe = resultYes > Math.floor(arbiters.length / 2) || resultNo > Math.floor(arbiters.length / 2)
+
+  const withdrawRawMutation = useWithdrawRaw(id);
+  const withdrawRottenMutation = useWithdrawRotten(id);
+  const serveMutation = useServeBeef(id);
+
+  if (canWithdrawRaw) {
+    return <Button onClick={() => withdrawRawMutation.mutate()}>Withdraw Raw Beef</Button>
+  } else if (canWithdrawRotten) {
+    return <Button onClick={() => withdrawRottenMutation.mutate()}>Withdraw Rotten Beef</Button>
+  } else if (canServe) {
+    return <Button onClick={() => serveMutation.mutate()}>Serve Beef</Button>
+  } else {
+    return <Button disabled>Nothing to do</Button>;
+  }
+}
 
 const ArbiterButton = ({
   connectedAddress,
@@ -128,6 +152,7 @@ const BeefControls = ({
           <FoeButton {...{ id, hasJoined: isCooking, value: wager }} />
         )}
         {isUserOwner && <OwnerButton {...{ id, canWithdraw }} />}
+        <WithdrawButton {...{ id, beef }} />
       </Stack>
     )
   );

@@ -82,32 +82,9 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
   });
 };
 
-export const useWithdrawRaw = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      const txHash = await sendTransaction({
-        to: beefId,
-        data: encodeFunctionData({
-          abi: beefAbi,
-          functionName: "withdrawRaw",
-          args: [],
-        }),
-      });
-
-      return txHash;
-    },
-    onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
-    },
-  });
-};
-
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext
+    SmartAccountClientContext,
   );
   const queryClient = useQueryClient();
 
@@ -135,7 +112,7 @@ export const useAddBeef = () => {
               address: value,
               type: "email" as const,
             },
-          ])
+          ]),
     );
 
     const arbitersAddresses = await Promise.all(addressPromises);
@@ -166,6 +143,72 @@ export const useAddBeef = () => {
     mutationFn: addBeef,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+    },
+  });
+};
+
+export const useWithdrawRaw = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
+  return useMutation({
+    mutationFn: async () => {
+      const txHash = await sendTransaction({
+        to: beefId,
+        data: encodeFunctionData({
+          abi: beefAbi,
+          functionName: "withdrawRaw",
+          args: [],
+        }),
+      });
+
+      return txHash;
+    },
+    onSuccess() {
+      // FIXME:invalidate QueryClient
+    },
+  });
+};
+
+export const useWithdrawRotten = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
+  return useMutation({
+    mutationFn: async () => {
+      const txHash = await sendTransaction({
+        to: beefId,
+        data: encodeFunctionData({
+          abi: beefAbi,
+          functionName: "withdrawRotten",
+          args: [],
+        }),
+      });
+
+      return txHash;
+    },
+    onSuccess() {
+      // FIXME:invalidate QueryClient
+    },
+  });
+};
+
+export const useServeBeef = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
+  return useMutation({
+    mutationFn: async () => {
+      const txHash = await sendTransaction({
+        to: beefId,
+        data: encodeFunctionData({
+          abi: beefAbi,
+          functionName: "serveBeef",
+          args: [],
+        }),
+      });
+
+      return txHash;
+    },
+    onSuccess() {
+      // FIXME:invalidate QueryClient
     },
   });
 };
