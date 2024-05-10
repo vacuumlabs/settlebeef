@@ -20,6 +20,7 @@ const Header = () => {
               Decobie
             </Typography>
           </Link>
+          {/*
           <Link href="/beef/new" style={{ textDecoration: "none" }}>
             <Typography
               variant="h6"
@@ -29,6 +30,7 @@ const Header = () => {
               New beef
             </Typography>
           </Link>
+          */}
         </Stack>
         <LoginButton />
       </Toolbar>
