@@ -165,7 +165,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         deadline = new Date(Number(settleStart) * 1000);
         step = 3;
       } else {
-        if (now < settleStart + BigInt(60 * 60 * 24 * 30) * 1000n) {
+        if (now < (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
           // TODO: this assumes constant settlingDuration of 30 days!
           deadline = new Date(
             Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
@@ -267,12 +267,14 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 {arbiterStatuses && (
                   <Typography>
                     {step < 4
-                      ? arbiterStatuses[index].hasAttended
+                      ? arbiterStatuses[index]!.hasAttended
                         ? "✅"
                         : "⌛"
-                      : arbiterStatuses[index].hasSettled
+                      : arbiterStatuses[index]!.hasSettled === 1n
                         ? "1️⃣"
-                        : "2️⃣"}
+                        : arbiterStatuses[index]!.hasSettled === 2n
+                          ? "2️⃣"
+                          : "⌛"}
                   </Typography>
                 )}
               </Stack>
