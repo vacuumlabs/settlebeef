@@ -18,6 +18,7 @@ import { useAddBeef } from "@/hooks/mutations";
 import { ArbiterAccount } from "@/types";
 import { usePrivy } from "@privy-io/react-auth";
 import NotLoggedIn from "@/components/NotLoggedIn";
+import { enqueueSnackbar } from "notistack";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -59,7 +60,9 @@ const NewBeefPage = () => {
 
   const addBeef = handleSubmit((values) => {
     mutate(values, {
-      onSuccess: () => {},
+      onSuccess: () => {
+        enqueueSnackbar("Beef added", { variant: "success" });
+      },
     });
   });
 
