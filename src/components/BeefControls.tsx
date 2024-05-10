@@ -5,7 +5,7 @@ import {
   SmartAccountClientContext,
 } from "./providers/SmartAccountClientContext";
 import { Address, Beef } from "@/types";
-import { useGetArbiterStatus } from "@/hooks/queries";
+import { useGetArbiterStatuses } from "@/hooks/queries";
 import {
   useArbiterAttend,
   useJoinBeef,
@@ -21,7 +21,7 @@ type ButtonProps = {
 };
 
 const ArbiterButton = ({ client, id }: ButtonProps) => {
-  const arbiterStatus = useGetArbiterStatus(id, client.account.address);
+  const arbiterStatus = useGetArbiterStatuses(id, [client.account.address]);
   const settleMutation = useSettleBeef(id, client);
   const attendMutation = useArbiterAttend(id, client);
 

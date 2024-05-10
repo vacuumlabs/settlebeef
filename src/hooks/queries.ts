@@ -69,32 +69,46 @@ export const useGetBeefs = () => {
   };
 };
 
-export const useGetArbiterStatus = (
+export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddress: Address,
+  arbiterAddresses: Address[],
 ) => {
   const { data } = useReadContracts({
     contracts: [
-      {
-        abi: beefAbi,
-        address: beefId,
-        functionName: "hasSettled",
-        args: [arbiterAddress],
-      },
-      {
-        abi: beefAbi,
-        address: beefId,
-        functionName: "hasAttended",
-        args: [arbiterAddress],
-      },
+      ...arbiterAddresses.flatMap((arbiterAddress) => [
+        {
+          abi: beefAbi,
+          address: beefId,
+          functionName: "hasAttended",
+          args: [arbiterAddress],
+        } as const,
+        {
+          abi: beefAbi,
+          address: beefId,
+          functionName: "hasSettled",
+          args: [arbiterAddress],
+        } as const,
+      ]),
     ],
     allowFailure: false,
   });
 
   return data != null
-    ? {
-        hasSettled: data[0],
-        hasAttended: data[1],
-      }
+    ? data
+        .reduce(
+          (acc, curr, idx) => {
+            if (idx % 2 === 0) {
+              acc.push([curr]);
+            } else {
+              acc[acc.length - 1].push(curr);
+            }
+            return acc;
+          },
+          [] as Array<[boolean, bigint]>,
+        )
+        .map(([hasAttended, hasSettled]) => ({
+          hasAttended,
+          hasSettled,
+        }))
     : undefined;
 };
