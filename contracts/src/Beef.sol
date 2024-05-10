@@ -27,13 +27,18 @@ contract Beef is Ownable {
     address[] public arbiters;
     // @notice Wager amount of each side.
     uint256 public wager;
+    // @notice Title of the beef.
     string public title;
+    // @notice Description of the beef.
     string public description;
+    // @notice Deadline of the beef - when the settling can start.
     uint256 public deadline;
+    // @notice Deadline for foe to join the beef.
     uint256 public joinDeadline;
+    // @notice Flag indicating if the beef is cooking - the foe had joined.
     bool public cooking;
-    int256 public result;
-    uint256 public settleCount;
+    uint128 public resultYes;
+    uint128 public resultNo;
     uint256 attendCount;
     mapping(address => bool) public hasSettled;
     mapping(address => bool) public hasAttended;
@@ -49,7 +54,7 @@ contract Beef is Ownable {
     error BeefNotFoe(address declaredFoe, address sender);
     error BeefNotRaw();
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
-    error BeefNotSettled(uint256 settleCount, uint256 requiredSettleCount);
+    error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
 
     modifier onlyArbiter() {
         bool isArbiter;
@@ -130,19 +135,21 @@ contract Beef is Ownable {
         if (hasSettled[msg.sender]) {
             revert BeefArbiterAlreadySettled(msg.sender);
         }
-        result += verdict ? int256(1) : int256(-1);
-        ++settleCount;
+
+        if (verdict) {
+            ++resultYes;
+        } else {
+            ++resultNo;
+        }
         hasSettled[msg.sender] = true;
     }
 
     // @notice Serve the beef to the winner.
     function serveBeef() public {
-        if (settleCount <= arbiters.length / 2) {
-            revert BeefNotSettled(settleCount, arbiters.length / 2);
+        if (resultYes <= arbiters.length / 2 && resultNo <= arbiters.length / 2) {
+            revert BeefNotSettled(resultYes, resultNo, arbiters.length / 2);
         }
-        // If majority has settled, result should never be 0.
-        assert(result != 0);
-        if (result > 0) {
+        if (resultYes > resultNo) {
             payable(owner()).transfer(address(this).balance);
         } else {
             payable(foe).transfer(address(this).balance);
