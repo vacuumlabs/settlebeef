@@ -25,6 +25,7 @@ contract Beef is OwnableUpgradeable {
         uint128 resultYes;
         uint128 resultNo;
         uint256 attendCount;
+        bool beefGone;
     }
 
     uint256 public constant settlingDuration = 30 days;
@@ -153,7 +154,8 @@ contract Beef is OwnableUpgradeable {
             cooking: cooking,
             resultYes: resultYes,
             resultNo: resultNo,
-            attendCount: attendCount
+            attendCount: attendCount,
+            beefGone: address(this).balance == 0
         });
     }
 
