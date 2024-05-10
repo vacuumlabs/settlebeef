@@ -22,26 +22,59 @@ type ButtonProps = {
 };
 
 const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
-  const { isCooking, joinDeadline, settleStart, resultYes, resultNo, arbiters } = beef
+  const {
+    isCooking,
+    joinDeadline,
+    settleStart,
+    resultYes,
+    resultNo,
+    arbiters,
+  } = beef;
 
-  const canWithdrawRaw = !isCooking && parseIsoDateToTimestamp(DateTime.now().toISODate()) > joinDeadline
-  const canWithdrawRotten = isCooking && parseIsoDateToTimestamp(DateTime.now().toISODate()) > settleStart + BigInt(30 * 24 * 60 * 60)
-  const canServe = resultYes > Math.floor(arbiters.length / 2) || resultNo > Math.floor(arbiters.length / 2)
+  const canWithdrawRaw =
+    !isCooking &&
+    parseIsoDateToTimestamp(DateTime.now().toISODate()) > joinDeadline;
+  const canWithdrawRotten =
+    isCooking &&
+    parseIsoDateToTimestamp(DateTime.now().toISODate()) >
+      settleStart + BigInt(30 * 24 * 60 * 60);
+  const canServe =
+    resultYes > Math.floor(arbiters.length / 2) ||
+    resultNo > Math.floor(arbiters.length / 2);
 
   const withdrawRawMutation = useWithdrawRaw(id);
   const withdrawRottenMutation = useWithdrawRotten(id);
   const serveMutation = useServeBeef(id);
 
   if (canWithdrawRaw) {
-    return <Button onClick={() => withdrawRawMutation.mutate()}>Withdraw Raw Beef</Button>
+    return (
+      <Button onClick={() => withdrawRawMutation.mutate()} variant="outlined">
+        Withdraw Raw Beef
+      </Button>
+    );
   } else if (canWithdrawRotten) {
-    return <Button onClick={() => withdrawRottenMutation.mutate()}>Withdraw Rotten Beef</Button>
+    return (
+      <Button
+        onClick={() => withdrawRottenMutation.mutate()}
+        variant="outlined"
+      >
+        Withdraw Rotten Beef
+      </Button>
+    );
   } else if (canServe) {
-    return <Button onClick={() => serveMutation.mutate()}>Serve Beef</Button>
+    return (
+      <Button onClick={() => serveMutation.mutate()} variant="outlined">
+        Serve Beef
+      </Button>
+    );
   } else {
-    return <Button disabled>Nothing to do</Button>;
+    return (
+      <Button disabled variant="outlined">
+        Nothing to do
+      </Button>
+    );
   }
-}
+};
 
 const ArbiterButton = ({
   connectedAddress,
@@ -91,10 +124,16 @@ const FoeButton = ({
   id,
   value,
   hasJoined,
-}: ButtonProps & { value: bigint; hasJoined: boolean }) => {
+  attendCount,
+}: ButtonProps & {
+  value: bigint;
+  hasJoined: boolean;
+  attendCount: bigint;
+}) => {
   const joinBeefMutation = useJoinBeef(id, value);
 
-  return hasJoined ? (
+  // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
+  return hasJoined || attendCount < 3 ? (
     <Button disabled variant="outlined">
       Nothing to do
     </Button>
@@ -136,7 +175,7 @@ const BeefControls = ({
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, joinDeadline, settleStart } = beef;
+  const { isCooking, wager, joinDeadline, settleStart, attendCount } = beef;
   const canWithdraw =
     !isCooking &&
     isUserOwner &&
@@ -149,7 +188,9 @@ const BeefControls = ({
           <ArbiterButton {...{ id, connectedAddress, settleStart }} />
         )}
         {isUserFoe && (
-          <FoeButton {...{ id, hasJoined: isCooking, value: wager }} />
+          <FoeButton
+            {...{ id, hasJoined: isCooking, value: wager, attendCount }}
+          />
         )}
         {isUserOwner && <OwnerButton {...{ id, canWithdraw }} />}
         <WithdrawButton {...{ id, beef }} />

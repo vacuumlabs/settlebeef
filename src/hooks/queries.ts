@@ -56,7 +56,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const
+          }) as const,
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -74,7 +74,7 @@ export const useGetBeefs = () => {
 
 export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddresses: Address[]
+  arbiterAddresses: Address[],
 ) => {
   const { data } = useReadContracts({
     contracts: [
@@ -107,7 +107,7 @@ export const useGetArbiterStatuses = (
             }
             return acc;
           },
-          [] as Array<[boolean, bigint]>
+          [] as Array<[boolean, bigint]>,
         )
         .map(([hasAttended, hasSettled]) => ({
           hasAttended,

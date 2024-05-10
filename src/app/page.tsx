@@ -29,7 +29,8 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.owner.toLowerCase() === connectedAddress.toLowerCase()
+              beef.params.owner.toLowerCase() ===
+              connectedAddress.toLowerCase(),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -42,7 +43,7 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase()
+              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase(),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -56,7 +57,7 @@ export default function Home() {
           .filter((beef) =>
             beef.params.arbiters
               .map((it) => it.toLowerCase())
-              .includes(connectedAddress.toLowerCase())
+              .includes(connectedAddress.toLowerCase()),
           )
           .map((beef) => ({
             title: beef.params.title,
