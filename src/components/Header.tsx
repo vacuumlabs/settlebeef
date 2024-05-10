@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const Header = () => {
   return (
-    <AppBar>
+    <AppBar sx={{ borderRadius: 0 }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <Stack sx={{ flexDirection: "row" }}>
           <Link
