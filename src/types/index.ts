@@ -6,6 +6,7 @@ type UnixTimestamp = bigint;
 // Beef is a disagreement that two people have.
 // It is also a type of meat that comes from cows.
 export type Beef = {
+  address: string;
   title: string;
   description: string;
   owner: Address;
