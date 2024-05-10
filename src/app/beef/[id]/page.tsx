@@ -254,8 +254,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               Arbiters
             </Typography>
             {step >= 4 && (
-              <Typography variant="h4" whiteSpace="pre-line">
-                {resultYes.toString()} votes for to {resultNo.toString()} votes
+              <Typography
+                variant="h6"
+                whiteSpace="pre-line"
+                alignSelf={"center"}
+              >
+                {resultYes.toString()} votes for ⚔️ {resultNo.toString()} votes
                 against
               </Typography>
             )}
