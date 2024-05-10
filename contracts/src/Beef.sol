@@ -11,13 +11,13 @@ contract Beef is Ownable {
         address owner;
         uint256 wager;
         address foe;
-        uint256 deadline;
+        uint256 settleStart;
         string title;
         string description;
         address[] arbiters;
     }
 
-    uint256 constant arbiteringDuration = 30 days;
+    uint256 constant settlingDuration = 30 days;
     uint256 constant joinDuration = 7 days;
     uint256 constant arbitersRequiredCount = 3;
 
@@ -31,8 +31,8 @@ contract Beef is Ownable {
     string public title;
     // @notice Description of the beef.
     string public description;
-    // @notice Deadline of the beef - when the settling can start.
-    uint256 public deadline;
+    // @notice Timestamp when the settling can start.
+    uint256 public settleStart;
     // @notice Deadline for foe to join the beef.
     uint256 public joinDeadline;
     // @notice Flag indicating if the beef is cooking - the foe had joined.
@@ -91,8 +91,8 @@ contract Beef is Ownable {
         if (params.arbiters.length != arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
-        (wager, foe, deadline, title, description, arbiters) =
-            (params.wager, params.foe, params.deadline, params.title, params.description, params.arbiters);
+        (wager, foe, settleStart, title, description, arbiters) =
+            (params.wager, params.foe, params.settleStart, params.title, params.description, params.arbiters);
         joinDeadline = block.timestamp + joinDuration;
     }
 
@@ -126,11 +126,11 @@ contract Beef is Ownable {
     // @notice Arbiter can settle the beef.
     // @param verdict True if outcome is according to the description, false otherwise.
     function settleBeef(bool verdict) public onlyArbiter {
-        if (block.timestamp < deadline) {
-            revert BeefIsNotCooked(deadline, block.timestamp);
+        if (block.timestamp < settleStart) {
+            revert BeefIsNotCooked(settleStart, block.timestamp);
         }
-        if (block.timestamp >= deadline + arbiteringDuration) {
-            revert BeefIsRotten(deadline + arbiteringDuration, block.timestamp);
+        if (block.timestamp >= settleStart + settlingDuration) {
+            revert BeefIsRotten(settleStart + settlingDuration, block.timestamp);
         }
         if (hasSettled[msg.sender]) {
             revert BeefArbiterAlreadySettled(msg.sender);
@@ -158,8 +158,8 @@ contract Beef is Ownable {
 
     // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
     function withdrawRotten() public {
-        if (cooking && block.timestamp < deadline + arbiteringDuration) {
-            revert BeefNotRotten(deadline + arbiteringDuration, block.timestamp);
+        if (cooking && block.timestamp < settleStart + settlingDuration) {
+            revert BeefNotRotten(settleStart + settlingDuration, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance / 2);
         payable(foe).transfer(address(this).balance / 2);
