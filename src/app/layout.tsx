@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import Providers from "@/components/providers/Providers";
 import Header from "@/components/Header";
 import { Box } from "@mui/material";
+import { SnackbarProvider } from "notistack";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           <Providers>
             <Header />
             <Box mt={8}>{children}</Box>
+            <SnackbarProvider />
           </Providers>
         </AppRouterCacheProvider>
       </body>

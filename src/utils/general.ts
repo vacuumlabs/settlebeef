@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { formatEther } from "viem";
 
 export const sliceStringDecimals = (
@@ -24,4 +25,15 @@ export const formatBigint = (
   return Number(stringValue).toLocaleString("en", {
     maximumFractionDigits: decimalsDisplay,
   });
+};
+
+export const parseIsoDateToTimestamp = (value: string) =>
+  Math.round(DateTime.fromISO(value).toMillis() / 1000);
+
+export const ellipsizeText = (text: string, maxLength: number) => {
+  const trimmedText = text.trim();
+
+  return trimmedText.length <= maxLength
+    ? trimmedText
+    : `${trimmedText.slice(0, maxLength)}...`;
 };
