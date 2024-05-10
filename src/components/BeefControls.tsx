@@ -12,6 +12,8 @@ import {
   useSettleBeef,
   useWithdrawRaw,
 } from "@/hooks/mutations";
+import { parseIsoDateToTimestamp } from "@/utils/general";
+import { DateTime } from "luxon";
 
 type ButtonProps = {
   id: Address;
@@ -105,9 +107,12 @@ const BeefControls = ({
 }: BeefControlsProps) => {
   const { client } = useContext(SmartAccountClientContext);
 
-  // TODO: proper condition
-  const { isCooking, wager } = beef;
-  const canWithdraw = true;
+  const { isCooking, wager, joinDeadline } = beef;
+  const canWithdraw =
+    !isCooking &&
+    isUserOwner &&
+    joinDeadline * 1000n <
+      BigInt(parseIsoDateToTimestamp(DateTime.now().toISODate()));
 
   return (
     client && (

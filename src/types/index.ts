@@ -7,15 +7,20 @@ type UnixTimestamp = bigint;
 // It is also a type of meat that comes from cows.
 export type Beef = {
   address: string;
+
+  owner: Address;
+  wager: bigint;
+  foe: Address;
+  settleStart: UnixTimestamp;
   title: string;
   description: string;
-  owner: Address;
-  foe: Address;
-  wager: bigint;
-  deadline: UnixTimestamp;
   arbiters: Address[];
-  result: bigint;
+  joinDeadline: UnixTimestamp;
+
   isCooking: boolean;
+  resultYes: bigint;
+  resultNo: bigint;
+  attendCount: bigint;
 };
 
 export enum ArbiterAccount {
