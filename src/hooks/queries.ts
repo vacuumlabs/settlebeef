@@ -1,5 +1,7 @@
-import { useReadContracts } from "wagmi";
+import { useReadContract, useReadContracts } from "wagmi";
 import type { Address, Beef } from "../types";
+import { slaughterhouseAbi } from "@/abi/slaughterhouse";
+import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
 
 export const useBeef = (id: string): Beef | undefined => {
@@ -21,15 +23,44 @@ export const useBeef = (id: string): Beef | undefined => {
   return undefined;
 };
 
-export const useGetBeefs = (): Beef[] | undefined => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const beef = useBeef("test")!;
-  return [beef, beef, beef];
+const useGetBeefsArray = () => {
+  return useReadContract({
+    abi: slaughterhouseAbi,
+    address: SLAUGHTERHOUSE_ADDRESS,
+    functionName: "getBeefs",
+  });
+};
+
+export const useGetBeefs = () => {
+  const { data: beefAddresses } = useGetBeefsArray();
+  console.log("beefAddresses", beefAddresses);
+  const query = useReadContracts({
+    contracts:
+      beefAddresses?.map(
+        (address) =>
+          ({
+            abi: beefAbi,
+            address,
+            functionName: "getInfo",
+          }) as const
+      ) ?? [],
+    query: { enabled: !!beefAddresses },
+    allowFailure: false,
+  });
+  return {
+    ...query,
+    data:
+      beefAddresses &&
+      query.data?.map((beef, index) => ({
+        ...beef,
+        address: beefAddresses[index],
+      })),
+  };
 };
 
 export const useGetArbiterStatus = (
   beefId: Address,
-  arbiterAddress: Address,
+  arbiterAddress: Address
 ) => {
   const { data } = useReadContracts({
     contracts: [

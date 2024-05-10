@@ -4,7 +4,7 @@ import { formatEther } from "viem";
 import Link from "next/link";
 import { Beef } from "@/types";
 
-type BeefRowProps = Beef;
+export type BeefRowProps = Pick<Beef, "address" | "title" | "wager">;
 
 const BeefRow = ({ address, title, wager }: BeefRowProps) => {
   return (
