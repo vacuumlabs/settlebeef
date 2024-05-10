@@ -29,8 +29,7 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.owner.toLowerCase() ===
-              connectedAddress.toLowerCase(),
+              beef.params.owner.toLowerCase() === connectedAddress.toLowerCase()
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -43,7 +42,7 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase(),
+              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase()
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -57,7 +56,7 @@ export default function Home() {
           .filter((beef) =>
             beef.params.arbiters
               .map((it) => it.toLowerCase())
-              .includes(connectedAddress.toLowerCase()),
+              .includes(connectedAddress.toLowerCase())
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -75,7 +74,7 @@ export default function Home() {
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="h3">My Beef List 🥩📝</Typography>
               <Link href="/beef/new" style={{ textDecoration: "none" }}>
-                <Button variant="outlined">New beef</Button>
+                <Button variant="outlined">Start beef</Button>
               </Link>
             </Stack>
             <Typography variant="h5">As owner 🤴</Typography>
@@ -117,7 +116,7 @@ export default function Home() {
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h3">Beef List 🥩📝</Typography>
             <Link href="/beef/new" style={{ textDecoration: "none" }}>
-              <Button variant="outlined">New beef</Button>
+              <Button variant="outlined">Start beef</Button>
             </Link>
           </Stack>
           {isLoadingBeefs ? (
