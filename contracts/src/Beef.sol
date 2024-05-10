@@ -49,8 +49,9 @@ contract Beef is OwnableUpgradeable {
     uint128 public resultYes;
     uint128 public resultNo;
     uint256 public attendCount;
-    mapping(address => bool) public hasSettled;
-    mapping(address => bool) public hasAttended;
+    // 0 if not settled, 1 if yes, 2 if no.
+    mapping(address arbiter => uint256 result) public hasSettled;
+    mapping(address arbiter => bool) public hasAttended;
 
     error BeefArbiterAlreadyAttended(address sender);
     error BeefArbiterAlreadySettled(address sender);
@@ -193,7 +194,7 @@ contract Beef is OwnableUpgradeable {
         if (block.timestamp >= settleStart + settlingDuration) {
             revert BeefIsRotten(settleStart + settlingDuration, block.timestamp);
         }
-        if (hasSettled[msg.sender]) {
+        if (hasSettled[msg.sender] != 0) {
             revert BeefArbiterAlreadySettled(msg.sender);
         }
 
@@ -202,7 +203,7 @@ contract Beef is OwnableUpgradeable {
         } else {
             ++resultNo;
         }
-        hasSettled[msg.sender] = true;
+        hasSettled[msg.sender] = verdict ? 1 : 2;
         emit BeefSettled(msg.sender, verdict);
     }
 
