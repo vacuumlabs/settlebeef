@@ -36,15 +36,13 @@ let steps = [
 ];
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
-  const { client } = useContext(SmartAccountClientContext);
+  const { connectedAddress } = useContext(SmartAccountClientContext);
   const { id } = params;
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? []
+    beef?.arbiters ?? [],
   );
-
-  const address = client?.account.address;
 
   if (beef === undefined) {
     redirect("/not-found");
@@ -72,9 +70,17 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     isCooking,
     settleStart,
   } = beef;
-  const isUserArbiter = address != null && arbiters.includes(address);
-  const isUserFoe = address === foe;
-  const isUserOwner = address === owner;
+  const isUserArbiter =
+    connectedAddress != null &&
+    arbiters
+      .map((it) => it.toLowerCase())
+      .includes(connectedAddress.toLowerCase());
+  const isUserFoe =
+    connectedAddress != null &&
+    connectedAddress.toLowerCase() === foe.toLowerCase();
+  const isUserOwner =
+    connectedAddress != null &&
+    connectedAddress.toLowerCase() === owner.toLowerCase();
 
   let step = 0;
   let deadline: Date | undefined;
@@ -98,7 +104,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         if (now < settleStart + BigInt(60 * 60 * 24 * 30) * 1000n) {
           // TODO: this assumes constant settlingDuration of 30 days!
           deadline = new Date(
-            Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
+            Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
           );
           step = 4;
         } else {

@@ -33,7 +33,7 @@ type SmartAccountClientContext = {
 };
 
 export const SmartAccountClientContext = createContext(
-  {} as SmartAccountClientContext
+  {} as SmartAccountClientContext,
 );
 
 type SmartAccountClientContextProviderProps = {
@@ -57,11 +57,11 @@ export const SmartAccountClientContextProvider = ({
         return hash;
       }
     },
-    [client, sendTransactionAsync]
+    [client, sendTransactionAsync],
   );
 
   const embeddedWallet = wallets.find(
-    (wallet) => wallet.walletClientType === "privy"
+    (wallet) => wallet.walletClientType === "privy",
   );
 
   const createClient = useCallback(async () => {
@@ -82,7 +82,7 @@ export const SmartAccountClientContextProvider = ({
       createClient,
       sendTransaction,
     }),
-    [client, createClient, sendTransaction, wallets]
+    [client, createClient, sendTransaction, wallets],
   );
 
   useEffect(() => {

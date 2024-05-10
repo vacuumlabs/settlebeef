@@ -11,7 +11,7 @@ export const Countdown = ({ deadline }: CountdownProps) => {
   const timeToDisplayText = (
     time: number,
     title: string,
-    displayAlsoZero: boolean
+    displayAlsoZero: boolean,
   ) => {
     if (time === 0 && !displayAlsoZero) {
       return "";

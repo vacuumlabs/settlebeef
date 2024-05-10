@@ -4,7 +4,7 @@ import {
   SmartAccountClient,
   SmartAccountClientContext,
 } from "./providers/SmartAccountClientContext";
-import { Address, Beef } from "@/types";
+import type { Address, Beef, UnixTimestamp } from "@/types";
 import { useGetArbiterStatuses } from "@/hooks/queries";
 import {
   useArbiterAttend,
@@ -17,15 +17,16 @@ import { DateTime } from "luxon";
 
 type ButtonProps = {
   id: Address;
-  client: SmartAccountClient;
 };
 
-const ArbiterButton = ({ client, id }: ButtonProps) => {
-  const { connectedAddress } = useContext(SmartAccountClientContext);
-
+const ArbiterButton = ({
+  connectedAddress,
+  id,
+  settleStart,
+}: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : []
+    connectedAddress ? [connectedAddress] : [],
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);
@@ -38,7 +39,11 @@ const ArbiterButton = ({ client, id }: ButtonProps) => {
 
   if (!hasAttended && !hasSettled) {
     return <Button onClick={() => attendMutation.mutate()}>Attend ✋</Button>;
-  } else if (hasAttended && !hasSettled) {
+  } else if (
+    hasAttended &&
+    !hasSettled &&
+    parseIsoDateToTimestamp(DateTime.now().toISODate()) > settleStart
+  ) {
     return (
       <Stack direction="row" spacing={2}>
         <Button onClick={() => settleMutation.mutate(true)}>
@@ -49,11 +54,16 @@ const ArbiterButton = ({ client, id }: ButtonProps) => {
         </Button>
       </Stack>
     );
+  } else {
+    return (
+      <Button disabled variant="outlined">
+        Nothing to do
+      </Button>
+    );
   }
 };
 
 const FoeButton = ({
-  client,
   id,
   value,
   hasJoined,
@@ -70,7 +80,6 @@ const FoeButton = ({
 };
 
 const OwnerButton = ({
-  client,
   id,
   canWithdraw,
 }: ButtonProps & { canWithdraw: boolean }) => {
@@ -101,23 +110,24 @@ const BeefControls = ({
   isUserFoe,
   isUserOwner,
 }: BeefControlsProps) => {
-  const { client } = useContext(SmartAccountClientContext);
+  const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, joinDeadline } = beef;
+  const { isCooking, wager, joinDeadline, settleStart } = beef;
   const canWithdraw =
     !isCooking &&
     isUserOwner &&
-    joinDeadline * 1000n <
-      BigInt(parseIsoDateToTimestamp(DateTime.now().toISODate()));
+    joinDeadline < parseIsoDateToTimestamp(DateTime.now().toISODate());
 
   return (
-    client && (
+    connectedAddress && (
       <Stack direction="row" spacing={2}>
-        {isUserArbiter && <ArbiterButton {...{ id, client }} />}
-        {isUserFoe && (
-          <FoeButton {...{ id, client, hasJoined: isCooking, value: wager }} />
+        {isUserArbiter && (
+          <ArbiterButton {...{ id, connectedAddress, settleStart }} />
         )}
-        {isUserOwner && <OwnerButton {...{ id, client, canWithdraw }} />}
+        {isUserFoe && (
+          <FoeButton {...{ id, hasJoined: isCooking, value: wager }} />
+        )}
+        {isUserOwner && <OwnerButton {...{ id, canWithdraw }} />}
       </Stack>
     )
   );
