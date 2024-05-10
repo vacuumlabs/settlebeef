@@ -19,9 +19,7 @@ const LoginButton = () => {
     },
   });
 
-  const { data: balance, isLoading } = useBalance({
-    address: connectedAddress,
-  });
+  const { data: balance, isLoading } = useBalance();
 
   return authenticated ? (
     <Stack direction="row" alignItems="center" gap={3}>

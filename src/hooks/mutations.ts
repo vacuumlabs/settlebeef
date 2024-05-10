@@ -10,9 +10,11 @@ import { useContext } from "react";
 import { encodeFunctionData, isAddress } from "viem";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
+import { queryKeys } from "./queryKeys";
 
 export const useArbiterAttend = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -28,13 +30,14 @@ export const useArbiterAttend = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useSettleBeef = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (verdict: boolean) => {
@@ -50,13 +53,14 @@ export const useSettleBeef = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useJoinBeef = (beefId: Address, value: bigint) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -73,13 +77,14 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useWithdrawRaw = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -95,14 +100,14 @@ export const useWithdrawRaw = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext,
+    SmartAccountClientContext
   );
   const queryClient = useQueryClient();
 
@@ -130,7 +135,7 @@ export const useAddBeef = () => {
               address: value,
               type: "email" as const,
             },
-          ]),
+          ])
     );
 
     const arbitersAddresses = await Promise.all(addressPromises);
@@ -160,7 +165,7 @@ export const useAddBeef = () => {
   return useMutation({
     mutationFn: addBeef,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [""] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
