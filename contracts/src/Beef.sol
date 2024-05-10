@@ -57,6 +57,21 @@ contract Beef is OwnableUpgradeable {
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
 
+    event BeefCreated(
+        address indexed owner,
+        address indexed foe,
+        uint256 wager,
+        uint256 settleStart,
+        string title,
+        string description,
+        address[] arbiters
+    );
+    event ArbiterAttended(address indexed arbiter);
+    event BeefCooking();
+    event BeefSettled(address indexed arbiter, bool verdict);
+    event BeefServed(address indexed winner);
+    event BeefWithdrawn(bool hadBeenCooking);
+
     modifier onlyArbiter() {
         bool isArbiter;
         for (uint256 i = 0; i < arbiters.length; i++) {
@@ -102,6 +117,8 @@ contract Beef is OwnableUpgradeable {
         joinDeadline = block.timestamp + joinDuration;
 
         __Ownable_init(params.owner);
+
+        emit BeefCreated(params.owner, foe, wager, settleStart, title, description, arbiters);
     }
 
     // @notice Owner can set the arbiters, if beef is still raw.
@@ -115,6 +132,7 @@ contract Beef is OwnableUpgradeable {
         }
         hasAttended[msg.sender] = true;
         ++attendCount;
+        emit ArbiterAttended(msg.sender);
     }
 
     // @notice Foe can join the beef, paying the wager.
@@ -129,6 +147,7 @@ contract Beef is OwnableUpgradeable {
             revert BeefInvalidArbitersCount(attendCount, arbitersRequiredCount);
         }
         cooking = true;
+        emit BeefCooking();
     }
 
     // @notice Arbiter can settle the beef.
@@ -150,6 +169,7 @@ contract Beef is OwnableUpgradeable {
             ++resultNo;
         }
         hasSettled[msg.sender] = true;
+        emit BeefSettled(msg.sender, verdict);
     }
 
     // @notice Serve the beef to the winner.
@@ -159,8 +179,10 @@ contract Beef is OwnableUpgradeable {
         }
         if (resultYes > resultNo) {
             payable(owner()).transfer(address(this).balance);
+            emit BeefServed(owner());
         } else {
             payable(foe).transfer(address(this).balance);
+            emit BeefServed(foe);
         }
     }
 
@@ -171,6 +193,7 @@ contract Beef is OwnableUpgradeable {
         }
         payable(owner()).transfer(address(this).balance / 2);
         payable(foe).transfer(address(this).balance / 2);
+        emit BeefWithdrawn(cooking);
     }
 
     // @notice Withdraw the wager if beef had raw for too long.
@@ -179,5 +202,6 @@ contract Beef is OwnableUpgradeable {
             revert BeefNotRotten(joinDuration, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance);
+        emit BeefWithdrawn(cooking);
     }
 }
