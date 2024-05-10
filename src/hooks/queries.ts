@@ -4,23 +4,30 @@ import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
 
-export const useBeef = (id: string): Beef | undefined => {
-  if (id === "test") {
-    return {
-      address: id,
-      title: "Did Kendrick cook Drake?",
-      description: "Did BBL Drizzy get cooked by Dot?",
-      owner: "0x1234567890123456789012345678901234567890",
-      foe: "0x9a10ef0f27d2FB52DED714997912D86235343659",
-      wager: 1000000000000000n,
-      deadline: 1634025600n,
-      result: 0n,
-      arbiters: ["0x123", "0x456", "0x789"],
-      isCooking: false,
-    };
+export const useBeef = (id: string): Beef | null | undefined => {
+  if (!id.startsWith("0x")) {
+    return undefined;
   }
 
-  return undefined;
+  const { data } = useReadContract({
+    abi: beefAbi,
+    address: id as Address,
+    functionName: "getInfo",
+  });
+
+  console.log("beef", data);
+
+  return data != null
+    ? {
+        ...data.params,
+        arbiters: [...data.params.arbiters],
+        address: id,
+        isCooking: data.cooking,
+        resultYes: data.resultYes,
+        resultNo: data.resultNo,
+        attendCount: data.attendCount,
+      }
+    : null;
 };
 
 const useGetBeefsArray = () => {
@@ -42,7 +49,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const
+          }) as const,
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -60,7 +67,7 @@ export const useGetBeefs = () => {
 
 export const useGetArbiterStatus = (
   beefId: Address,
-  arbiterAddress: Address
+  arbiterAddress: Address,
 ) => {
   const { data } = useReadContracts({
     contracts: [
