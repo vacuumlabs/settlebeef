@@ -11,7 +11,7 @@ contract Beef is Ownable {
         address owner;
         uint256 wager;
         address foe;
-        uint256 duration;
+        uint256 deadline;
         string title;
         string description;
         address[] arbiters;
@@ -21,16 +21,19 @@ contract Beef is Ownable {
     uint256 constant joinDuration = 7 days;
     uint256 constant arbitersRequiredCount = 3;
 
+    // @notice Address of the foe - the counterparty to the beef.
     address public foe;
+    // @notice Addresses of the arbiters - the judges of the beef.
     address[] public arbiters;
+    // @notice Wager amount of each side.
     uint256 public wager;
-    uint256 public duration;
-    uint256 public deadline;
-    uint256 public joinDeadline;
-    int256 public result;
-    uint256 public settleCount;
     string public title;
     string public description;
+    uint256 public deadline;
+    uint256 public joinDeadline;
+    bool public cooking;
+    int256 public result;
+    uint256 public settleCount;
     uint256 attendCount;
     mapping(address => bool) public hasSettled;
     mapping(address => bool) public hasAttended;
@@ -39,7 +42,8 @@ contract Beef is Ownable {
     error BeefArbiterAlreadySettled(address sender);
     error BeefInvalidArbitersCount(uint256 providedCount, uint256 requiredCount);
     error BeefInvalidWager(uint256 declaredWager, uint256 providedWager);
-    error BeefisNotCooking(uint256 deadline, uint256 timestamp);
+    error BeefIsCooking();
+    error BeefIsNotCooked(uint256 deadline, uint256 timestamp);
     error BeefIsRotten(uint256 deadline, uint256 timestamp);
     error BeefNotArbiter(address sender);
     error BeefNotFoe(address declaredFoe, address sender);
@@ -69,8 +73,8 @@ contract Beef is Ownable {
     }
 
     modifier isNotCooking() {
-        if (deadline != 0) {
-            revert BeefNotRaw();
+        if (cooking) {
+            revert BeefIsCooking();
         }
         _;
     }
@@ -82,8 +86,8 @@ contract Beef is Ownable {
         if (params.arbiters.length != arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
-        (wager, foe, duration, title, description, arbiters) =
-            (params.wager, params.foe, params.duration, params.title, params.description, params.arbiters);
+        (wager, foe, deadline, title, description, arbiters) =
+            (params.wager, params.foe, params.deadline, params.title, params.description, params.arbiters);
         joinDeadline = block.timestamp + joinDuration;
     }
 
@@ -111,14 +115,14 @@ contract Beef is Ownable {
         if (attendCount < arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(attendCount, arbitersRequiredCount);
         }
-        deadline = block.timestamp + duration;
+        cooking = true;
     }
 
     // @notice Arbiter can settle the beef.
     // @param verdict True if outcome is according to the description, false otherwise.
     function settleBeef(bool verdict) public onlyArbiter {
         if (block.timestamp < deadline) {
-            revert BeefisNotCooking(deadline, block.timestamp);
+            revert BeefIsNotCooked(deadline, block.timestamp);
         }
         if (block.timestamp >= deadline + arbiteringDuration) {
             revert BeefIsRotten(deadline + arbiteringDuration, block.timestamp);
@@ -147,7 +151,7 @@ contract Beef is Ownable {
 
     // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
     function withdrawRotten() public {
-        if (deadline != 0 && block.timestamp < deadline + arbiteringDuration) {
+        if (cooking && block.timestamp < deadline + arbiteringDuration) {
             revert BeefNotRotten(deadline + arbiteringDuration, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance / 2);
