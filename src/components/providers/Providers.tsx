@@ -33,7 +33,7 @@ const Providers = ({ children }: ProvidersProps) => {
           appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
           config={{
             embeddedWallets: {
-              createOnLogin: "users-without-wallets",
+              createOnLogin: "all-users",
             },
             defaultChain: activeChain,
             supportedChains: [activeChain],
