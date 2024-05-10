@@ -1,8 +1,20 @@
-import { createContext, useMemo, useState } from "react";
+import { createSmartAccountClient } from "@/utils/privy";
+import { useWallets } from "@privy-io/react-auth";
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
+
+type SmartAccountClient = Awaited<ReturnType<typeof createSmartAccountClient>>;
 
 type SmartAccountClientContext = {
-  client: any;
-  setClient: any;
+  client: SmartAccountClient | undefined;
+  setClient: Dispatch<SetStateAction<SmartAccountClient | undefined>>;
+  createClient: () => Promise<void>;
 };
 
 export const SmartAccountClientContext = createContext(
@@ -16,9 +28,26 @@ type SmartAccountClientContextProviderProps = {
 export const SmartAccountClientContextProvider = ({
   children,
 }: SmartAccountClientContextProviderProps) => {
-  const [client, setClient] = useState();
+  const [client, setClient] = useState<SmartAccountClient>();
+  const { wallets } = useWallets();
 
-  const value = useMemo(() => ({ client, setClient }), [client]);
+  const embeddedWallet = wallets.find(
+    (wallet) => wallet.walletClientType === "privy"
+  );
+
+  const createClient = useCallback(async () => {
+    if (!embeddedWallet) {
+      return;
+    }
+
+    const newClient = await createSmartAccountClient(embeddedWallet);
+    setClient(newClient);
+  }, [embeddedWallet]);
+
+  const value = useMemo(
+    () => ({ client, setClient, createClient }),
+    [client, createClient]
+  );
 
   return (
     <SmartAccountClientContext.Provider value={value}>
