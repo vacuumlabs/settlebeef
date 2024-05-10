@@ -3,7 +3,7 @@ import { formatEther } from "viem";
 
 export const sliceStringDecimals = (
   stringValue: string,
-  maxDecimals: number
+  maxDecimals: number,
 ) => {
   const indexOfDot = stringValue.indexOf(".");
 
@@ -14,7 +14,7 @@ export const sliceStringDecimals = (
 
 export const formatBigint = (
   value: bigint | null | undefined,
-  decimalsDisplay = 2
+  decimalsDisplay = 2,
 ) => {
   if (value == null) {
     return "";

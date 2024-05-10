@@ -4,7 +4,7 @@ import React, { useContext } from "react";
 import { useBeef } from "../../../hooks/queries";
 import { Box, Container, Paper, Stack, Typography } from "@mui/material";
 import { redirect } from "next/navigation";
-import { formatEther } from "viem";
+import { Address, formatEther } from "viem";
 import { truncateAddress } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
@@ -26,7 +26,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
 
   const { title, description, owner, foe, wager, deadline, arbiters, result } =
     beef;
-  const isUserArbiter = arbiters.includes(address);
+  const isUserArbiter = address != null && arbiters.includes(address);
   const isUserFoe = address === foe;
   const isUserOwner = address === owner;
 
@@ -53,7 +53,15 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               Arbiters: {arbiters.join(", ")}
             </Typography>
           </Box>
-          <BeefControls {...{ id, isUserArbiter, isUserFoe, isUserOwner }} />
+          <BeefControls
+            {...{
+              id: id as Address,
+              beef,
+              isUserArbiter,
+              isUserFoe,
+              isUserOwner,
+            }}
+          />
         </Stack>
       </Paper>
     </Container>

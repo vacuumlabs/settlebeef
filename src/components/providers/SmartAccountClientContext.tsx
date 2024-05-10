@@ -10,7 +10,9 @@ import {
   useState,
 } from "react";
 
-type SmartAccountClient = Awaited<ReturnType<typeof createSmartAccountClient>>;
+export type SmartAccountClient = Awaited<
+  ReturnType<typeof createSmartAccountClient>
+>;
 
 type SmartAccountClientContext = {
   client: SmartAccountClient | undefined;
