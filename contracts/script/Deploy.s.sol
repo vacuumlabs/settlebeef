@@ -12,7 +12,7 @@ contract Deploy is Script {
         address owner = vm.envAddress("CONTRACT_OWNER_ADDRESS");
         vm.broadcast();
 
-        Beef beef = new Beef(owner);
-        console2.log("Beef:", address(beef));
+        // Beef beef = new Beef(owner);
+        // console2.log("Beef:", address(beef));
     }
 }
