@@ -14,22 +14,17 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { isAddress } from "viem";
 import { DateTime } from "luxon";
+import { useAddBeef } from "@/hooks/mutations";
+import { ArbiterAccount } from "@/types";
 
 const NUMBER_OF_ARBITERS = 3;
 
-enum ArbiterAccount {
-  EMAIL = "EMAIL",
-  ADDRESS = "ADDRESS",
-}
+type FormArbiter = {
+  type: ArbiterAccount;
+  value: string;
+};
 
-type FormArbiter =
-  | {
-      type: ArbiterAccount;
-      value: string;
-    }
-  | undefined;
-
-type FormValues = {
+export type NewBeefFormValues = {
   title: string;
   description: string;
   arbiters: FormArbiter[];
@@ -40,7 +35,9 @@ type FormValues = {
 };
 
 const NewBeefPage = () => {
-  const form = useForm<FormValues>({
+  const { mutate } = useAddBeef();
+
+  const form = useForm<NewBeefFormValues>({
     defaultValues: {
       title: "",
       description: "",
@@ -58,7 +55,11 @@ const NewBeefPage = () => {
 
   const { watch, control, handleSubmit, setError } = form;
 
-  const addBeef = handleSubmit((values) => {});
+  const addBeef = handleSubmit((values) => {
+    mutate(values, {
+      onSuccess: () => {},
+    });
+  });
 
   return (
     <Container component="main" maxWidth="md">
