@@ -12,5 +12,9 @@
     "deploy:localhost": "bash -c 'source .env && forge script script/Deploy.s.sol:Deploy --broadcast --private-key $LOCALCHAIN_DEPLOYER_PK --fork-url http://localhost:8545'"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1"
+  }
 }
