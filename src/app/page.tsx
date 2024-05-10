@@ -70,12 +70,14 @@ export default function Home() {
     <Container>
       {/* My beefs */}
       {connectedAddress && (
-        <Paper elevation={2} square>
+        <Paper elevation={2}>
           <Stack p={4} spacing={2}>
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="h3">My Beef List 🥩📝</Typography>
               <Link href="/beef/new" style={{ textDecoration: "none" }}>
-                <Button variant="outlined">Start beef</Button>
+                <Button variant="contained" color="secondary">
+                  Start beef
+                </Button>
               </Link>
             </Stack>
             <Typography variant="h5">As owner 🤴</Typography>
@@ -112,12 +114,14 @@ export default function Home() {
         </Paper>
       )}
       <Box mt={4} />
-      <Paper elevation={2} square>
+      <Paper elevation={2} sx={{ mb: 5 }}>
         <Stack p={4} spacing={2}>
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h3">Beef List 🥩📝</Typography>
             <Link href="/beef/new" style={{ textDecoration: "none" }}>
-              <Button variant="outlined">Start beef</Button>
+              <Button variant="contained" color="secondary">
+                Start beef
+              </Button>
             </Link>
           </Stack>
           {isLoadingBeefs ? (

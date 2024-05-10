@@ -9,7 +9,14 @@ export type BeefRowProps = Pick<Beef, "address" | "title" | "wager">;
 const BeefRow = ({ address, title, wager }: BeefRowProps) => {
   return (
     <Link href={`/beef/${address}`} style={{ textDecoration: "none" }}>
-      <Card>
+      <Card
+        sx={{
+          p: 2,
+          "&:hover": {
+            backgroundColor: "secondary.main",
+          },
+        }}
+      >
         <CardContent>
           <Stack
             sx={{

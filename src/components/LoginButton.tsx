@@ -39,12 +39,12 @@ const LoginButton = () => {
       ) : (
         <Skeleton variant="circular" />
       )}
-      <Button color="inherit" onClick={logout}>
+      <Button variant="contained" color="primary" onClick={logout}>
         Logout
       </Button>
     </Stack>
   ) : (
-    <Button color="inherit" onClick={login}>
+    <Button variant="contained" color="primary" onClick={login}>
       Login
     </Button>
   );
