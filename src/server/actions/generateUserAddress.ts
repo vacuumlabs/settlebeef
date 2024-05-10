@@ -9,11 +9,11 @@ import {
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
+  process.env.PRIVY_APP_SECRET!
 );
 
 const isWalletWithMetadata = (
-  account: LinkedAccountWithMetadata,
+  account: LinkedAccountWithMetadata
 ): account is WalletWithMetadata =>
   account.type === "wallet" && account.walletClientType === "privy";
 
@@ -27,7 +27,7 @@ export type GenerateUserAddressParams = Parameters<
 >[0]["linkedAccounts"];
 
 export const generateUserAddress = async (
-  params: GenerateUserAddressParams,
+  params: GenerateUserAddressParams
 ) => {
   const user = await privy.importUser({
     linkedAccounts: params,

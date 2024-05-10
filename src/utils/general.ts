@@ -28,7 +28,7 @@ export const formatBigint = (
 };
 
 export const parseIsoDateToTimestamp = (value: string) =>
-  Math.round(DateTime.fromISO(value).toMillis() / 1000);
+  BigInt(Math.round(DateTime.fromISO(value).toMillis() / 1000));
 
 export const ellipsizeText = (text: string, maxLength: number) => {
   const trimmedText = text.trim();

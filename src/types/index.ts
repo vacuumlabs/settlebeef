@@ -17,3 +17,8 @@ export type Beef = {
   result: bigint;
   isCooking: boolean;
 };
+
+export enum ArbiterAccount {
+  EMAIL = "EMAIL",
+  ADDRESS = "ADDRESS",
+}
