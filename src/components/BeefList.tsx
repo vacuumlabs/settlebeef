@@ -1,7 +1,6 @@
 import React from "react";
 import { Stack } from "@mui/material";
 import BeefRow, { BeefRowProps } from "./BeefRow";
-import { Beef } from "@/types";
 
 type BeefListProps = {
   beefs: BeefRowProps[];

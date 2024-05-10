@@ -15,8 +15,6 @@ import { Address, formatEther } from "viem";
 import { truncateAddress } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
-import { usePrivy } from "@privy-io/react-auth";
-import NotLoggedIn from "@/components/NotLoggedIn";
 
 type BeefDetailPageProps = {
   params: {
@@ -26,7 +24,6 @@ type BeefDetailPageProps = {
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { client } = useContext(SmartAccountClientContext);
   const { id } = params;
-  console.log(id);
   const beef = useBeef(id);
 
   const address = client?.account.address;
