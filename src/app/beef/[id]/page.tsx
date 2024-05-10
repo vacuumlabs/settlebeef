@@ -102,7 +102,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? [],
+    beef?.arbiters ?? []
   );
 
   if (beef === undefined) {
@@ -131,6 +131,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     isCooking,
     settleStart,
   } = beef;
+  console.log("beef", beef);
   const isUserArbiter =
     connectedAddress != null &&
     arbiters
@@ -165,7 +166,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         if (now < settleStart + BigInt(60 * 60 * 24 * 30) * 1000n) {
           // TODO: this assumes constant settlingDuration of 30 days!
           deadline = new Date(
-            Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
+            Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
           );
           step = 4;
         } else {
@@ -183,15 +184,6 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         }
       }
     }
-  }
-
-  if (now < joinDeadline * 1000n) {
-    deadline = new Date(Number(joinDeadline) * 1000);
-  } else if (now < settleStart * 1000n) {
-    deadline = new Date(Number(settleStart) * 1000);
-  } else if (now < settleStart + BigInt(60 * 60 * 24 * 30) * 1000n) {
-    // TODO: this assumes constant settlingDuration of 30 days!
-    deadline = new Date(Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000);
   }
   return (
     <Container sx={{ pt: 4 }}>
