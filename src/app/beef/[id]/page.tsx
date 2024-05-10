@@ -180,7 +180,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 {arbiterStatuses && (
                   <Typography>
                     {step < 4
-                      ? arbiterStatuses[index].hasAttended && "✅"
+                      ? arbiterStatuses[index].hasAttended
+                        ? "✅"
+                        : "⌛"
                       : arbiterStatuses[index].hasSettled
                         ? "1️⃣"
                         : "2️⃣"}
