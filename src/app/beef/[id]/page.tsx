@@ -25,23 +25,24 @@ type BeefDetailPageProps = {
   };
 };
 
-const steps = [
+let steps = [
   "Beef creation 🥩",
   "Arbiters attendance 🧑‍⚖️",
   "Foe joining 🐄",
   "Beef cooking 👨‍🍳",
   "Beef settling 🧑‍⚖️",
   "Beef ready to serve 🍽️",
+  "Beef served 😋",
 ];
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { client } = useContext(SmartAccountClientContext);
   const { id } = params;
   const beef = useBeef(id);
-  // const arbiterStatuses = useGetArbiterStatuses(
-  //   (beef?.address ?? "0x0") as Address,
-  //   beef?.arbiters ?? []
-  // );
+  const arbiterStatuses = useGetArbiterStatuses(
+    (beef?.address ?? "0x0") as Address,
+    beef?.arbiters ?? []
+  );
 
   const address = client?.account.address;
 
@@ -76,17 +77,47 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const isUserOwner = address === owner;
 
   let step = 0;
-  if (attendCount < arbiters.length) {
-    step = 1;
-  } else {
-    step = 2;
-  }
-  if (isCooking) {
-    step = 3;
-  }
-
   let deadline: Date | undefined;
   const now = new Date().getTime();
+  if (attendCount < arbiters.length) {
+    if (now < joinDeadline * 1000n) {
+      deadline = new Date(Number(joinDeadline) * 1000);
+      step = 1;
+    } else {
+      steps = steps.slice(0, 2);
+      steps.push("Beef rotten 🤢");
+      step = 2;
+    }
+  } else {
+    step = 2;
+    if (isCooking) {
+      if (now < settleStart * 1000n) {
+        deadline = new Date(Number(settleStart) * 1000);
+        step = 3;
+      } else {
+        if (now < settleStart + BigInt(60 * 60 * 24 * 30) * 1000n) {
+          // TODO: this assumes constant settlingDuration of 30 days!
+          deadline = new Date(
+            Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
+          );
+          step = 4;
+        } else {
+          step = 5;
+          if (
+            resultYes <= arbiters.length / 2 &&
+            resultNo <= arbiters.length / 2
+          ) {
+            steps = steps.slice(0, 5);
+            steps.push("Beef rotten 🤢");
+          }
+          if (/*served*/ false) {
+            step = 6;
+          }
+        }
+      }
+    }
+  }
+
   if (now < joinDeadline * 1000n) {
     deadline = new Date(Number(joinDeadline) * 1000);
   } else if (now < settleStart * 1000n) {
@@ -110,7 +141,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             <Typography variant="h4">💸 {formatEther(wager)} ETH</Typography>
           </Stack>
           <Typography variant="h5">{description}</Typography>
-          <Typography variant="h3" whiteSpace="pre-line">
+          <Typography variant="h3" whiteSpace="pre-line" pb={4}>
             {truncateAddress(owner)} 🥊 vs 🥊 {truncateAddress(foe)}
           </Typography>
 
@@ -135,18 +166,26 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             <Typography variant="h4" mb={1} alignSelf={"center"}>
               Arbiters
             </Typography>
-            {step === 4 && (
+            {step >= 4 && (
               <Typography variant="h4" whiteSpace="pre-line">
                 {resultYes.toString()} votes for to {resultNo.toString()} votes
                 against
               </Typography>
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
-            {arbiters.map((arbiter) => (
+            {arbiters.map((arbiter, index) => (
               <Stack direction={"row"} key={arbiter} gap={1}>
                 <Typography variant="subtitle2">{arbiter}</Typography>
                 {/* TODO: show attended/settled status */}
-                {true && <Typography>✅</Typography>}
+                {arbiterStatuses && (
+                  <Typography>
+                    {step < 4
+                      ? arbiterStatuses[index].hasAttended && "✅"
+                      : arbiterStatuses[index].hasSettled
+                        ? "1️⃣"
+                        : "2️⃣"}
+                  </Typography>
+                )}
               </Stack>
             ))}
           </Stack>
