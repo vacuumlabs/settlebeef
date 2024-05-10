@@ -16,6 +16,8 @@ import { isAddress } from "viem";
 import { DateTime } from "luxon";
 import { useAddBeef } from "@/hooks/mutations";
 import { ArbiterAccount } from "@/types";
+import { usePrivy } from "@privy-io/react-auth";
+import NotLoggedIn from "@/components/NotLoggedIn";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -36,7 +38,7 @@ export type NewBeefFormValues = {
 
 const NewBeefPage = () => {
   const { mutate } = useAddBeef();
-
+  const { authenticated } = usePrivy();
   const form = useForm<NewBeefFormValues>({
     defaultValues: {
       title: "",
@@ -61,7 +63,7 @@ const NewBeefPage = () => {
     });
   });
 
-  return (
+  return authenticated ? (
     <Container component="main" maxWidth="md">
       <Typography variant="h2" component="h1">
         New Beef
@@ -222,6 +224,8 @@ const NewBeefPage = () => {
         </Button>
       </Stack>
     </Container>
+  ) : (
+    <NotLoggedIn />
   );
 };
 

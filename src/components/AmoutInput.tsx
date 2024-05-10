@@ -55,7 +55,7 @@ const AmountInput = forwardRef<HTMLDivElement, AmountInputProps>(
       sx,
       label,
     },
-    ref
+    ref,
   ) => {
     const [stringValue, setStringValue] = useState(formatValue(value));
 
@@ -134,7 +134,7 @@ const AmountInput = forwardRef<HTMLDivElement, AmountInputProps>(
         sx={sx}
       />
     );
-  }
+  },
 );
 
 AmountInput.displayName = "AmountInput";
