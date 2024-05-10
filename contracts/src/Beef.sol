@@ -223,7 +223,7 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
     function withdrawRotten() public {
-        if (cooking && block.timestamp < settleStart + settlingDuration) {
+        if (!cooking || block.timestamp < settleStart + settlingDuration) {
             revert BeefNotRotten(settleStart + settlingDuration, block.timestamp);
         }
         payable(owner()).transfer(address(this).balance / 2);
