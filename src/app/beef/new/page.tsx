@@ -184,6 +184,7 @@ const NewBeefPage = () => {
                 render={({ field }) => (
                   <Select {...field} sx={{ width: 200 }}>
                     <MenuItem value={ArbiterAccount.EMAIL}>Email</MenuItem>
+                    {/* <MenuItem value={ArbiterAccount.TWITTER}>Twitter</MenuItem> */}
                     <MenuItem value={ArbiterAccount.ADDRESS}>
                       Wallet address
                     </MenuItem>

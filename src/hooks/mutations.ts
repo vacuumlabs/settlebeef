@@ -1,7 +1,4 @@
-import {
-  SmartAccountClient,
-  SmartAccountClientContext,
-} from "@/components/providers/SmartAccountClientContext";
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { beefAbi } from "@/abi/beef";
 import type { Address } from "@/types";
 import { NewBeefFormValues } from "@/app/beef/new/page";
@@ -14,13 +11,12 @@ import { encodeFunctionData, isAddress } from "viem";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 
-export const useArbiterAttend = (
-  beefId: Address,
-  client: SmartAccountClient,
-) => {
+export const useArbiterAttend = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
   return useMutation({
     mutationFn: async () => {
-      const txHash = await client.sendTransaction({
+      const txHash = await sendTransaction({
         to: beefId,
         data: encodeFunctionData({
           abi: beefAbi,
@@ -37,10 +33,12 @@ export const useArbiterAttend = (
   });
 };
 
-export const useSettleBeef = (beefId: Address, client: SmartAccountClient) => {
+export const useSettleBeef = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
   return useMutation({
     mutationFn: async (verdict: boolean) => {
-      const txHash = await client.sendTransaction({
+      const txHash = await sendTransaction({
         to: beefId,
         data: encodeFunctionData({
           abi: beefAbi,
@@ -57,14 +55,12 @@ export const useSettleBeef = (beefId: Address, client: SmartAccountClient) => {
   });
 };
 
-export const useJoinBeef = (
-  beefId: Address,
-  value: bigint,
-  client: SmartAccountClient,
-) => {
+export const useJoinBeef = (beefId: Address, value: bigint) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
   return useMutation({
     mutationFn: async () => {
-      const txHash = await client.sendTransaction({
+      const txHash = await sendTransaction({
         to: beefId,
         value,
         data: encodeFunctionData({
@@ -82,10 +78,12 @@ export const useJoinBeef = (
   });
 };
 
-export const useWithdrawRaw = (beefId: Address, client: SmartAccountClient) => {
+export const useWithdrawRaw = (beefId: Address) => {
+  const { sendTransaction } = useContext(SmartAccountClientContext);
+
   return useMutation({
     mutationFn: async () => {
-      const txHash = await client.sendTransaction({
+      const txHash = await sendTransaction({
         to: beefId,
         data: encodeFunctionData({
           abi: beefAbi,
@@ -103,7 +101,9 @@ export const useWithdrawRaw = (beefId: Address, client: SmartAccountClient) => {
 };
 
 export const useAddBeef = () => {
-  const { client } = useContext(SmartAccountClientContext);
+  const { sendTransaction, connectedAddress } = useContext(
+    SmartAccountClientContext
+  );
   const queryClient = useQueryClient();
 
   const addBeef = async ({
@@ -115,35 +115,27 @@ export const useAddBeef = () => {
     joinDeadline,
     foe,
   }: NewBeefFormValues) => {
-    if (!client) {
-      throw new Error("Client not connected");
+    if (!connectedAddress) {
+      throw new Error("Wallet not connected");
     }
     if (!foe || !isAddress(foe) || !wager) {
       throw new Error("Invalid request");
     }
 
-    const addressPromises = arbiters
-      .map(({ type, value }) =>
-        type === ArbiterAccount.ADDRESS
-          ? [
-              {
-                address: value,
-                type: "wallet" as const,
-                chainType: "ethereum" as const,
-              },
-            ]
-          : [
-              {
-                address: value,
-                type: "email" as const,
-              },
-            ],
-      )
-      .map(getUserGeneratedAddress);
+    const addressPromises = arbiters.map(({ type, value }) =>
+      type === ArbiterAccount.ADDRESS
+        ? (value as Address)
+        : getUserGeneratedAddress([
+            {
+              address: value,
+              type: "email" as const,
+            },
+          ])
+    );
 
     const arbitersAddresses = await Promise.all(addressPromises);
 
-    return client.sendTransaction({
+    return sendTransaction({
       to: SLAUGHTERHOUSE_ADDRESS,
       value: wager,
       data: encodeFunctionData({
@@ -151,7 +143,7 @@ export const useAddBeef = () => {
         functionName: "packageBeef",
         args: [
           {
-            owner: client.account.address,
+            owner: connectedAddress,
             wager,
             foe,
             settleStart: parseIsoDateToTimestamp(settleStart),

@@ -26,4 +26,5 @@ export type Beef = {
 export enum ArbiterAccount {
   EMAIL = "EMAIL",
   ADDRESS = "ADDRESS",
+  TWITTER = "TWITTER",
 }

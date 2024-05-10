@@ -21,15 +21,20 @@ type ButtonProps = {
 };
 
 const ArbiterButton = ({ client, id }: ButtonProps) => {
-  const arbiterStatus = useGetArbiterStatuses(id, [client.account.address]);
-  const settleMutation = useSettleBeef(id, client);
-  const attendMutation = useArbiterAttend(id, client);
+  const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  if (!arbiterStatus) {
+  const arbiterStatus = useGetArbiterStatuses(
+    id,
+    connectedAddress ? [connectedAddress] : []
+  );
+  const settleMutation = useSettleBeef(id);
+  const attendMutation = useArbiterAttend(id);
+
+  if (!arbiterStatus?.[0]) {
     return <Button disabled>Nothing to do</Button>;
   }
 
-  const { hasSettled, hasAttended } = arbiterStatus;
+  const { hasSettled, hasAttended } = arbiterStatus[0];
 
   if (!hasAttended && !hasSettled) {
     return <Button onClick={() => attendMutation.mutate()}>Attend ✋</Button>;
@@ -53,7 +58,7 @@ const FoeButton = ({
   value,
   hasJoined,
 }: ButtonProps & { value: bigint; hasJoined: boolean }) => {
-  const joinBeefMutation = useJoinBeef(id, value, client);
+  const joinBeefMutation = useJoinBeef(id, value);
 
   return hasJoined ? (
     <Button disabled variant="outlined">
@@ -69,7 +74,7 @@ const OwnerButton = ({
   id,
   canWithdraw,
 }: ButtonProps & { canWithdraw: boolean }) => {
-  const withdrawMutation = useWithdrawRaw(id, client);
+  const withdrawMutation = useWithdrawRaw(id);
   return canWithdraw ? (
     <Button onClick={() => withdrawMutation.mutate()} variant="outlined">
       Withdraw Raw Beef
