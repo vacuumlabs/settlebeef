@@ -1,17 +1,17 @@
 type HexString = `0x${string}`;
 
-type Address = HexString;
-type Timestamp = bigint;
+export type Address = HexString;
+type UnixTimestamp = bigint;
 
 // Beef is a disagreement that two people have.
 // It is also a type of meat that comes from cows.
-type Beef = {
+export type Beef = {
   title: string;
   description: string;
   owner: Address;
   foe: Address;
   wager: bigint;
-  duration: Timestamp;
+  deadline: UnixTimestamp;
   arbiters: Address[];
   result: bigint;
 };

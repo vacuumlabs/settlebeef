@@ -9,7 +9,7 @@ import { publicClient } from "./chain";
 
 export const getUserGeneratedAddress = async (
   params: GenerateUserAddressParams,
-  index = 0
+  index = 0,
 ) => {
   const { signerAddress } = await generateUserAddress(params);
 
