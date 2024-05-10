@@ -1,5 +1,6 @@
-import { AppBar, Button, Toolbar, Typography } from "@mui/material";
+import { AppBar, Toolbar, Typography } from "@mui/material";
 import React from "react";
+import LoginButton from "./LoginButton";
 
 const Header = () => {
   return (
@@ -8,7 +9,7 @@ const Header = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Decobie
         </Typography>
-        <Button color="inherit">Login</Button>
+        <LoginButton />
       </Toolbar>
     </AppBar>
   );
