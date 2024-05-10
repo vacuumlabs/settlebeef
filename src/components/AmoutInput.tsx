@@ -1,5 +1,10 @@
 import { SxProps, TextField, Theme } from "@mui/material";
-import React, { ChangeEventHandler, useEffect, useState } from "react";
+import React, {
+  ChangeEventHandler,
+  forwardRef,
+  useEffect,
+  useState,
+} from "react";
 import { formatEther, parseEther } from "viem";
 
 import { formatBigint, sliceStringDecimals } from "@/utils/general";
@@ -36,94 +41,102 @@ type AmountInputProps = {
   value: bigint | null | undefined;
 };
 
-const AmountInput: React.FC<AmountInputProps> = ({
-  disabled,
-  errorMessage,
-  setError,
-  value,
-  setValue,
-  maxValue,
-  minValue = BigInt(0),
-  name,
-  sx,
-  label,
-}) => {
-  const [stringValue, setStringValue] = useState(formatValue(value));
+const AmountInput = forwardRef<HTMLDivElement, AmountInputProps>(
+  (
+    {
+      disabled,
+      errorMessage,
+      setError,
+      value,
+      setValue,
+      maxValue,
+      minValue = BigInt(0),
+      name,
+      sx,
+      label,
+    },
+    ref
+  ) => {
+    const [stringValue, setStringValue] = useState(formatValue(value));
 
-  useEffect(() => {
-    setStringValue(formatValue(value));
-  }, [value]);
+    useEffect(() => {
+      setStringValue(formatValue(value));
+    }, [value]);
 
-  const handleInputChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    setError(undefined);
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+      setError(undefined);
 
-    const newValue = event.target.value.replace(",", ".");
-    const normalizedValue = sliceStringDecimals(newValue, DECIMALS);
+      const newValue = event.target.value.replace(",", ".");
+      const normalizedValue = sliceStringDecimals(newValue, DECIMALS);
 
-    setStringValue(normalizedValue);
+      setStringValue(normalizedValue);
 
-    if (normalizedValue === "") {
-      setValue(null);
-      return;
-    }
+      if (normalizedValue === "") {
+        setValue(null);
+        return;
+      }
 
-    if (Number.isNaN(Number(normalizedValue))) {
-      setError("Value is not a number.");
-      return;
-    }
-    const parsedValue = parseValue(normalizedValue);
+      if (Number.isNaN(Number(normalizedValue))) {
+        setError("Value is not a number.");
+        return;
+      }
+      const parsedValue = parseValue(normalizedValue);
 
-    if (parsedValue === undefined) {
-      setError("Invalid price");
-      return;
-    }
-    if (parsedValue <= minValue) {
-      setError(`Amount must be greater than ${formatBigint(minValue, 4)}`);
-    }
-    if (maxValue != null && parsedValue > maxValue) {
-      setError(`Amount must be at most ${formatBigint(maxValue, 4)}`);
-    }
+      if (parsedValue === undefined) {
+        setError("Invalid price");
+        return;
+      }
+      if (parsedValue <= minValue) {
+        setError(`Amount must be greater than ${formatBigint(minValue, 4)}`);
+      }
+      if (maxValue != null && parsedValue > maxValue) {
+        setError(`Amount must be at most ${formatBigint(maxValue, 4)}`);
+      }
 
-    setValue(parsedValue);
-  };
+      setValue(parsedValue);
+    };
 
-  const handleInputFocus = () => {
-    if (stringValue === "0") {
-      setStringValue("");
-    }
-  };
+    const handleInputFocus = () => {
+      if (stringValue === "0") {
+        setStringValue("");
+      }
+    };
 
-  const handleInputBlur = () => {
-    if (stringValue === "") {
-      setStringValue("0");
-      return;
-    }
+    const handleInputBlur = () => {
+      if (stringValue === "") {
+        setStringValue("0");
+        return;
+      }
 
-    const numberValue = Number(stringValue);
-    if (Number.isNaN(numberValue)) {
-      return;
-    }
+      const numberValue = Number(stringValue);
+      if (Number.isNaN(numberValue)) {
+        return;
+      }
 
-    // Removes trailing / leading zeros
-    setStringValue(numberValue.toString());
-  };
+      // Removes trailing / leading zeros
+      setStringValue(numberValue.toString());
+    };
 
-  return (
-    <TextField
-      label={label}
-      disabled={disabled}
-      autoComplete="off"
-      type="text"
-      value={stringValue}
-      onChange={handleInputChange}
-      onFocus={handleInputFocus}
-      onBlur={handleInputBlur}
-      error={!!errorMessage}
-      helperText={errorMessage}
-      name={name}
-      sx={sx}
-    />
-  );
-};
+    return (
+      <TextField
+        ref={ref}
+        label={label}
+        disabled={disabled}
+        autoComplete="off"
+        type="text"
+        value={stringValue}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        error={!!errorMessage}
+        helperText={errorMessage}
+        name={name}
+        sx={sx}
+      />
+    );
+  }
+);
+
+AmountInput.displayName = "AmountInput";
 
 export default AmountInput;
