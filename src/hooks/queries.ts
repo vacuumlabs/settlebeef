@@ -9,13 +9,17 @@ export const useBeef = (id: string): Beef | null | undefined => {
     return undefined;
   }
 
-  const { data } = useReadContract({
+  const { data, isError } = useReadContract({
     abi: beefAbi,
     address: id as Address,
     functionName: "getInfo",
   });
 
   console.log("beef", data);
+
+  if (isError) {
+    return undefined;
+  }
 
   return data != null
     ? {
