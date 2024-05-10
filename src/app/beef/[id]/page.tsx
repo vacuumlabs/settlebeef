@@ -38,7 +38,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
 
   if (beef === null) {
     return (
-      <Container alignItems="center">
+      <Container>
         <Skeleton width={800} height={600} />
       </Container>
     );
