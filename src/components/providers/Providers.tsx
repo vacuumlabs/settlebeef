@@ -12,7 +12,7 @@ import { activeChain } from "@/utils/chain";
 import { injected } from "wagmi/connectors";
 import { WagmiProvider, createConfig } from "wagmi";
 import { ellipsizeText } from "@/utils/general";
-import { enqueueSnackbar } from "notistack";
+import { SnackbarProvider, enqueueSnackbar } from "notistack";
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -71,6 +71,7 @@ const Providers = ({ children }: ProvidersProps) => {
         >
           <SmartAccountClientContextProvider>
             {children}
+            <SnackbarProvider />
           </SmartAccountClientContextProvider>
         </PrivyProvider>
       </WagmiProvider>
