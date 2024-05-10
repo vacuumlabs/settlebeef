@@ -8,16 +8,16 @@ contract BeefTest is Test {
     Beef public beef;
 
     function setUp() public {
-        address[] memory arbiters = new address[](0);
         Beef.ConstructorParams memory params = Beef.ConstructorParams({
             owner: address(this),
             wager: 1000,
             foe: address(0),
-            deadline: block.timestamp + 30 days,
+            settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
-            arbiters: arbiters
+            arbiters: new address[](0)
         });
-        beef = new Beef(params);
+        beef = new Beef();
+        beef.initialize(params);
     }
 }
