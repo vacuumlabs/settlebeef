@@ -13,6 +13,8 @@ import { injected } from "wagmi/connectors";
 import { WagmiProvider, createConfig } from "wagmi";
 import { ellipsizeText } from "@/utils/general";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
+import { ThemeProvider } from "@mui/material";
+import theme from "@/utils/theme";
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -23,7 +25,7 @@ export const handleError = (error: Error | undefined) => {
 
   enqueueSnackbar(
     error ? ellipsizeText(error.message, 100) : "Uh oh! Something went wrong.",
-    { variant: "error" },
+    { variant: "error" }
   );
 };
 
@@ -51,7 +53,7 @@ const Providers = ({ children }: ProvidersProps) => {
     connectors: [injected()],
     transports: {
       [activeChain.id]: http(
-        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`,
+        `https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`
       ),
     },
   });
@@ -70,8 +72,10 @@ const Providers = ({ children }: ProvidersProps) => {
           }}
         >
           <SmartAccountClientContextProvider>
-            {children}
-            <SnackbarProvider />
+            <ThemeProvider theme={theme}>
+              {children}
+              <SnackbarProvider />
+            </ThemeProvider>
           </SmartAccountClientContextProvider>
         </PrivyProvider>
       </WagmiProvider>
