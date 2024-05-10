@@ -102,7 +102,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? []
+    beef?.arbiters ?? [],
   );
 
   if (beef === undefined) {
@@ -168,7 +168,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // TODO: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
