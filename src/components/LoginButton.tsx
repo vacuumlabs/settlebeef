@@ -32,7 +32,7 @@ const LoginButton = () => {
             <Skeleton variant="circular" />
           ) : (
             <Typography component="span">
-              {formatBigint(balance.value, 5)} ETH
+              {formatBigint(balance.value, 5)}&nbsp;Ξ
             </Typography>
           )}
           <QueryGuard {...ensNameQuery}>

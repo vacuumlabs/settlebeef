@@ -29,7 +29,7 @@ const BeefRow = ({ address, title, wager }: BeefRowProps) => {
               <Typography variant="h4">{title}</Typography>
               <Typography variant="body1">{address}</Typography>
             </Stack>
-            <Typography variant="h3">{formatEther(wager)} ETH</Typography>
+            <Typography variant="h3">{formatEther(wager)}&nbsp;Ξ</Typography>
           </Stack>
         </CardContent>
       </Card>
