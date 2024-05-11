@@ -42,7 +42,7 @@ export type NewBeefFormValues = {
   wager: bigint | null;
   joinDeadline: string;
   settleStart: string;
-  foe: string | null;
+  challenger: string | null;
   staking: boolean;
 };
 
@@ -68,7 +68,7 @@ const NewBeefPage = () => {
         .plus({ months: 6 })
         .set({ second: 0, millisecond: 0 })
         .toISO({ suppressSeconds: true, includeOffset: false }),
-      foe: "",
+      challenger: "",
       staking: true,
     },
   });
@@ -80,7 +80,7 @@ const NewBeefPage = () => {
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
-        : Promise.resolve(null)
+        : Promise.resolve(null),
     );
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
@@ -99,7 +99,7 @@ const NewBeefPage = () => {
       validatedEnsNames.some(
         (ensName, index) =>
           ensName === null &&
-          values.arbiters[index]!.type === ArbiterAccount.ENS
+          values.arbiters[index]!.type === ArbiterAccount.ENS,
       )
     ) {
       return;
@@ -161,7 +161,7 @@ const NewBeefPage = () => {
             )}
           />
           <Controller
-            name="foe"
+            name="challenger"
             control={control}
             rules={{
               required: "Required",
@@ -171,7 +171,7 @@ const NewBeefPage = () => {
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}
-                label="Foe"
+                label="Challenger"
                 error={!!error}
                 helperText={error?.message}
               />

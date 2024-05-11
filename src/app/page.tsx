@@ -38,12 +38,13 @@ export default function Home() {
             wager: beef.params.wager,
           }))
       : [];
-  const myBeefsFoe =
+  const myBeefsChallenger =
     connectedAddress && beefs
       ? beefs
           .filter(
             (beef) =>
-              beef.params.foe.toLowerCase() === connectedAddress.toLowerCase(),
+              beef.params.challenger.toLowerCase() ===
+              connectedAddress.toLowerCase(),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -90,14 +91,14 @@ export default function Home() {
                 <BeefList beefs={myBeefsOwner} />
               )}
             </Stack>
-            <Typography variant="h5">As foe 🤺</Typography>
+            <Typography variant="h5">As challenger 🤺</Typography>
             <Stack spacing={2}>
               {isLoadingBeefs ? (
                 "Loading beef list"
-              ) : myBeefsFoe.length === 0 ? (
+              ) : myBeefsChallenger.length === 0 ? (
                 "No beef!"
               ) : (
-                <BeefList beefs={myBeefsFoe} />
+                <BeefList beefs={myBeefsChallenger} />
               )}
             </Stack>
             <Typography variant="h5">As arbiter 🧑‍⚖️</Typography>

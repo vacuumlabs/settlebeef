@@ -16,7 +16,7 @@ contract Beef is OwnableUpgradeable {
     struct ConstructorParams {
         address owner;
         uint256 wager;
-        address foe;
+        address challenger;
         uint256 settleStart;
         string title;
         string description;
@@ -37,8 +37,8 @@ contract Beef is OwnableUpgradeable {
     uint256 public constant settlingDuration = 30 days;
     uint256 public constant arbitersRequiredCount = 3;
 
-    // @notice Address of the foe - the counterparty to the beef.
-    address public foe;
+    // @notice Address of the challenger - the counterparty to the beef.
+    address public challenger;
     // @notice Addresses of the arbiters - the judges of the beef.
     address[] public arbiters;
     // @notice Wager amount of each side.
@@ -49,9 +49,9 @@ contract Beef is OwnableUpgradeable {
     string public description;
     // @notice Timestamp when the settling can start.
     uint256 public settleStart;
-    // @notice Deadline for foe to join the beef.
+    // @notice Deadline for challenger to join the beef.
     uint256 public joinDeadline;
-    // @notice Flag indicating if the beef is cooking - the foe had joined.
+    // @notice Flag indicating if the beef is cooking - the challenger had joined.
     bool public cooking;
     bool public beefGone;
     Slaughterhouse public slaughterhouse;
@@ -79,16 +79,16 @@ contract Beef is OwnableUpgradeable {
     error BeefIsNotCooked(uint256 deadline, uint256 timestamp);
     error BeefIsRotten(uint256 deadline, uint256 timestamp);
     error BeefNotArbiter(address sender);
-    error BeefNotFoe(address declaredFoe, address sender);
+    error BeefNotChallenger(address declaredChallenger, address sender);
     error BeefNotOwner(address declaredOwner, address sender);
-    error BeefNotOwnerNorFoe(address declaredOwner, address declaredFoe, address sender);
+    error BeefNotOwnerNorChallenger(address declaredOwner, address declaredChallenger, address sender);
     error BeefNotRaw();
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
 
     event BeefCreated(
         address indexed owner,
-        address indexed foe,
+        address indexed challenger,
         uint256 wager,
         uint256 settleStart,
         string title,
@@ -115,9 +115,9 @@ contract Beef is OwnableUpgradeable {
         _;
     }
 
-    modifier onlyFoe() {
-        if (msg.sender != foe) {
-            revert BeefNotFoe(foe, msg.sender);
+    modifier onlyChallenger() {
+        if (msg.sender != challenger) {
+            revert BeefNotChallenger(challenger, msg.sender);
         }
         _;
     }
@@ -149,7 +149,7 @@ contract Beef is OwnableUpgradeable {
             revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
         wager = params.wager;
-        foe = params.foe;
+        challenger = params.challenger;
         settleStart = params.settleStart;
         title = params.title;
         description = params.description;
@@ -167,7 +167,7 @@ contract Beef is OwnableUpgradeable {
             _stakeBeef(amountOutMin);
         }
 
-        emit BeefCreated(params.owner, foe, wager, settleStart, title, description, arbiters);
+        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters);
     }
 
     // @notice Get the current information about beef.
@@ -176,7 +176,7 @@ contract Beef is OwnableUpgradeable {
             params: ConstructorParams({
                 owner: owner(),
                 wager: wager,
-                foe: foe,
+                challenger: challenger,
                 settleStart: settleStart,
                 title: title,
                 description: description,
@@ -206,9 +206,9 @@ contract Beef is OwnableUpgradeable {
         emit ArbiterAttended(msg.sender);
     }
 
-    // @notice Foe can join the beef, paying the wager.
+    // @notice Challenger can join the beef, paying the wager.
     // @param amountOutMin Minimum amount of wstETH to receive, if staking is enabled.
-    function joinBeef(uint256 amountOutMin) public payable onlyFoe isNotCooking {
+    function joinBeef(uint256 amountOutMin) public payable onlyChallenger isNotCooking {
         if (msg.value != wager) {
             revert BeefInvalidWager(wager, msg.value);
         }
@@ -267,11 +267,11 @@ contract Beef is OwnableUpgradeable {
             payable(owner()).transfer(address(this).balance);
             emit BeefServed(owner());
         } else {
-            if (msg.sender != foe) {
-                revert BeefNotFoe(foe, msg.sender);
+            if (msg.sender != challenger) {
+                revert BeefNotChallenger(challenger, msg.sender);
             }
-            payable(foe).transfer(address(this).balance);
-            emit BeefServed(foe);
+            payable(challenger).transfer(address(this).balance);
+            emit BeefServed(challenger);
         }
 
         StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);
@@ -297,8 +297,8 @@ contract Beef is OwnableUpgradeable {
         if (!cooking || block.timestamp < settleStart + settlingDuration) {
             revert BeefNotRotten(settleStart + settlingDuration, block.timestamp);
         }
-        if (msg.sender != owner() && msg.sender != foe) {
-            revert BeefNotOwnerNorFoe(owner(), foe, msg.sender);
+        if (msg.sender != owner() && msg.sender != challenger) {
+            revert BeefNotOwnerNorChallenger(owner(), challenger, msg.sender);
         }
 
         if (staking) {
@@ -306,7 +306,7 @@ contract Beef is OwnableUpgradeable {
         }
 
         payable(owner()).transfer(address(this).balance / 2);
-        payable(foe).transfer(address(this).balance / 2);
+        payable(challenger).transfer(address(this).balance / 2);
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }

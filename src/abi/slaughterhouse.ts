@@ -130,7 +130,7 @@ export const slaughterhouseAbi = [
             internalType: "uint256",
           },
           {
-            name: "foe",
+            name: "challenger",
             type: "address",
             internalType: "address",
           },
@@ -248,7 +248,7 @@ export const slaughterhouseAbi = [
         internalType: "address",
       },
       {
-        name: "foe",
+        name: "challenger",
         type: "address",
         indexed: true,
         internalType: "address",

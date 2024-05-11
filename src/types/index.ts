@@ -10,7 +10,7 @@ export type Beef = {
 
   owner: Address;
   wager: bigint;
-  foe: Address;
+  challenger: Address;
   settleStart: UnixTimestamp;
   title: string;
   description: string;
