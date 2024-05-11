@@ -8,8 +8,8 @@ import { Box } from "@mui/material";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Decobie",
-  description: "De-Cobie your on-chain gambling addiction!",
+  title: "SettleBeef",
+  description: "Settle your beef!",
 };
 
 export default function RootLayout({
