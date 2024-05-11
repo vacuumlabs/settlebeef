@@ -16,7 +16,7 @@ export type Beef = {
   description: string;
   arbiters: Address[];
   joinDeadline: UnixTimestamp;
-
+  staking: boolean;
   isCooking: boolean;
   resultYes: bigint;
   resultNo: bigint;
