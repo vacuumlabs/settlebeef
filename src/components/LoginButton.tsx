@@ -5,11 +5,13 @@ import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { useContext } from "react";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import { formatEther } from "viem";
-import { useBalance } from "@/hooks/queries";
+import { useBalance, useEnsName } from "@/hooks/queries";
+import { QueryGuard } from "@/hooks/QueryGuard";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
   const { connectedAddress, setClient } = useContext(SmartAccountClientContext);
+  const ensNameQuery = useEnsName("0x1f916bBF39aB189A9E3d9E1823a7b1A8e9e5f204");
 
   const { login } = useLogin();
 
@@ -32,9 +34,13 @@ const LoginButton = () => {
               {formatEther(BigInt(balance.value.toString()))} ETH
             </Typography>
           )}
-          <Typography component="span" variant="body2">
-            {connectedAddress}
-          </Typography>
+          <QueryGuard {...ensNameQuery}>
+            {(ensName) => (
+              <Typography component="span" variant="body2">
+                {ensName != null ? ensName : connectedAddress}
+              </Typography>
+            )}
+          </QueryGuard>
         </Stack>
       ) : (
         <Skeleton variant="circular" />
