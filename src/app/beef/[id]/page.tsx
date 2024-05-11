@@ -123,8 +123,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
 
   if (beef === null || ensNamesLoading) {
     return (
-      <Container>
-        <Skeleton width={800} height={600} />
+      <Container sx={{ pb: 6 }}>
+        <Skeleton height={600} />
       </Container>
     );
   }

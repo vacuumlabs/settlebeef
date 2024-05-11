@@ -72,6 +72,13 @@ theme.components = {
       },
     },
   },
+  MuiSkeleton: {
+    styleOverrides: {
+      root: {
+        borderRadius: 24,
+      },
+    },
+  },
   MuiTextField: {
     styleOverrides: {
       root: {
