@@ -192,7 +192,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           step = 5;
           deadline = undefined;
           if (beefGone) {
-            step = 6;
+            step = 7;
           }
         } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
           deadline = undefined;
@@ -202,6 +202,15 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           steps.push({ icon: "🤢", text: "Beef rotten" });
           isRotten = true;
         }
+      }
+    } else {
+      steps = steps.slice(0, 2);
+      steps.push({ icon: "🤦", text: "Challenger didn't join" });
+      steps.push({ icon: "🤢", text: "Beef raw forever" });
+      step = 3;
+      isRotten = true;
+      if (beefGone) {
+        step = 4;
       }
     }
   }
