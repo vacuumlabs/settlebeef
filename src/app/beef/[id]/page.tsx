@@ -176,7 +176,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 3;
       } else {
         step = 4;
-        // TODO: this assumes constant settlingDuration of 30 days!
+        // FIXME: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
           Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
         );
@@ -188,7 +188,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           }
         } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
           deadline = undefined;
-          // TODO: this assumes constant settlingDuration of 30 days!
+          // FIXME: this assumes constant settlingDuration of 30 days!
           steps = steps.slice(0, 5);
           steps.push({ icon: "🤢", text: "Beef rotten" });
           isRotten = true;
