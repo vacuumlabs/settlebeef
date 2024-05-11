@@ -159,12 +159,11 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     connectedAddress.toLowerCase() === owner.toLowerCase();
 
   let step = 0;
-  let deadline: Date | undefined;
+  let deadline = new Date(Number(joinDeadline) * 1000);
   let isRotten = false;
   const now = new Date().getTime();
   if (attendCount < arbiters.length) {
     if (now < joinDeadline * 1000n) {
-      deadline = new Date(Number(joinDeadline) * 1000);
       step = 1;
     } else {
       steps = steps.slice(0, 1);
