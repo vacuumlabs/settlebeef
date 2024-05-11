@@ -159,7 +159,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     connectedAddress.toLowerCase() === owner.toLowerCase();
 
   let step = 0;
-  let deadline = new Date(Number(joinDeadline) * 1000);
+  let deadline: Date | undefined = new Date(Number(joinDeadline) * 1000);
   let isRotten = false;
   const now = new Date().getTime();
   if (attendCount < arbiters.length) {
