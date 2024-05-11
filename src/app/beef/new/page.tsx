@@ -81,7 +81,7 @@ const NewBeefPage = () => {
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
-        : Promise.resolve(null)
+        : Promise.resolve(null),
     );
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
@@ -100,7 +100,7 @@ const NewBeefPage = () => {
       validatedEnsNames.some(
         (ensName, index) =>
           ensName === null &&
-          values.arbiters[index]!.type === ArbiterAccount.ENS
+          values.arbiters[index]!.type === ArbiterAccount.ENS,
       )
     ) {
       return;

@@ -1,9 +1,6 @@
 import React, { useContext } from "react";
 import { Button, Stack } from "@mui/material";
-import {
-  SmartAccountClient,
-  SmartAccountClientContext,
-} from "./providers/SmartAccountClientContext";
+import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import type { Address, Beef, UnixTimestamp } from "@/types";
 import { useGetArbiterStatuses } from "@/hooks/queries";
 import {
@@ -48,7 +45,7 @@ const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
 
   if (canWithdrawRaw) {
     return (
-      <Button onClick={() => withdrawRawMutation.mutate()} variant="outlined">
+      <Button onClick={() => withdrawRawMutation.mutate()} variant="contained">
         Withdraw Raw Beef
       </Button>
     );
@@ -56,14 +53,14 @@ const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
     return (
       <Button
         onClick={() => withdrawRottenMutation.mutate()}
-        variant="outlined"
+        variant="contained"
       >
         Withdraw Rotten Beef
       </Button>
     );
   } else if (canServe) {
     return (
-      <Button onClick={() => serveMutation.mutate()} variant="outlined">
+      <Button onClick={() => serveMutation.mutate()} variant="contained">
         Serve Beef
       </Button>
     );
@@ -83,7 +80,7 @@ const ArbiterButton = ({
 }: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : []
+    connectedAddress ? [connectedAddress] : [],
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);
@@ -147,22 +144,6 @@ const ChallengerButton = ({
   );
 };
 
-const OwnerButton = ({
-  id,
-  canWithdraw,
-}: ButtonProps & { canWithdraw: boolean }) => {
-  const withdrawMutation = useWithdrawRaw(id);
-  return canWithdraw ? (
-    <Button onClick={() => withdrawMutation.mutate()} variant="contained">
-      Withdraw Raw Beef
-    </Button>
-  ) : (
-    <Button disabled variant="outlined">
-      Nothing to do
-    </Button>
-  );
-};
-
 type BeefControlsProps = {
   id: Address;
   beef: Beef;
@@ -180,11 +161,7 @@ const BeefControls = ({
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, joinDeadline, settleStart, attendCount } = beef;
-  const canWithdraw =
-    !isCooking &&
-    isUserOwner &&
-    joinDeadline < parseIsoDateToTimestamp(DateTime.now().toISO());
+  const { isCooking, wager, settleStart, attendCount } = beef;
 
   const showWithdrawButton = isUserOwner || isUserChallenger;
 
@@ -194,12 +171,11 @@ const BeefControls = ({
         {isUserArbiter && (
           <ArbiterButton {...{ id, connectedAddress, settleStart }} />
         )}
-        {isUserChallenger && (
+        {isUserChallenger && !(isCooking || attendCount < 3) && (
           <ChallengerButton
             {...{ id, hasJoined: isCooking, value: wager, attendCount }}
           />
         )}
-        {isUserOwner && <OwnerButton {...{ id, canWithdraw }} />}
         {showWithdrawButton && <WithdrawButton {...{ id, beef }} />}
       </Stack>
     )
