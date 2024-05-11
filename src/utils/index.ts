@@ -7,7 +7,7 @@ const truncateAddress = (address: Address) => {
 export const getAddressOrEnsName = (
   address: Address | undefined,
   ensNameOrUndefined: string | undefined | null,
-  truncate = true
+  truncate = true,
 ) => {
   if (ensNameOrUndefined != null) {
     return ensNameOrUndefined;

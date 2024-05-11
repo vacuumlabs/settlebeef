@@ -4,7 +4,7 @@ const BOTTOM_BOUNDARY = -20;
 const calculateRelativeAmount = (
   score: number,
   topValue: number,
-  bottomValue: number
+  bottomValue: number,
 ) => {
   if (score >= TOP_BOUNDARY) {
     return topValue;
@@ -23,7 +23,7 @@ const errorColor = [239, 83, 80] as const;
 const successColor = [76, 175, 80] as const;
 
 export const calculateColorFromStreetCredit = (
-  streetCredit: bigint | undefined
+  streetCredit: bigint | undefined,
 ) => {
   if (streetCredit === undefined) {
     return;
