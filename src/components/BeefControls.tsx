@@ -80,7 +80,7 @@ const ArbiterButton = ({
 }: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : [],
+    connectedAddress ? [connectedAddress] : []
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);
@@ -161,9 +161,9 @@ const BeefControls = ({
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, settleStart, attendCount } = beef;
+  const { isCooking, wager, settleStart, attendCount, beefGone } = beef;
 
-  const showWithdrawButton = isUserOwner || isUserChallenger;
+  const showWithdrawButton = !beefGone && (isUserOwner || isUserChallenger);
 
   return (
     connectedAddress && (
