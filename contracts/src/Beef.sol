@@ -7,6 +7,9 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
+import {Slaughterhouse} from "./Slaughterhouse.sol";
+import {StreetCredit} from "./StreetCredit.sol";
+
 contract Beef is OwnableUpgradeable {
     using Address for address;
 
@@ -51,6 +54,7 @@ contract Beef is OwnableUpgradeable {
     // @notice Flag indicating if the beef is cooking - the foe had joined.
     bool public cooking;
     bool public beefGone;
+    Slaughterhouse public slaughterhouse;
 
     // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
     bool public staking;
@@ -135,7 +139,8 @@ contract Beef is OwnableUpgradeable {
         uint256 amountOutMin,
         address _weth,
         address _wsteth,
-        address _uniswapV2Router
+        address _uniswapV2Router,
+        address _slaughterhouse
     ) public payable initializer {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
@@ -154,6 +159,7 @@ contract Beef is OwnableUpgradeable {
         WETH = IERC20(_weth);
         WSTETH = IERC20(_wsteth);
         uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
+        slaughterhouse = Slaughterhouse(_slaughterhouse);
 
         __Ownable_init(params.owner);
 
@@ -267,6 +273,19 @@ contract Beef is OwnableUpgradeable {
             payable(foe).transfer(address(this).balance);
             emit BeefServed(foe);
         }
+
+        StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);
+        uint256 correctSettle = resultYes > resultNo ? 1 : 2;
+        for (uint256 i; i < arbiters.length;) {
+            streetCreditUpdateBooleans[i] = hasSettled[arbiters[i]] == 0
+                ? StreetCredit.Vote.Abstain
+                : hasSettled[arbiters[i]] == correctSettle ? StreetCredit.Vote.Correct : StreetCredit.Vote.Incorrect;
+            unchecked {
+                ++i;
+            }
+        }
+        slaughterhouse.updateStreetCredit(streetCreditUpdateBooleans, arbiters);
+
         beefGone = true;
     }
 

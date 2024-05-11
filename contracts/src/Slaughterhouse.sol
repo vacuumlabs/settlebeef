@@ -4,9 +4,10 @@ pragma solidity ^0.8.13;
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 import {Beef} from "./Beef.sol";
+import {StreetCredit} from "./StreetCredit.sol";
 
 // @notice Factory contract for creating Beef contracts. User entrypoint in Settlebeef.
-contract Slaughterhouse {
+contract Slaughterhouse is StreetCredit {
     // @notice The implementation address for Beef contract
     address public beefImplementation;
     // @notice The list of all beefs
@@ -35,9 +36,13 @@ contract Slaughterhouse {
     // @notice Start a new beef
     // @param params The parameters for the beef
     // @param amountOutMin The minimum amount of WSTETH to receive from the beef, if staking enabled
-    function packageBeef(Beef.ConstructorParams memory params, uint256 amountOutMin) public payable returns (address) {
+    function packageBeef(Beef.ConstructorParams memory params, uint256 amountOutMin)
+        public
+        payable
+        returns (address payable)
+    {
         address payable beef = payable(Clones.clone(beefImplementation));
-        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router);
+        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this));
         beefs.push(beef);
         canUpdateStreetCredit[beef] = true;
         emit BeefPackaged(beef, params.owner, params.foe);
