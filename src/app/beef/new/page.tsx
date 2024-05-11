@@ -60,8 +60,14 @@ const NewBeefPage = () => {
         { type: ArbiterAccount.EMAIL, value: "" },
       ],
       wager: null,
-      joinDeadline: DateTime.now().plus({ days: 7 }).toISODate(),
-      settleStart: DateTime.now().plus({ months: 6 }).toISODate(),
+      joinDeadline: DateTime.now()
+        .plus({ days: 7 })
+        .set({ second: 0, millisecond: 0 })
+        .toISO({ suppressSeconds: true, includeOffset: false }),
+      settleStart: DateTime.now()
+        .plus({ months: 6 })
+        .set({ second: 0, millisecond: 0 })
+        .toISO({ suppressSeconds: true, includeOffset: false }),
       foe: "",
       staking: true,
     },
@@ -74,7 +80,7 @@ const NewBeefPage = () => {
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
-        : Promise.resolve(null),
+        : Promise.resolve(null)
     );
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
@@ -93,7 +99,7 @@ const NewBeefPage = () => {
       validatedEnsNames.some(
         (ensName, index) =>
           ensName === null &&
-          values.arbiters[index]!.type === ArbiterAccount.ENS,
+          values.arbiters[index]!.type === ArbiterAccount.ENS
       )
     ) {
       return;
@@ -184,7 +190,7 @@ const NewBeefPage = () => {
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}
-                type="date"
+                type="datetime-local"
                 label="Deadline for joining"
                 error={!!error}
                 helperText={error?.message}
@@ -204,7 +210,7 @@ const NewBeefPage = () => {
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}
-                type="date"
+                type="datetime-local"
                 label="Judging start"
                 error={!!error}
                 helperText={error?.message}
