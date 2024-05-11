@@ -310,9 +310,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                         ? "✅"
                         : "⌛"
                       : arbiterStatuses[index]!.hasSettled === 1n
-                        ? "1️⃣"
+                        ? "👍🏽"
                         : arbiterStatuses[index]!.hasSettled === 2n
-                          ? "2️⃣"
+                          ? "👎🏽"
                           : "⌛"}
                   </Typography>
                 )}
