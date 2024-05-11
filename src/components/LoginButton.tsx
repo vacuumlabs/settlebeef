@@ -4,9 +4,10 @@ import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { useContext } from "react";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import { formatEther } from "viem";
 import { useBalance, useEnsName } from "@/hooks/queries";
 import { QueryGuard } from "@/hooks/QueryGuard";
+import { formatBigint } from "@/utils/general";
+import { getAddressOrEnsName } from "@/utils";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
@@ -26,18 +27,18 @@ const LoginButton = () => {
   return authenticated ? (
     <Stack direction="row" alignItems="center" gap={3}>
       {ready ? (
-        <Stack direction="row" gap={3}>
+        <Stack direction="row" alignItems="center" gap={3}>
           {isLoading || balance == null ? (
             <Skeleton variant="circular" />
           ) : (
-            <Typography component="span" variant="body2">
-              {formatEther(BigInt(balance.value.toString()))} ETH
+            <Typography component="span">
+              {formatBigint(balance.value, 5)} ETH
             </Typography>
           )}
           <QueryGuard {...ensNameQuery}>
             {(ensName) => (
-              <Typography component="span" variant="body2">
-                {ensName != null ? ensName : connectedAddress}
+              <Typography component="span">
+                {getAddressOrEnsName(connectedAddress, ensName)}
               </Typography>
             )}
           </QueryGuard>
