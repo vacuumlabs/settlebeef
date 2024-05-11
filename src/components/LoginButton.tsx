@@ -28,11 +28,11 @@ const LoginButton = () => {
     <Stack direction="row" alignItems="center" gap={3}>
       {ready ? (
         <Stack direction="row" alignItems="center" gap={3}>
-          {isLoading || balance == null ? (
-            <Skeleton variant="circular" />
+          {isLoading ? (
+            <Skeleton height={15} width={200} />
           ) : (
             <Typography component="span">
-              {formatBigint(balance.value, 5)}&nbsp;Ξ
+              {formatBigint(balance?.value, 5)}&nbsp;Ξ
             </Typography>
           )}
           <QueryGuard {...ensNameQuery}>
