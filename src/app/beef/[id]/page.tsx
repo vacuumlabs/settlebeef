@@ -167,7 +167,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       step = 1;
     } else {
       steps = steps.slice(0, 2);
-      steps.push({ icon: "🤢", text: "Beef rotten" });
+      steps.push({ icon: "🤢", text: "Beef raw forever" });
       step = 2;
       isRotten = true;
     }
