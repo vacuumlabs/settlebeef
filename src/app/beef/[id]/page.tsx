@@ -36,16 +36,6 @@ type BeefDetailPageProps = {
   };
 };
 
-let steps = [
-  { icon: "🥩", text: "Beef creation" },
-  { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-  { icon: "🤺", text: "Challenger joining" },
-  { icon: "👨‍🍳", text: "Beef cooking" },
-  { icon: "🧑‍⚖️", text: "Beef settling" },
-  { icon: "🍽️", text: "Beef ready to serve" },
-  { icon: "😋", text: "Beef served" },
-];
-
 const BeefStepConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
     top: 30,
@@ -96,7 +86,7 @@ function StepIcon(props: StepIconProps) {
             "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;",
         }}
       >
-        {steps[(icon as number) - 1]?.icon}
+        {icon}
       </Typography>
     </Box>
   );
@@ -110,6 +100,16 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     (beef?.address ?? "0x0") as Address,
     beef?.arbiters ?? []
   );
+
+  let steps = [
+    { icon: "🥩", text: "Beef creation" },
+    { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+    { icon: "🤺", text: "Challenger joining" },
+    { icon: "👨‍🍳", text: "Beef cooking" },
+    { icon: "🧑‍⚖️", text: "Beef settling" },
+    { icon: "🍽️", text: "Beef ready to serve" },
+    { icon: "😋", text: "Beef served" },
+  ];
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
@@ -261,7 +261,14 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 : null;
               return (
                 <Step key={label.text}>
-                  <StepLabel StepIconComponent={StepIcon}>
+                  <StepLabel
+                    StepIconComponent={() => {
+                      return StepIcon({
+                        completed: step > index,
+                        icon: label.icon,
+                      });
+                    }}
+                  >
                     <Stack>
                       <Typography>{label.text}</Typography>
                       {stepDate && !isRotten && (
