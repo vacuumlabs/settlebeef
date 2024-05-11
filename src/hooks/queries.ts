@@ -31,7 +31,7 @@ export const useEnsNames = (addresses: (Address | undefined)[]) => {
       const ensNameQueries = addresses.map((address) =>
         address == null
           ? Promise.resolve(null)
-          : getEnsName(ensConfig, { address }),
+          : getEnsName(ensConfig, { address })
       );
 
       const ensNames = await Promise.all(ensNameQueries);
@@ -42,8 +42,10 @@ export const useEnsNames = (addresses: (Address | undefined)[]) => {
   });
 };
 
-export const useBeef = (id: string): Beef | null | undefined => {
-  const { data, isError } = useReadContract({
+export const useBeef = (
+  id: string
+): (Beef & { refetch: () => Promise<unknown> }) | null | undefined => {
+  const { data, isError, refetch } = useReadContract({
     abi: beefAbi,
     address: id as Address,
     functionName: "getInfo",
@@ -58,6 +60,7 @@ export const useBeef = (id: string): Beef | null | undefined => {
 
   return data != null
     ? {
+        refetch,
         ...data.params,
         arbiters: [...data.params.arbiters],
         address: id,
@@ -89,7 +92,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const,
+          }) as const
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -107,7 +110,7 @@ export const useGetBeefs = () => {
 
 export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddresses: Address[],
+  arbiterAddresses: Address[]
 ) => {
   const { data } = useReadContracts({
     contracts: [
@@ -146,7 +149,7 @@ export const useGetArbiterStatuses = (
             }
             return acc;
           },
-          [] as Array<[boolean, bigint, bigint]>,
+          [] as Array<[boolean, bigint, bigint]>
         )
         .map(([hasAttended, hasSettled, streetCredit]) => ({
           hasAttended,
