@@ -144,6 +144,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     settleStart,
     staking,
     beefGone,
+    refetch,
   } = beef;
 
   const isUserArbiter =
@@ -353,6 +354,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               isUserArbiter,
               isUserChallenger,
               isUserOwner,
+              refetch,
             }}
           />
         </Stack>

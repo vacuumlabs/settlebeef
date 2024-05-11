@@ -18,7 +18,11 @@ type ButtonProps = {
   id: Address;
 };
 
-const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
+const WithdrawButton = ({
+  id,
+  beef,
+  refetch,
+}: ButtonProps & { beef: Beef; refetch: () => void }) => {
   const {
     isCooking,
     joinDeadline,
@@ -45,14 +49,21 @@ const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
 
   if (canWithdrawRaw) {
     return (
-      <Button onClick={() => withdrawRawMutation.mutate()} variant="contained">
+      <Button
+        onClick={() =>
+          withdrawRawMutation.mutate(undefined, { onSuccess: refetch })
+        }
+        variant="contained"
+      >
         Withdraw Raw Beef
       </Button>
     );
   } else if (canWithdrawRotten) {
     return (
       <Button
-        onClick={() => withdrawRottenMutation.mutate()}
+        onClick={() =>
+          withdrawRottenMutation.mutate(undefined, { onSuccess: refetch })
+        }
         variant="contained"
       >
         Withdraw Rotten Beef
@@ -60,7 +71,10 @@ const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
     );
   } else if (canServe) {
     return (
-      <Button onClick={() => serveMutation.mutate()} variant="contained">
+      <Button
+        onClick={() => serveMutation.mutate(undefined, { onSuccess: refetch })}
+        variant="contained"
+      >
         Serve Beef
       </Button>
     );
@@ -77,7 +91,12 @@ const ArbiterButton = ({
   connectedAddress,
   id,
   settleStart,
-}: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
+  refetch,
+}: ButtonProps & {
+  connectedAddress: Address;
+  settleStart: UnixTimestamp;
+  refetch: () => void;
+}) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
     connectedAddress ? [connectedAddress] : []
@@ -92,7 +111,13 @@ const ArbiterButton = ({
   const { hasSettled, hasAttended } = arbiterStatus[0];
 
   if (!hasAttended && hasSettled === 0n) {
-    return <Button onClick={() => attendMutation.mutate()}>Attend ✋</Button>;
+    return (
+      <Button
+        onClick={() => attendMutation.mutate(undefined, { onSuccess: refetch })}
+      >
+        Attend ✋
+      </Button>
+    );
   } else if (
     hasAttended &&
     hasSettled === 0n &&
@@ -100,12 +125,15 @@ const ArbiterButton = ({
   ) {
     return (
       <Stack direction="row" spacing={2}>
-        <Button variant="contained" onClick={() => settleMutation.mutate(true)}>
+        <Button
+          variant="contained"
+          onClick={() => settleMutation.mutate(true, { onSuccess: refetch })}
+        >
           Settle In Favour 👍
         </Button>
         <Button
           variant="contained"
-          onClick={() => settleMutation.mutate(false)}
+          onClick={() => settleMutation.mutate(false, { onSuccess: refetch })}
         >
           Settle Against 👎
         </Button>
@@ -125,10 +153,12 @@ const ChallengerButton = ({
   value,
   hasJoined,
   attendCount,
+  refetch,
 }: ButtonProps & {
   value: bigint;
   hasJoined: boolean;
   attendCount: bigint;
+  refetch: () => void;
 }) => {
   const joinBeefMutation = useJoinBeef(id, value);
 
@@ -138,7 +168,10 @@ const ChallengerButton = ({
       Nothing to do
     </Button>
   ) : (
-    <Button variant="contained" onClick={() => joinBeefMutation.mutate()}>
+    <Button
+      variant="contained"
+      onClick={() => joinBeefMutation.mutate(undefined, { onSuccess: refetch })}
+    >
       Join Beef
     </Button>
   );
@@ -150,6 +183,7 @@ type BeefControlsProps = {
   isUserArbiter: boolean;
   isUserChallenger: boolean;
   isUserOwner: boolean;
+  refetch: () => void;
 };
 
 const BeefControls = ({
@@ -158,6 +192,7 @@ const BeefControls = ({
   isUserArbiter,
   isUserChallenger,
   isUserOwner,
+  refetch,
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
@@ -169,14 +204,20 @@ const BeefControls = ({
     connectedAddress && (
       <Stack direction="row" spacing={2}>
         {isUserArbiter && (
-          <ArbiterButton {...{ id, connectedAddress, settleStart }} />
+          <ArbiterButton {...{ id, connectedAddress, settleStart, refetch }} />
         )}
         {isUserChallenger && !(isCooking || attendCount < 3) && (
           <ChallengerButton
-            {...{ id, hasJoined: isCooking, value: wager, attendCount }}
+            {...{
+              id,
+              hasJoined: isCooking,
+              value: wager,
+              attendCount,
+              refetch,
+            }}
           />
         )}
-        {showWithdrawButton && <WithdrawButton {...{ id, beef }} />}
+        {showWithdrawButton && <WithdrawButton {...{ id, beef, refetch }} />}
       </Stack>
     )
   );
