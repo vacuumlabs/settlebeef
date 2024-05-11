@@ -4,8 +4,10 @@ import AmountInput from "@/components/AmoutInput";
 import { isValidEmail } from "@/utils/validations";
 import {
   Button,
+  Checkbox,
   CircularProgress,
   Container,
+  FormControlLabel,
   MenuItem,
   Paper,
   Select,
@@ -41,6 +43,7 @@ export type NewBeefFormValues = {
   joinDeadline: string;
   settleStart: string;
   foe: string | null;
+  staking: boolean;
 };
 
 const NewBeefPage = () => {
@@ -60,6 +63,7 @@ const NewBeefPage = () => {
       joinDeadline: DateTime.now().plus({ days: 7 }).toISODate(),
       settleStart: DateTime.now().plus({ months: 6 }).toISODate(),
       foe: "",
+      staking: true,
     },
   });
 
@@ -274,6 +278,26 @@ const NewBeefPage = () => {
               </Stack>
             </Stack>
           ))}
+          <Controller
+            name="staking"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                sx={{ mt: 4 }}
+                control={
+                  <Checkbox checked={field.value} onChange={field.onChange} />
+                }
+                label={
+                  <Stack>
+                    <Typography variant="h6">Let the beef drip!</Typography>
+                    <Typography variant="subtitle2" color="grey">
+                      {`Beef amount will be steaked (🤣)`}
+                    </Typography>
+                  </Stack>
+                }
+              />
+            )}
+          />
           <Button
             disabled={isPending}
             onClick={addBeef}

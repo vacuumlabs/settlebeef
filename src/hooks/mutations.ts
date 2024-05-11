@@ -156,6 +156,7 @@ export const useAddBeef = () => {
 
 export const useWithdrawRaw = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -171,13 +172,14 @@ export const useWithdrawRaw = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useWithdrawRotten = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -193,13 +195,14 @@ export const useWithdrawRotten = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
 
 export const useServeBeef = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -215,7 +218,7 @@ export const useServeBeef = (beefId: Address) => {
       return txHash;
     },
     onSuccess() {
-      // FIXME:invalidate QueryClient
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
   });
 };
