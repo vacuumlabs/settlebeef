@@ -277,7 +277,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                         </Stack>
                       )}
                       {index === step && deadline != null && (
-                        <Typography>
+                        <Typography sx={{ fontWeight: 600 }}>
                           <Countdown deadline={deadline} />
                         </Typography>
                       )}
