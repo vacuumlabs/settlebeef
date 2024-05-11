@@ -108,7 +108,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? []
+    beef?.arbiters ?? [],
   );
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
@@ -143,6 +143,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     isCooking,
     settleStart,
     staking,
+    beefGone,
   } = beef;
 
   const isUserArbiter =
@@ -170,6 +171,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       steps.push({ icon: "🤢", text: "Beef raw forever" });
       step = 2;
       isRotten = true;
+      if (beefGone) {
+        step = 3;
+      }
     }
   } else {
     step = 2;
@@ -181,12 +185,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // FIXME: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
           deadline = undefined;
-          if (/*served*/ false) {
+          if (beefGone) {
             step = 6;
           }
         } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
@@ -310,7 +314,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                   }
                   sx={{
                     backgroundColor: calculateColorFromStreetCredit(
-                      arbiterStatuses?.[index]!.streetCredit
+                      arbiterStatuses?.[index]!.streetCredit,
                     ),
                   }}
                 />

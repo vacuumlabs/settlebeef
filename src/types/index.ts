@@ -21,6 +21,7 @@ export type Beef = {
   resultYes: bigint;
   resultNo: bigint;
   attendCount: bigint;
+  beefGone: boolean;
 };
 
 export enum ArbiterAccount {

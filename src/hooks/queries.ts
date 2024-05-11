@@ -65,6 +65,7 @@ export const useBeef = (id: string): Beef | null | undefined => {
         resultYes: data.resultYes,
         resultNo: data.resultNo,
         attendCount: data.attendCount,
+        beefGone: data.beefGone,
       }
     : null;
 };
