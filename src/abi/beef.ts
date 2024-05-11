@@ -5,6 +5,36 @@ export const beefAbi = [
     stateMutability: "nonpayable",
   },
   {
+    type: "fallback",
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "WETH",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract IERC20",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "WSTETH",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract IERC20",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
     type: "function",
     name: "arbiterAttend",
     inputs: [],
@@ -52,6 +82,19 @@ export const beefAbi = [
         name: "",
         type: "uint256",
         internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "beefGone",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
       },
     ],
     stateMutability: "view",
@@ -150,6 +193,11 @@ export const beefAbi = [
                 type: "uint256",
                 internalType: "uint256",
               },
+              {
+                name: "staking",
+                type: "bool",
+                internalType: "bool",
+              },
             ],
           },
           {
@@ -171,6 +219,11 @@ export const beefAbi = [
             name: "attendCount",
             type: "uint256",
             internalType: "uint256",
+          },
+          {
+            name: "beefGone",
+            type: "bool",
+            internalType: "bool",
           },
         ],
       },
@@ -264,7 +317,32 @@ export const beefAbi = [
             type: "uint256",
             internalType: "uint256",
           },
+          {
+            name: "staking",
+            type: "bool",
+            internalType: "bool",
+          },
         ],
+      },
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "_weth",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_wsteth",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_uniswapV2Router",
+        type: "address",
+        internalType: "address",
       },
     ],
     outputs: [],
@@ -273,7 +351,13 @@ export const beefAbi = [
   {
     type: "function",
     name: "joinBeef",
-    inputs: [],
+    inputs: [
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
     outputs: [],
     stateMutability: "payable",
   },
@@ -339,7 +423,13 @@ export const beefAbi = [
   {
     type: "function",
     name: "serveBeef",
-    inputs: [],
+    inputs: [
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -384,6 +474,19 @@ export const beefAbi = [
   },
   {
     type: "function",
+    name: "staking",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "title",
     inputs: [],
     outputs: [
@@ -410,6 +513,19 @@ export const beefAbi = [
   },
   {
     type: "function",
+    name: "uniswapV2Router",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract IUniswapV2Router02",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "wager",
     inputs: [],
     outputs: [
@@ -424,14 +540,26 @@ export const beefAbi = [
   {
     type: "function",
     name: "withdrawRaw",
-    inputs: [],
+    inputs: [
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "withdrawRotten",
-    inputs: [],
+    inputs: [
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -582,6 +710,11 @@ export const beefAbi = [
   },
   {
     type: "error",
+    name: "BeefAlreadyGone",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "BeefArbiterAlreadyAttended",
     inputs: [
       {
@@ -686,6 +819,43 @@ export const beefAbi = [
     type: "error",
     name: "BeefNotFoe",
     inputs: [
+      {
+        name: "declaredFoe",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "sender",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "BeefNotOwner",
+    inputs: [
+      {
+        name: "declaredOwner",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "sender",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "BeefNotOwnerNorFoe",
+    inputs: [
+      {
+        name: "declaredOwner",
+        type: "address",
+        internalType: "address",
+      },
       {
         name: "declaredFoe",
         type: "address",

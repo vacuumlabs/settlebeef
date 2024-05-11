@@ -2,8 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract Beef is OwnableUpgradeable {
     using Address for address;
@@ -17,6 +19,7 @@ contract Beef is OwnableUpgradeable {
         string description;
         address[] arbiters;
         uint256 joinDeadline;
+        bool staking;
     }
 
     struct BeefInfo {
@@ -47,6 +50,15 @@ contract Beef is OwnableUpgradeable {
     uint256 public joinDeadline;
     // @notice Flag indicating if the beef is cooking - the foe had joined.
     bool public cooking;
+    bool public beefGone;
+
+    // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
+    bool public staking;
+    // @notice Address of the Uniswap V2 Router.
+    IUniswapV2Router02 public uniswapV2Router;
+    IERC20 public WETH;
+    IERC20 public WSTETH;
+
     uint128 public resultYes;
     uint128 public resultNo;
     uint256 public attendCount;
@@ -64,6 +76,8 @@ contract Beef is OwnableUpgradeable {
     error BeefIsRotten(uint256 deadline, uint256 timestamp);
     error BeefNotArbiter(address sender);
     error BeefNotFoe(address declaredFoe, address sender);
+    error BeefNotOwner(address declaredOwner, address sender);
+    error BeefNotOwnerNorFoe(address declaredOwner, address declaredFoe, address sender);
     error BeefNotRaw();
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
@@ -116,24 +130,36 @@ contract Beef is OwnableUpgradeable {
         _disableInitializers();
     }
 
-    function initialize(ConstructorParams memory params) public payable initializer {
+    function initialize(
+        ConstructorParams memory params,
+        uint256 amountOutMin,
+        address _weth,
+        address _wsteth,
+        address _uniswapV2Router
+    ) public payable initializer {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
         }
         if (params.arbiters.length != arbitersRequiredCount) {
             revert BeefInvalidArbitersCount(params.arbiters.length, arbitersRequiredCount);
         }
-        (wager, foe, settleStart, title, description, arbiters, joinDeadline) = (
-            params.wager,
-            params.foe,
-            params.settleStart,
-            params.title,
-            params.description,
-            params.arbiters,
-            params.joinDeadline
-        );
+        wager = params.wager;
+        foe = params.foe;
+        settleStart = params.settleStart;
+        title = params.title;
+        description = params.description;
+        arbiters = params.arbiters;
+        joinDeadline = params.joinDeadline;
+        staking = params.staking;
+        WETH = IERC20(_weth);
+        WSTETH = IERC20(_wsteth);
+        uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
 
         __Ownable_init(params.owner);
+
+        if (staking) {
+            _stakeBeef(amountOutMin);
+        }
 
         emit BeefCreated(params.owner, foe, wager, settleStart, title, description, arbiters);
     }
@@ -149,13 +175,14 @@ contract Beef is OwnableUpgradeable {
                 title: title,
                 description: description,
                 arbiters: arbiters,
-                joinDeadline: joinDeadline
+                joinDeadline: joinDeadline,
+                staking: staking
             }),
             cooking: cooking,
             resultYes: resultYes,
             resultNo: resultNo,
             attendCount: attendCount,
-            beefGone: address(this).balance == 0
+            beefGone: beefGone
         });
     }
 
@@ -174,7 +201,8 @@ contract Beef is OwnableUpgradeable {
     }
 
     // @notice Foe can join the beef, paying the wager.
-    function joinBeef() public payable onlyFoe isNotCooking {
+    // @param amountOutMin Minimum amount of wstETH to receive, if staking is enabled.
+    function joinBeef(uint256 amountOutMin) public payable onlyFoe isNotCooking {
         if (msg.value != wager) {
             revert BeefInvalidWager(wager, msg.value);
         }
@@ -185,6 +213,9 @@ contract Beef is OwnableUpgradeable {
             revert BeefInvalidArbitersCount(attendCount, arbitersRequiredCount);
         }
         cooking = true;
+        if (staking) {
+            _stakeBeef(amountOutMin);
+        }
         emit BeefCooking();
     }
 
@@ -211,44 +242,94 @@ contract Beef is OwnableUpgradeable {
     }
 
     // @notice Serve the beef to the winner.
-    function serveBeef() public {
-        if (address(this).balance == 0) {
+    function serveBeef(uint256 amountOutMin) public {
+        if (beefGone) {
             revert BeefAlreadyGone();
         }
         if (resultYes <= arbiters.length / 2 && resultNo <= arbiters.length / 2) {
             revert BeefNotSettled(resultYes, resultNo, arbiters.length / 2);
         }
+
+        if (staking) {
+            _unstakeBeef(amountOutMin);
+        }
+
         if (resultYes > resultNo) {
+            if (msg.sender != owner()) {
+                revert BeefNotOwner(owner(), msg.sender);
+            }
             payable(owner()).transfer(address(this).balance);
             emit BeefServed(owner());
         } else {
+            if (msg.sender != foe) {
+                revert BeefNotFoe(foe, msg.sender);
+            }
             payable(foe).transfer(address(this).balance);
             emit BeefServed(foe);
         }
+        beefGone = true;
     }
 
     // @notice Withdraw the wagers if beef had rotten (arbiters didn't settle in time).
-    function withdrawRotten() public {
-        if (address(this).balance == 0) {
+    function withdrawRotten(uint256 amountOutMin) public {
+        if (beefGone) {
             revert BeefAlreadyGone();
         }
         if (!cooking || block.timestamp < settleStart + settlingDuration) {
             revert BeefNotRotten(settleStart + settlingDuration, block.timestamp);
         }
+        if (msg.sender != owner() && msg.sender != foe) {
+            revert BeefNotOwnerNorFoe(owner(), foe, msg.sender);
+        }
+
+        if (staking) {
+            _unstakeBeef(amountOutMin);
+        }
+
         payable(owner()).transfer(address(this).balance / 2);
         payable(foe).transfer(address(this).balance / 2);
         emit BeefWithdrawn(cooking);
+        beefGone = true;
     }
 
     // @notice Withdraw the wager if beef had raw for too long.
-    function withdrawRaw() public isNotCooking {
-        if (address(this).balance == 0) {
+    function withdrawRaw(uint256 amountOutMin) public isNotCooking onlyOwner {
+        if (beefGone) {
             revert BeefAlreadyGone();
         }
         if (block.timestamp < joinDeadline) {
             revert BeefNotRotten(joinDeadline, block.timestamp);
         }
+
+        if (staking) {
+            _unstakeBeef(amountOutMin);
+        }
+
         payable(owner()).transfer(address(this).balance);
         emit BeefWithdrawn(cooking);
+        beefGone = true;
     }
+
+    function _stakeBeef(uint256 amountOutMin) internal {
+        address[] memory path;
+        path = new address[](2);
+        path[0] = address(WETH);
+        path[1] = address(WSTETH);
+        uniswapV2Router.swapExactETHForTokens{value: address(this).balance}(
+            amountOutMin, path, address(this), block.timestamp
+        );
+    }
+
+    function _unstakeBeef(uint256 amountOutMin) internal {
+        address[] memory path;
+        path = new address[](2);
+        path[0] = address(WSTETH);
+        path[1] = address(WETH);
+        uint256 amountIn = IERC20(WSTETH).balanceOf(address(this));
+        WSTETH.approve(address(uniswapV2Router), amountIn);
+        uniswapV2Router.swapExactTokensForETH(amountIn, amountOutMin, path, address(this), block.timestamp);
+    }
+
+    // @notice Fallback function to receive ETH.
+    fallback() external payable {}
 }

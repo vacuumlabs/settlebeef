@@ -1,8 +1,50 @@
 export const slaughterhouseAbi = [
   {
     type: "constructor",
-    inputs: [],
+    inputs: [
+      {
+        name: "_weth",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_wsteth",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_uniswapV2Router",
+        type: "address",
+        internalType: "address",
+      },
+    ],
     stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "WETH",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "WSTETH",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
   },
   {
     type: "function",
@@ -98,7 +140,17 @@ export const slaughterhouseAbi = [
             type: "uint256",
             internalType: "uint256",
           },
+          {
+            name: "staking",
+            type: "bool",
+            internalType: "bool",
+          },
         ],
+      },
+      {
+        name: "amountOutMin",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     outputs: [
@@ -109,6 +161,19 @@ export const slaughterhouseAbi = [
       },
     ],
     stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "uniswapV2Router",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
   },
   {
     type: "event",
