@@ -61,8 +61,7 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.owner.toLowerCase() ===
-              connectedAddress.toLowerCase(),
+              beef.params.owner.toLowerCase() === connectedAddress.toLowerCase()
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -76,7 +75,7 @@ export default function Home() {
           .filter(
             (beef) =>
               beef.params.challenger.toLowerCase() ===
-              connectedAddress.toLowerCase(),
+              connectedAddress.toLowerCase()
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -90,7 +89,7 @@ export default function Home() {
           .filter((beef) =>
             beef.params.arbiters
               .map((it) => it.toLowerCase())
-              .includes(connectedAddress.toLowerCase()),
+              .includes(connectedAddress.toLowerCase())
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -101,7 +100,7 @@ export default function Home() {
 
   const handleChangeTabIndex = (
     event: React.SyntheticEvent,
-    newValue: number,
+    newValue: number
   ) => {
     setTabIndex(newValue);
   };
@@ -156,7 +155,7 @@ export default function Home() {
         {/* My beefs */}
         {connectedAddress && (
           <Paper elevation={2}>
-            <Stack p={4} spacing={2}>
+            <Stack p={4} gap={1}>
               <Stack direction="row" justifyContent="space-between">
                 <Typography variant="h3">My Beef List 🥩📝</Typography>
                 <Link href="/beef/new" style={{ textDecoration: "none" }}>
@@ -165,7 +164,9 @@ export default function Home() {
                   </Button>
                 </Link>
               </Stack>
-              <Typography variant="h5">As owner 🤴</Typography>
+              <Typography variant="h5" sx={{ mt: 3 }}>
+                As owner 🤴
+              </Typography>
               <Stack spacing={2}>
                 {isLoadingBeefs ? (
                   "Loading beef list"
@@ -175,7 +176,9 @@ export default function Home() {
                   <BeefList beefs={myBeefsOwner} />
                 )}
               </Stack>
-              <Typography variant="h5">As challenger 🤺</Typography>
+              <Typography variant="h5" sx={{ mt: 4 }}>
+                As challenger 🤺
+              </Typography>
               <Stack spacing={2}>
                 {isLoadingBeefs ? (
                   "Loading beef list"
@@ -185,7 +188,9 @@ export default function Home() {
                   <BeefList beefs={myBeefsChallenger} />
                 )}
               </Stack>
-              <Typography variant="h5">As arbiter 🧑‍⚖️</Typography>
+              <Typography variant="h5" sx={{ mt: 4 }}>
+                As arbiter 🧑‍⚖️
+              </Typography>
               <Stack spacing={2}>
                 {isLoadingBeefs ? (
                   "Loading beef list"
