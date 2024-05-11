@@ -31,6 +31,4 @@ export const sendBeefRequestEmail = async (to: string) => {
   </div>
   `,
   });
-
-  console.log(`Request email sent to ${to}`);
 };
