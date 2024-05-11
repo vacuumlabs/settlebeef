@@ -125,7 +125,7 @@ const NewBeefPage = () => {
     <Container component="main" maxWidth="md">
       <Paper sx={{ p: 4, mb: 10 }}>
         <Typography variant="h3" component="h1">
-          Start Beef
+          Start Beef 🐄🔪👀
         </Typography>
         <Stack sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Controller
