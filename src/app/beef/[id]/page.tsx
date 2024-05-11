@@ -108,7 +108,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? [],
+    beef?.arbiters ?? []
   );
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
@@ -142,6 +142,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     attendCount,
     isCooking,
     settleStart,
+    staking,
   } = beef;
 
   const isUserArbiter =
@@ -180,7 +181,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // FIXME: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
@@ -211,9 +212,21 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             }}
           >
             <Typography variant="h2">🔥 {title}</Typography>
-            <Typography variant="h4">
-              💸&nbsp;{formatEther(wager)}&nbsp;Ξ
-            </Typography>
+            <Stack alignItems="flex-end" gap={2}>
+              <Typography variant="h4">
+                💸&nbsp;{formatEther(wager)}&nbsp;Ξ
+              </Typography>
+              {staking && (
+                <Chip
+                  sx={{ backgroundColor: "primary.main" }}
+                  label={
+                    <Typography fontWeight={500} color="white">
+                      {"Steaked 🥩📈"}
+                    </Typography>
+                  }
+                />
+              )}
+            </Stack>
           </Stack>
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
@@ -297,7 +310,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                   }
                   sx={{
                     backgroundColor: calculateColorFromStreetCredit(
-                      arbiterStatuses?.[index]!.streetCredit,
+                      arbiterStatuses?.[index]!.streetCredit
                     ),
                   }}
                 />
