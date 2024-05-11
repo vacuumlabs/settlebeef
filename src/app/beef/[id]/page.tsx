@@ -8,6 +8,7 @@ import {
 } from "../../../hooks/queries";
 import {
   Box,
+  Chip,
   Container,
   Paper,
   Skeleton,
@@ -27,6 +28,7 @@ import { getAddressOrEnsName } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
+import { calculateColorFromStreetCredit } from "@/utils/colors";
 
 type BeefDetailPageProps = {
   params: {
@@ -106,7 +108,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? [],
+    beef?.arbiters ?? []
   );
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
@@ -178,7 +180,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // FIXME: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
@@ -196,6 +198,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       }
     }
   }
+
   return (
     <Container sx={{ pt: 4, pb: 6 }}>
       <Paper elevation={2} square>
@@ -280,7 +283,22 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 key={arbiter}
                 gap={1}
                 justifyContent={"space-between"}
+                alignItems="center"
               >
+                <Chip
+                  label={
+                    <Typography color="white" variant="subtitle1">
+                      {arbiterStatuses
+                        ? Number(arbiterStatuses[index]!.streetCredit)
+                        : "-"}
+                    </Typography>
+                  }
+                  sx={{
+                    backgroundColor: calculateColorFromStreetCredit(
+                      arbiterStatuses?.[index]!.streetCredit
+                    ),
+                  }}
+                />
                 <Typography variant="subtitle2">
                   {getAddressOrEnsName(arbiter, ensNames?.at(2 + index), false)}
                 </Typography>

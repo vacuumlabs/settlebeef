@@ -31,7 +31,7 @@ export const useEnsNames = (addresses: (Address | undefined)[]) => {
       const ensNameQueries = addresses.map((address) =>
         address == null
           ? Promise.resolve(null)
-          : getEnsName(ensConfig, { address }),
+          : getEnsName(ensConfig, { address })
       );
 
       const ensNames = await Promise.all(ensNameQueries);
@@ -88,7 +88,7 @@ export const useGetBeefs = () => {
             abi: beefAbi,
             address,
             functionName: "getInfo",
-          }) as const,
+          }) as const
       ) ?? [],
     query: { enabled: !!beefAddresses },
     allowFailure: false,
@@ -106,7 +106,7 @@ export const useGetBeefs = () => {
 
 export const useGetArbiterStatuses = (
   beefId: Address,
-  arbiterAddresses: Address[],
+  arbiterAddresses: Address[]
 ) => {
   const { data } = useReadContracts({
     contracts: [
@@ -123,6 +123,12 @@ export const useGetArbiterStatuses = (
           functionName: "hasSettled",
           args: [arbiterAddress],
         } as const,
+        {
+          abi: slaughterhouseAbi,
+          address: SLAUGHTERHOUSE_ADDRESS,
+          functionName: "streetCredit",
+          args: [arbiterAddress],
+        } as const,
       ]),
     ],
     allowFailure: false,
@@ -132,18 +138,19 @@ export const useGetArbiterStatuses = (
     ? data
         .reduce(
           (acc, curr, idx) => {
-            if (idx % 2 === 0) {
-              acc.push([curr] as unknown as [boolean, bigint]);
+            if (idx % 3 === 0) {
+              acc.push([curr] as unknown as [boolean, bigint, bigint]);
             } else {
               acc[acc.length - 1]?.push(curr);
             }
             return acc;
           },
-          [] as Array<[boolean, bigint]>,
+          [] as Array<[boolean, bigint, bigint]>
         )
-        .map(([hasAttended, hasSettled]) => ({
+        .map(([hasAttended, hasSettled, streetCredit]) => ({
           hasAttended,
           hasSettled,
+          streetCredit,
         }))
     : undefined;
 };

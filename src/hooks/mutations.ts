@@ -174,8 +174,6 @@ export const useAddBeef = () => {
         )[1]!
       : BigInt(0);
 
-    console.log(amountOut);
-
     return sendTransaction({
       to: SLAUGHTERHOUSE_ADDRESS,
       value: wager,
