@@ -2,24 +2,30 @@
 pragma solidity ^0.8.13;
 
 contract StreetCredit {
-    mapping(address => int256) public balance;
-    mapping(address => boolean) public canUpdate;
+    enum Vote {
+        Correct,
+        Incorrect,
+        Abstain
+    }
+
+    mapping(address => int256) public streetCredit;
+    mapping(address => bool) public canUpdateStreetCredit;
 
     error StreetCreditTransferForbidden();
 
-    modifier onlyAuthorised() { 
-        if (!canUpdate[msg.sender]) {
+    modifier onlyAuthorised() {
+        if (!canUpdateStreetCredit[msg.sender]) {
             revert StreetCreditTransferForbidden();
         }
         _;
     }
 
-    function update(boolean increase, address[] memory to) public onlyAuthorised {
+    function updateStreetCredit(Vote[] memory votes, address[] memory to) public onlyAuthorised {
         for (uint256 i; i < to.length;) {
-            if (increase) {
-                balance[to[i]] += 1;
-            } else {
-                balance[to[i]] -= 10;
+            if (votes[i] == Vote.Correct) {
+                streetCredit[to[i]] += 1;
+            } else if (votes[i] == Vote.Incorrect) {
+                streetCredit[to[i]] -= 10;
             }
             unchecked {
                 ++i;

@@ -80,6 +80,25 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
+    name: "canUpdateStreetCredit",
+    inputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "getBeefs",
     inputs: [],
     outputs: [
@@ -157,10 +176,29 @@ export const slaughterhouseAbi = [
       {
         name: "",
         type: "address",
-        internalType: "address",
+        internalType: "address payable",
       },
     ],
     stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "streetCredit",
+    inputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "int256",
+        internalType: "int256",
+      },
+    ],
+    stateMutability: "view",
   },
   {
     type: "function",
@@ -174,6 +212,24 @@ export const slaughterhouseAbi = [
       },
     ],
     stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "updateStreetCredit",
+    inputs: [
+      {
+        name: "votes",
+        type: "uint8[]",
+        internalType: "enum StreetCredit.Vote[]",
+      },
+      {
+        name: "to",
+        type: "address[]",
+        internalType: "address[]",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "event",
@@ -203,6 +259,11 @@ export const slaughterhouseAbi = [
   {
     type: "error",
     name: "ERC1167FailedCreateClone",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "StreetCreditTransferForbidden",
     inputs: [],
   },
 ] as const;

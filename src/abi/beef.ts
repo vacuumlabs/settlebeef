@@ -344,6 +344,11 @@ export const beefAbi = [
         type: "address",
         internalType: "address",
       },
+      {
+        name: "_slaughterhouse",
+        type: "address",
+        internalType: "address",
+      },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -468,6 +473,19 @@ export const beefAbi = [
         name: "",
         type: "uint256",
         internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "slaughterhouse",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract Slaughterhouse",
       },
     ],
     stateMutability: "view",

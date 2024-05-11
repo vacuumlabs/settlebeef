@@ -28,8 +28,8 @@ contract BeefTest is Test {
             staking: false
         });
         Beef beefImpl = new Beef();
-        beef = Beef(Clones.clone(address(beefImpl)));
-        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0));
+        beef = Beef(payable(Clones.clone(address(beefImpl))));
+        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0), address(0));
     }
 
     function test_arbiterAttend_reverts_ifAlreadyAttended() public {
