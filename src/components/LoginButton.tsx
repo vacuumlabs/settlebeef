@@ -11,7 +11,7 @@ import { QueryGuard } from "@/hooks/QueryGuard";
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
   const { connectedAddress, setClient } = useContext(SmartAccountClientContext);
-  const ensNameQuery = useEnsName("0x1f916bBF39aB189A9E3d9E1823a7b1A8e9e5f204");
+  const ensNameQuery = useEnsName(connectedAddress);
 
   const { login } = useLogin();
 
