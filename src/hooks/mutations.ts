@@ -123,7 +123,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
 
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext
+    SmartAccountClientContext,
   );
   const queryClient = useQueryClient();
 
@@ -134,13 +134,13 @@ export const useAddBeef = () => {
     wager,
     settleStart,
     joinDeadline,
-    foe,
+    challenger,
     staking,
   }: NewBeefFormValues) => {
     if (!connectedAddress) {
       throw new Error("Wallet not connected");
     }
-    if (!foe || !isAddress(foe) || !wager) {
+    if (!challenger || !isAddress(challenger) || !wager) {
       throw new Error("Invalid request");
     }
 
@@ -158,7 +158,7 @@ export const useAddBeef = () => {
               address: value,
               type: "email" as const,
             },
-          ])
+          ]),
     );
 
     const arbitersAddresses = await Promise.all(addressPromises);
@@ -186,7 +186,7 @@ export const useAddBeef = () => {
           {
             owner: connectedAddress,
             wager,
-            foe,
+            challenger,
             settleStart: parseIsoDateToTimestamp(settleStart),
             joinDeadline: parseIsoDateToTimestamp(joinDeadline),
             title,

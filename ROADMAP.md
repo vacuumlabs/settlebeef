@@ -9,4 +9,4 @@
 # Q4 2024
 
 - Linking Twitter account to address / social credit score
-- Support for changing arbiters before the foe joins
+- Support for changing arbiters before the challenger joins

@@ -123,7 +123,7 @@ const ArbiterButton = ({
   }
 };
 
-const FoeButton = ({
+const ChallengerButton = ({
   id,
   value,
   hasJoined,
@@ -167,7 +167,7 @@ type BeefControlsProps = {
   id: Address;
   beef: Beef;
   isUserArbiter: boolean;
-  isUserFoe: boolean;
+  isUserChallenger: boolean;
   isUserOwner: boolean;
 };
 
@@ -175,7 +175,7 @@ const BeefControls = ({
   id,
   beef,
   isUserArbiter,
-  isUserFoe,
+  isUserChallenger,
   isUserOwner,
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
@@ -192,8 +192,8 @@ const BeefControls = ({
         {isUserArbiter && (
           <ArbiterButton {...{ id, connectedAddress, settleStart }} />
         )}
-        {isUserFoe && (
-          <FoeButton
+        {isUserChallenger && (
+          <ChallengerButton
             {...{ id, hasJoined: isCooking, value: wager, attendCount }}
           />
         )}

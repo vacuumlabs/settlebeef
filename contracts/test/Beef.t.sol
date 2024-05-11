@@ -19,7 +19,7 @@ contract BeefTest is Test {
         Beef.ConstructorParams memory params = Beef.ConstructorParams({
             owner: address(this),
             wager: 1000,
-            foe: address(0),
+            challenger: address(0),
             settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",

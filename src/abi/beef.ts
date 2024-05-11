@@ -101,6 +101,19 @@ export const beefAbi = [
   },
   {
     type: "function",
+    name: "challenger",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "cooking",
     inputs: [],
     outputs: [
@@ -121,19 +134,6 @@ export const beefAbi = [
         name: "",
         type: "string",
         internalType: "string",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "foe",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
       },
     ],
     stateMutability: "view",
@@ -164,7 +164,7 @@ export const beefAbi = [
                 internalType: "uint256",
               },
               {
-                name: "foe",
+                name: "challenger",
                 type: "address",
                 internalType: "address",
               },
@@ -288,7 +288,7 @@ export const beefAbi = [
             internalType: "uint256",
           },
           {
-            name: "foe",
+            name: "challenger",
             type: "address",
             internalType: "address",
           },
@@ -611,7 +611,7 @@ export const beefAbi = [
         internalType: "address",
       },
       {
-        name: "foe",
+        name: "challenger",
         type: "address",
         indexed: true,
         internalType: "address",
@@ -835,10 +835,10 @@ export const beefAbi = [
   },
   {
     type: "error",
-    name: "BeefNotFoe",
+    name: "BeefNotChallenger",
     inputs: [
       {
-        name: "declaredFoe",
+        name: "declaredChallenger",
         type: "address",
         internalType: "address",
       },
@@ -867,7 +867,7 @@ export const beefAbi = [
   },
   {
     type: "error",
-    name: "BeefNotOwnerNorFoe",
+    name: "BeefNotOwnerNorChallenger",
     inputs: [
       {
         name: "declaredOwner",
@@ -875,7 +875,7 @@ export const beefAbi = [
         internalType: "address",
       },
       {
-        name: "declaredFoe",
+        name: "declaredChallenger",
         type: "address",
         internalType: "address",
       },

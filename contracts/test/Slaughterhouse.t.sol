@@ -24,7 +24,7 @@ contract SlaughterhouseTest is Test {
         Beef.ConstructorParams memory params = Beef.ConstructorParams({
             owner: address(this),
             wager: 1000,
-            foe: address(0),
+            challenger: address(0),
             settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
@@ -36,7 +36,7 @@ contract SlaughterhouseTest is Test {
         assertTrue(address(beef) != address(0), "Beef not packaged");
         assertEq(beef.owner(), params.owner, "Beef owner mismatch");
         assertEq(beef.wager(), params.wager, "Beef wager mismatch");
-        assertEq(beef.foe(), params.foe, "Beef foe mismatch");
+        assertEq(beef.challenger(), params.challenger, "Beef challenger mismatch");
         assertEq(beef.settleStart(), params.settleStart, "Beef settleStart mismatch");
         assertEq(beef.title(), params.title, "Beef title mismatch");
         assertEq(beef.description(), params.description, "Beef description mismatch");

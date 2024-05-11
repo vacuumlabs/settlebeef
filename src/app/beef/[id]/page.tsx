@@ -37,7 +37,7 @@ type BeefDetailPageProps = {
 let steps = [
   { icon: "🥩", text: "Beef creation" },
   { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-  { icon: "🤺", text: "Foe joining" },
+  { icon: "🤺", text: "Challenger joining" },
   { icon: "👨‍🍳", text: "Beef cooking" },
   { icon: "🧑‍⚖️", text: "Beef settling" },
   { icon: "🍽️", text: "Beef ready to serve" },
@@ -111,7 +111,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
-    beef?.foe,
+    beef?.challenger,
     ...(beef?.arbiters ?? []),
   ]);
 
@@ -131,7 +131,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     title,
     description,
     owner,
-    foe,
+    challenger,
     wager,
     joinDeadline,
     arbiters,
@@ -147,9 +147,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     arbiters
       .map((it) => it.toLowerCase())
       .includes(connectedAddress.toLowerCase());
-  const isUserFoe =
+  const isUserChallenger =
     connectedAddress != null &&
-    connectedAddress.toLowerCase() === foe.toLowerCase();
+    connectedAddress.toLowerCase() === challenger.toLowerCase();
   const isUserOwner =
     connectedAddress != null &&
     connectedAddress.toLowerCase() === owner.toLowerCase();
@@ -213,7 +213,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
             {getAddressOrEnsName(owner, ensNames?.at(0))} 🥊 vs 🥊{" "}
-            {getAddressOrEnsName(foe, ensNames?.at(1))}
+            {getAddressOrEnsName(challenger, ensNames?.at(1))}
           </Typography>
 
           <Stepper
@@ -306,7 +306,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               id: id as Address,
               beef,
               isUserArbiter,
-              isUserFoe,
+              isUserChallenger,
               isUserOwner,
             }}
           />

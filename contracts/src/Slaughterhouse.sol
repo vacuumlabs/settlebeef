@@ -19,7 +19,7 @@ contract Slaughterhouse is StreetCredit {
     // @notice The address of Uniswap V2 Router (for swapping WETH/WSTETH)
     address public uniswapV2Router;
 
-    event BeefPackaged(address indexed beef, address indexed owner, address indexed foe);
+    event BeefPackaged(address indexed beef, address indexed owner, address indexed challenger);
 
     constructor(address _weth, address _wsteth, address _uniswapV2Router) {
         beefImplementation = address(new Beef());
@@ -45,7 +45,7 @@ contract Slaughterhouse is StreetCredit {
         Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this));
         beefs.push(beef);
         canUpdateStreetCredit[beef] = true;
-        emit BeefPackaged(beef, params.owner, params.foe);
+        emit BeefPackaged(beef, params.owner, params.challenger);
         return beef;
     }
 }
