@@ -50,10 +50,12 @@ theme.components = {
   MuiButton: {
     defaultProps: {
       disableElevation: true,
+      size: "large",
     },
     styleOverrides: {
       root: {
         elevation: 0,
+        borderRadius: "9999px",
       },
     },
   },
