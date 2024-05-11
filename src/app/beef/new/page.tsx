@@ -71,7 +71,6 @@ const NewBeefPage = () => {
 
   const addBeef = handleSubmit(async (values) => {
     // Validate submitted ens names
-    console.log("values", values);
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
