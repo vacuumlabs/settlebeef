@@ -15,6 +15,7 @@ import { ellipsizeText } from "@/utils/general";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { ThemeProvider } from "@mui/material";
 import theme from "@/utils/theme";
+import { mainnet } from "viem/chains";
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -36,6 +37,14 @@ export const wagmiConfig = createConfig({
   connectors: [injected()],
   transports: {
     [activeChain.id]: http(`https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`),
+  },
+});
+
+export const ensConfig = createConfig({
+  chains: [mainnet],
+  connectors: [injected()],
+  transports: {
+    [mainnet.id]: http(),
   },
 });
 

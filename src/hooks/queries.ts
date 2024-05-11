@@ -7,8 +7,42 @@ import { useContext } from "react";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "./queryKeys";
-import { wagmiConfig } from "@/components/providers/Providers";
-import { getBalance } from "wagmi/actions";
+import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
+import { getBalance, getEnsName } from "wagmi/actions";
+
+export const useEnsName = (address: Address | undefined) => {
+  return useQuery({
+    queryKey: ["ensName", address],
+    queryFn: async () => {
+      if (!address) {
+        return undefined;
+      }
+
+      const ensName = await getEnsName(ensConfig, { address });
+
+      return ensName != null ? ensName : undefined;
+    },
+    enabled: !!address,
+  });
+};
+
+export const useEnsNames = (addresses: (Address | undefined)[]) => {
+  return useQuery({
+    queryKey: ["ensName", ...addresses],
+    queryFn: async () => {
+      const ensNameQueries = addresses.map((address) =>
+        address == null
+          ? Promise.resolve(null)
+          : getEnsName(ensConfig, { address }),
+      );
+
+      const ensNames = await Promise.all(ensNameQueries);
+
+      return ensNames;
+    },
+    enabled: addresses.length > 0,
+  });
+};
 
 export const useBeef = (id: string): Beef | null | undefined => {
   const { data, isError } = useReadContract({

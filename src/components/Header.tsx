@@ -20,15 +20,6 @@ const Header = () => {
               🥩SettleBeef
             </Typography>
           </Link>
-          {/* <Link href="/beef/new" style={{ textDecoration: "none" }}>
-            <Typography
-              variant="h6"
-              component="span"
-              sx={{ flexGrow: 1, color: "white" }}
-            >
-              New beef
-            </Typography>
-          </Link> */}
         </Stack>
         <LoginButton />
       </Toolbar>

@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useContext } from "react";
-import { useBeef, useGetArbiterStatuses } from "../../../hooks/queries";
+import {
+  useBeef,
+  useEnsNames,
+  useGetArbiterStatuses,
+} from "../../../hooks/queries";
 import {
   Box,
   Container,
@@ -19,7 +23,7 @@ import {
 } from "@mui/material";
 import { redirect } from "next/navigation";
 import { Address, formatEther } from "viem";
-import { truncateAddress } from "@/utils";
+import { getAddressOrEnsName } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
@@ -102,14 +106,20 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? []
+    beef?.arbiters ?? [],
   );
+
+  const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
+    beef?.owner,
+    beef?.foe,
+    ...(beef?.arbiters ?? []),
+  ]);
 
   if (beef === undefined) {
     redirect("/not-found");
   }
 
-  if (beef === null) {
+  if (beef === null || ensNamesLoading) {
     return (
       <Container>
         <Skeleton width={800} height={600} />
@@ -131,7 +141,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     isCooking,
     settleStart,
   } = beef;
-  console.log("beef", beef);
+
   const isUserArbiter =
     connectedAddress != null &&
     arbiters
@@ -168,7 +178,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // TODO: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
@@ -202,7 +212,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           </Stack>
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
-            {truncateAddress(owner)} 🥊 vs 🥊 {truncateAddress(foe)}
+            {getAddressOrEnsName(owner, ensNames?.at(0))} 🥊 vs 🥊{" "}
+            {getAddressOrEnsName(foe, ensNames?.at(1))}
           </Typography>
 
           <Stepper
@@ -264,8 +275,15 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
             {arbiters.map((arbiter, index) => (
-              <Stack direction={"row"} key={arbiter} gap={1}>
-                <Typography variant="subtitle2">{arbiter}</Typography>
+              <Stack
+                direction={"row"}
+                key={arbiter}
+                gap={1}
+                justifyContent={"space-between"}
+              >
+                <Typography variant="subtitle2">
+                  {getAddressOrEnsName(arbiter, ensNames?.at(2 + index), false)}
+                </Typography>
                 {/* TODO: show attended/settled status */}
                 {arbiterStatuses && (
                   <Typography>

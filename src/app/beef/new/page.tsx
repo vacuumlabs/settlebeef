@@ -22,6 +22,9 @@ import { usePrivy } from "@privy-io/react-auth";
 import NotLoggedIn from "@/components/NotLoggedIn";
 import { enqueueSnackbar } from "notistack";
 import { useRouter } from "next/navigation";
+import { getEnsAddress } from "wagmi/actions";
+import { ensConfig } from "@/components/providers/Providers";
+import { normalize } from "viem/ens";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -62,7 +65,45 @@ const NewBeefPage = () => {
 
   const { watch, control, handleSubmit, setError } = form;
 
-  const addBeef = handleSubmit((values) => {
+  const addBeef = handleSubmit(async (values) => {
+    // Validate submitted ens names
+    console.log("values", values);
+    const submittedEnsNames = values.arbiters.map((arbiter) =>
+      arbiter.type === ArbiterAccount.ENS
+        ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
+        : Promise.resolve(null),
+    );
+
+    const validatedEnsNames = await Promise.all(submittedEnsNames);
+
+    validatedEnsNames.forEach((ensName, index) => {
+      if (
+        ensName === null &&
+        values.arbiters[index]!.type === ArbiterAccount.ENS
+      ) {
+        setError(`arbiters.${index}.value`, { message: "ENS name not found" });
+      }
+    });
+
+    // If any ens name is invalid, return
+    if (
+      validatedEnsNames.some(
+        (ensName, index) =>
+          ensName === null &&
+          values.arbiters[index]!.type === ArbiterAccount.ENS,
+      )
+    ) {
+      return;
+    }
+
+    values.arbiters = values.arbiters.map((arbiter, index) => {
+      const ensName = validatedEnsNames[index];
+      if (arbiter.type === ArbiterAccount.ENS && ensName != null) {
+        return { type: ArbiterAccount.ADDRESS, value: ensName };
+      }
+      return arbiter;
+    });
+
     mutate(values, {
       onSuccess: () => {
         enqueueSnackbar("Beef added", { variant: "success" });
@@ -75,7 +116,7 @@ const NewBeefPage = () => {
     <Container component="main" maxWidth="md">
       <Paper sx={{ p: 4, mb: 10 }}>
         <Typography variant="h3" component="h1">
-          New Beef
+          Start Beef
         </Typography>
         <Stack sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Controller
@@ -195,6 +236,7 @@ const NewBeefPage = () => {
                       <MenuItem value={ArbiterAccount.ADDRESS}>
                         Wallet address
                       </MenuItem>
+                      <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
                     </Select>
                   )}
                 />
@@ -207,7 +249,10 @@ const NewBeefPage = () => {
                       formValues.arbiters[index]?.type ===
                       ArbiterAccount.ADDRESS
                         ? isAddress(value) || "Address not valid"
-                        : isValidEmail(value) || "Email not valid",
+                        : formValues.arbiters[index]?.type ===
+                            ArbiterAccount.EMAIL
+                          ? isValidEmail(value) || "Email not valid"
+                          : true,
                   }}
                   render={({ field, fieldState: { error } }) => (
                     <TextField
@@ -218,7 +263,10 @@ const NewBeefPage = () => {
                       label={
                         watch(`arbiters.${index}.type`) === ArbiterAccount.EMAIL
                           ? "Email address"
-                          : "Wallet address"
+                          : watch(`arbiters.${index}.type`) ===
+                              ArbiterAccount.ENS
+                            ? "ENS Name"
+                            : "Wallet address"
                       }
                     />
                   )}
