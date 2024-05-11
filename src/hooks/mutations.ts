@@ -85,7 +85,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
 
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext
+    SmartAccountClientContext,
   );
   const queryClient = useQueryClient();
 
@@ -119,7 +119,7 @@ export const useAddBeef = () => {
               address: value,
               type: "email" as const,
             },
-          ])
+          ]),
     );
 
     const arbitersAddresses = await Promise.all(addressPromises);

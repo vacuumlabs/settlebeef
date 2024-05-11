@@ -16,13 +16,18 @@ export const sendBeefRequestEmail = async (to: string) => {
   });
 
   await transporter.sendMail({
-    from: "Settlebeef app",
+    from: "SettleBeef",
     to,
-    subject: "Someone has a beef with you!",
+    subject: "Someone has beef with you! 🔥🥩",
     html: `
   <div>
-    <h2>Join Decobie to resolve the beef</h2>
-    <a href="${process.env.NEXT_PUBLIC_SITE_URL}">Open Decobie app</a>
+    <h2>Join SettleBeef to settle your beef on-chain, no wallet required! ⛓️🤠</h2>
+    <p>
+      SettleBeef is an on-chain Twitter/X/offline beef settlement platform 🌾🧑‍🌾 <br/>
+      No wallet required, just sign in with your email and settle your beef on-chain with state-of-the-art Account Abstraction and Smart Contract Wallets! 📧🔗 <br />
+      What are you waiting for, cowboy/cowgirl? 🤠🐄
+    </p>
+    <a href="${process.env.NEXT_PUBLIC_SITE_URL}">👏Settle👏Your👏Beef👏 <br />🐄🐄🐄🔥🔥🔥</a>
   </div>
   `,
   });
