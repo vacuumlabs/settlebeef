@@ -108,7 +108,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const beef = useBeef(id);
   const arbiterStatuses = useGetArbiterStatuses(
     (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? [],
+    beef?.arbiters ?? []
   );
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
@@ -167,7 +167,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       deadline = new Date(Number(joinDeadline) * 1000);
       step = 1;
     } else {
-      steps = steps.slice(0, 2);
+      steps = steps.slice(0, 1);
+      steps.push({ icon: "🤦", text: "Arbiters didn't attend" });
       steps.push({ icon: "🤢", text: "Beef raw forever" });
       step = 2;
       isRotten = true;
@@ -185,7 +186,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         step = 4;
         // FIXME: this assumes constant settlingDuration of 30 days!
         deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
+          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000
         );
         if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
           step = 5;
@@ -196,7 +197,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
         } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
           deadline = undefined;
           // FIXME: this assumes constant settlingDuration of 30 days!
-          steps = steps.slice(0, 5);
+          steps = steps.slice(0, 4);
+          steps.push({ icon: "🤦", text: "Beef wasn't settled" });
           steps.push({ icon: "🤢", text: "Beef rotten" });
           isRotten = true;
         }
@@ -314,7 +316,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                   }
                   sx={{
                     backgroundColor: calculateColorFromStreetCredit(
-                      arbiterStatuses?.[index]!.streetCredit,
+                      arbiterStatuses?.[index]!.streetCredit
                     ),
                   }}
                 />
