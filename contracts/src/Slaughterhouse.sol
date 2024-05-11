@@ -39,6 +39,7 @@ contract Slaughterhouse {
         address payable beef = payable(Clones.clone(beefImplementation));
         Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router);
         beefs.push(beef);
+        canUpdateStreetCredit[beef] = true;
         emit BeefPackaged(beef, params.owner, params.foe);
         return beef;
     }
