@@ -11,6 +11,7 @@ import { encodeFunctionData, isAddress } from "viem";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { queryKeys } from "./queryKeys";
+import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
 
 export const useArbiterAttend = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
@@ -84,7 +85,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
 
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext,
+    SmartAccountClientContext
   );
   const queryClient = useQueryClient();
 
@@ -104,6 +105,12 @@ export const useAddBeef = () => {
       throw new Error("Invalid request");
     }
 
+    arbiters.forEach((arbiter) => {
+      if (arbiter.type === ArbiterAccount.EMAIL) {
+        sendBeefRequestEmail(arbiter.value);
+      }
+    });
+
     const addressPromises = arbiters.map(({ type, value }) =>
       type === ArbiterAccount.ADDRESS
         ? (value as Address)
@@ -112,7 +119,7 @@ export const useAddBeef = () => {
               address: value,
               type: "email" as const,
             },
-          ]),
+          ])
     );
 
     const arbitersAddresses = await Promise.all(addressPromises);
