@@ -13,6 +13,7 @@ import {
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
@@ -80,7 +81,7 @@ const NewBeefPage = () => {
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
-        : Promise.resolve(null),
+        : Promise.resolve(null)
     );
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
@@ -99,7 +100,7 @@ const NewBeefPage = () => {
       validatedEnsNames.some(
         (ensName, index) =>
           ensName === null &&
-          values.arbiters[index]!.type === ArbiterAccount.ENS,
+          values.arbiters[index]!.type === ArbiterAccount.ENS
       )
     ) {
       return;
@@ -295,9 +296,23 @@ const NewBeefPage = () => {
                 label={
                   <Stack>
                     <Typography variant="h6">Let the beef drip!</Typography>
-                    <Typography variant="subtitle2" color="grey">
-                      {`Beef amount will be steaked (🤣)`}
-                    </Typography>
+                    <Stack direction="row" gap={1} alignItems="center">
+                      <Typography variant="subtitle2" color="grey">
+                        {`Beef amount will be steaked (🤣)`}
+                      </Typography>
+                      <Tooltip
+                        title={
+                          <Typography>
+                            Your and your challenger&apos;s ETH will be swapped
+                            to Liquid Staking Derivative token wstETH for the
+                            duration of the beef, earning ETH staking yield paid
+                            out to the winner when the beef is served&nbsp;📈
+                          </Typography>
+                        }
+                      >
+                        <Typography>❓</Typography>
+                      </Tooltip>
+                    </Stack>
                   </Stack>
                 }
               />

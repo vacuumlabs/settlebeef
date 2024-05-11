@@ -51,6 +51,14 @@ theme.components = {
       },
     },
   },
+  MuiTooltip: {
+    styleOverrides: {
+      tooltip: {
+        borderRadius: 24,
+        padding: 16,
+      },
+    },
+  },
   MuiButton: {
     defaultProps: {
       disableElevation: true,
