@@ -17,6 +17,10 @@ const spaceMono = Space_Mono({
 const theme = createTheme({
   typography: {
     fontFamily: roboto.style.fontFamily,
+    h3: {
+      fontWeight: 700,
+      textTransform: "uppercase",
+    },
   },
   palette: {
     primary: {
@@ -54,6 +58,7 @@ theme.components = {
     },
     styleOverrides: {
       root: {
+        fontWeight: 600,
         elevation: 0,
         borderRadius: "9999px",
       },
