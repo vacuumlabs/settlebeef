@@ -33,10 +33,10 @@ const WithdrawButton = ({ id, beef }: ButtonProps & { beef: Beef }) => {
 
   const canWithdrawRaw =
     !isCooking &&
-    parseIsoDateToTimestamp(DateTime.now().toISODate()) > joinDeadline;
+    parseIsoDateToTimestamp(DateTime.now().toISO()) > joinDeadline;
   const canWithdrawRotten =
     isCooking &&
-    parseIsoDateToTimestamp(DateTime.now().toISODate()) >
+    parseIsoDateToTimestamp(DateTime.now().toISO()) >
       settleStart + BigInt(30 * 24 * 60 * 60);
   const canServe =
     resultYes > Math.floor(arbiters.length / 2) ||
@@ -83,7 +83,7 @@ const ArbiterButton = ({
 }: ButtonProps & { connectedAddress: Address; settleStart: UnixTimestamp }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : [],
+    connectedAddress ? [connectedAddress] : []
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);
@@ -94,23 +94,23 @@ const ArbiterButton = ({
 
   const { hasSettled, hasAttended } = arbiterStatus[0];
 
-  if (!hasAttended && !hasSettled) {
+  if (!hasAttended && hasSettled === 0n) {
     return <Button onClick={() => attendMutation.mutate()}>Attend ✋</Button>;
   } else if (
     hasAttended &&
-    !hasSettled &&
-    parseIsoDateToTimestamp(DateTime.now().toISODate()) > settleStart
+    hasSettled === 0n &&
+    parseIsoDateToTimestamp(DateTime.now().toISO()) > settleStart
   ) {
     return (
       <Stack direction="row" spacing={2}>
         <Button variant="contained" onClick={() => settleMutation.mutate(true)}>
-          Settle In Favour 🧑‍⚖️{" "}
+          Settle In Favour 👍
         </Button>
         <Button
           variant="contained"
           onClick={() => settleMutation.mutate(false)}
         >
-          Settle Against 🧑‍⚖️{" "}
+          Settle Against 👎
         </Button>
       </Stack>
     );
@@ -184,7 +184,9 @@ const BeefControls = ({
   const canWithdraw =
     !isCooking &&
     isUserOwner &&
-    joinDeadline < parseIsoDateToTimestamp(DateTime.now().toISODate());
+    joinDeadline < parseIsoDateToTimestamp(DateTime.now().toISO());
+
+  const showWithdrawButton = isUserOwner || isUserChallenger;
 
   return (
     connectedAddress && (
@@ -198,7 +200,7 @@ const BeefControls = ({
           />
         )}
         {isUserOwner && <OwnerButton {...{ id, canWithdraw }} />}
-        <WithdrawButton {...{ id, beef }} />
+        {showWithdrawButton && <WithdrawButton {...{ id, beef }} />}
       </Stack>
     )
   );

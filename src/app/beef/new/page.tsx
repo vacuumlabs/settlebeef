@@ -184,7 +184,7 @@ const NewBeefPage = () => {
             rules={{
               required: "Required",
               min: {
-                value: DateTime.now().toISODate(),
+                value: DateTime.now().toISO(),
                 message: "Date must be in the future",
               },
             }}
