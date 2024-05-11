@@ -211,7 +211,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             }}
           >
             <Typography variant="h2">🔥 {title}</Typography>
-            <Typography variant="h4">💸 {formatEther(wager)} ETH</Typography>
+            <Typography variant="h4">
+              💸&nbsp;{formatEther(wager)}&nbsp;Ξ
+            </Typography>
           </Stack>
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
