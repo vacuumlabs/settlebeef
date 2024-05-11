@@ -13,11 +13,11 @@ const Header = () => {
             style={{ textDecoration: "none", marginRight: "48px" }}
           >
             <Typography
-              variant="h6"
+              variant="h3"
               component="span"
               sx={{ flexGrow: 1, color: "white" }}
             >
-              Decobie
+              🥩SettleBeef
             </Typography>
           </Link>
           {/* <Link href="/beef/new" style={{ textDecoration: "none" }}>
