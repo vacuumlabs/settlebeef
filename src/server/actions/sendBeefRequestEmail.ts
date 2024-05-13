@@ -15,6 +15,7 @@ export const sendBeefRequestEmail = async (to: string) => {
     },
   });
 
+  // FIXME: The <a> tag doesn't work
   await transporter.sendMail({
     from: "SettleBeef",
     to,

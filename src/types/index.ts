@@ -7,7 +7,6 @@ export type UnixTimestamp = bigint;
 // It is also a type of meat that comes from cows.
 export type Beef = {
   address: string;
-
   owner: Address;
   wager: bigint;
   challenger: Address;
