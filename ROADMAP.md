@@ -3,7 +3,6 @@
 - Reward arbiters with a fraction of settled bets
 - Support for beef with incomplete votes to be decided if quorum is reached
 - Variable arbiter count
-- Support for beef with incomplete votes to be decided if quorum is reached
 
 # Q4 2024
 

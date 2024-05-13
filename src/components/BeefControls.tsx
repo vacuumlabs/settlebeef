@@ -99,7 +99,7 @@ const ArbiterButton = ({
 }) => {
   const arbiterStatus = useGetArbiterStatuses(
     id,
-    connectedAddress ? [connectedAddress] : []
+    connectedAddress ? [connectedAddress] : [],
   );
   const settleMutation = useSettleBeef(id);
   const attendMutation = useArbiterAttend(id);

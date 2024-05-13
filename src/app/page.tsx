@@ -61,7 +61,8 @@ export default function Home() {
       ? beefs
           .filter(
             (beef) =>
-              beef.params.owner.toLowerCase() === connectedAddress.toLowerCase()
+              beef.params.owner.toLowerCase() ===
+              connectedAddress.toLowerCase(),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -75,7 +76,7 @@ export default function Home() {
           .filter(
             (beef) =>
               beef.params.challenger.toLowerCase() ===
-              connectedAddress.toLowerCase()
+              connectedAddress.toLowerCase(),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -89,7 +90,7 @@ export default function Home() {
           .filter((beef) =>
             beef.params.arbiters
               .map((it) => it.toLowerCase())
-              .includes(connectedAddress.toLowerCase())
+              .includes(connectedAddress.toLowerCase()),
           )
           .map((beef) => ({
             title: beef.params.title,
@@ -100,7 +101,7 @@ export default function Home() {
 
   const handleChangeTabIndex = (
     event: React.SyntheticEvent,
-    newValue: number
+    newValue: number,
   ) => {
     setTabIndex(newValue);
   };
