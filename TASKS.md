@@ -11,6 +11,8 @@ Refactor & cleanup `BeefControls`, mainly to always display only 1 button
 Refactor the step counter in `beef/[id]/page` to be more readable
 Add more robust linting rules
 Support Linking Twitter to Address
+ENS Support in challenger name
+"Challenger didn't join" shows even if join deadline hasn't expired
 
 # Smart Contracts
 
