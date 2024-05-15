@@ -9,3 +9,4 @@
 - Link Twitter / X account to address & street credit
 - Support for changing arbiters before the foe joins
 - Street Credit staking rewarding honest arbiters with a percentage of platform profits
+- "Chaining Beef" -- Beef exposes its result, then that result can be used as a vote in other beef, or as an on-chain oracle... possibilities are endless!
