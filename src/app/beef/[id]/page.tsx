@@ -23,7 +23,7 @@ import {
   styled,
 } from "@mui/material";
 import { redirect } from "next/navigation";
-import { Address, formatEther } from "viem";
+import { Address, formatEther, isAddressEqual, zeroAddress } from "viem";
 import { getAddressOrEnsName } from "@/utils";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
@@ -95,12 +95,12 @@ function StepIcon(props: StepIconProps) {
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
   const { id } = params;
-  const beef = useBeef(id);
+  const beef = useBeef(id as Address);
+
   const arbiterStatuses = useGetArbiterStatuses(
-    (beef?.address ?? "0x0") as Address,
+    beef?.address ?? zeroAddress,
     beef?.arbiters ?? [],
   );
-
   let steps = [
     { icon: "🥩", text: "Beef creation" },
     { icon: "🧑‍⚖️", text: "Arbiters attendance" },
@@ -147,17 +147,14 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     refetch,
   } = beef;
 
-  const isUserArbiter =
-    connectedAddress != null &&
-    arbiters
-      .map((it) => it.toLowerCase())
-      .includes(connectedAddress.toLowerCase());
-  const isUserChallenger =
-    connectedAddress != null &&
-    connectedAddress.toLowerCase() === challenger.toLowerCase();
-  const isUserOwner =
-    connectedAddress != null &&
-    connectedAddress.toLowerCase() === owner.toLowerCase();
+  const isUserArbiter = arbiters.some((arbiter) =>
+    isAddressEqual(arbiter, connectedAddress ?? zeroAddress),
+  );
+  const isUserChallenger = isAddressEqual(
+    challenger,
+    connectedAddress ?? zeroAddress,
+  );
+  const isUserOwner = isAddressEqual(owner, connectedAddress ?? zeroAddress);
 
   let step = 0;
   let deadline: Date | undefined = new Date(Number(joinDeadline) * 1000);

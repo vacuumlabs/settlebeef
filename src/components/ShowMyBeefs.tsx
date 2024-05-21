@@ -6,10 +6,10 @@ import BeefList from "@/components/BeefList";
 
 type ShowMyBeefsProps = {
   address: Address;
-  beefs: (Pick<Beef, "address" | "title" | "wager" | "owner" | "challenger"> & {
-    // TODO: Assess possibility of making arbiters readonly directly in `Beef` type
-    arbiters: readonly Address[];
-  })[];
+  beefs: Pick<
+    Beef,
+    "address" | "title" | "wager" | "owner" | "challenger" | "arbiters"
+  >[];
   isLoadingBeefs: boolean;
 };
 
