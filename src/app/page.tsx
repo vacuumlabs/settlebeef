@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 import { useContext, useState } from "react";
+import { ShowMyBeefs } from "@/components/ShowMyBeefs";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -55,54 +56,12 @@ export default function Home() {
       title: beef.params.title,
       address: beef.address,
       wager: beef.params.wager,
+      owner: beef.params.owner,
+      challenger: beef.params.challenger,
+      arbiters: beef.params.arbiters,
     })) ?? [];
-  const myBeefsOwner =
-    connectedAddress && beefs
-      ? beefs
-          .filter(
-            (beef) =>
-              beef.params.owner.toLowerCase() ===
-              connectedAddress.toLowerCase(),
-          )
-          .map((beef) => ({
-            title: beef.params.title,
-            address: beef.address,
-            wager: beef.params.wager,
-          }))
-      : [];
-  const myBeefsChallenger =
-    connectedAddress && beefs
-      ? beefs
-          .filter(
-            (beef) =>
-              beef.params.challenger.toLowerCase() ===
-              connectedAddress.toLowerCase(),
-          )
-          .map((beef) => ({
-            title: beef.params.title,
-            address: beef.address,
-            wager: beef.params.wager,
-          }))
-      : [];
-  const myBeefsArbiter =
-    connectedAddress && beefs
-      ? beefs
-          .filter((beef) =>
-            beef.params.arbiters
-              .map((it) => it.toLowerCase())
-              .includes(connectedAddress.toLowerCase()),
-          )
-          .map((beef) => ({
-            title: beef.params.title,
-            address: beef.address,
-            wager: beef.params.wager,
-          }))
-      : [];
 
-  const handleChangeTabIndex = (
-    event: React.SyntheticEvent,
-    newValue: number,
-  ) => {
+  const handleChangeTabIndex = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
@@ -155,54 +114,11 @@ export default function Home() {
       <CustomTabPanel value={tabIndex} index={1}>
         {/* My beefs */}
         {connectedAddress && (
-          <Paper elevation={2}>
-            <Stack p={4} gap={1}>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography variant="h3">My Beef List 🥩📝</Typography>
-                <Link href="/beef/new" style={{ textDecoration: "none" }}>
-                  <Button variant="contained" color="secondary">
-                    Start beef
-                  </Button>
-                </Link>
-              </Stack>
-              <Typography variant="h5" sx={{ mt: 3 }}>
-                As owner 🤴
-              </Typography>
-              <Stack spacing={2}>
-                {isLoadingBeefs ? (
-                  "Loading beef list"
-                ) : myBeefsOwner.length === 0 ? (
-                  "No beef!"
-                ) : (
-                  <BeefList beefs={myBeefsOwner} />
-                )}
-              </Stack>
-              <Typography variant="h5" sx={{ mt: 4 }}>
-                As challenger 🤺
-              </Typography>
-              <Stack spacing={2}>
-                {isLoadingBeefs ? (
-                  "Loading beef list"
-                ) : myBeefsChallenger.length === 0 ? (
-                  "No beef!"
-                ) : (
-                  <BeefList beefs={myBeefsChallenger} />
-                )}
-              </Stack>
-              <Typography variant="h5" sx={{ mt: 4 }}>
-                As arbiter 🧑‍⚖️
-              </Typography>
-              <Stack spacing={2}>
-                {isLoadingBeefs ? (
-                  "Loading beef list"
-                ) : myBeefsArbiter.length === 0 ? (
-                  "No beef!"
-                ) : (
-                  <BeefList beefs={myBeefsArbiter} />
-                )}
-              </Stack>
-            </Stack>
-          </Paper>
+          <ShowMyBeefs
+            beefs={beefsListData}
+            isLoadingBeefs={isLoadingBeefs}
+            address={connectedAddress}
+          />
         )}
       </CustomTabPanel>
     </Container>
