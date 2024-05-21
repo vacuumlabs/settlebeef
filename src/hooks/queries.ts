@@ -1,5 +1,5 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import type { Address, Beef } from "../types";
+import type { Beef } from "../types";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "./queryKeys";
 import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
 import { getBalance, getEnsName } from "wagmi/actions";
+import { Address } from "viem";
 
 export const useEnsName = (address: Address | undefined) => {
   return useQuery({
@@ -43,11 +44,11 @@ export const useEnsNames = (addresses: (Address | undefined)[]) => {
 };
 
 export const useBeef = (
-  id: string,
+  id: Address,
 ): (Beef & { refetch: () => Promise<unknown> }) | null | undefined => {
   const { data, isError, refetch } = useReadContract({
     abi: beefAbi,
-    address: id as Address,
+    address: id,
     functionName: "getInfo",
     query: {
       enabled: id.startsWith("0x"),

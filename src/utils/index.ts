@@ -1,4 +1,4 @@
-import type { Address } from "@/types";
+import { Address } from "viem";
 
 const truncateAddress = (address: Address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;

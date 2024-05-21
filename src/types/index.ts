@@ -1,6 +1,5 @@
-type HexString = `0x${string}`;
+import { Address } from "viem";
 
-export type Address = HexString;
 export type UnixTimestamp = bigint;
 
 // Beef is a disagreement that two people have.

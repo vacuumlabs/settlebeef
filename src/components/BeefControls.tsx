@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Button, Stack } from "@mui/material";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import type { Address, Beef, UnixTimestamp } from "@/types";
+import type { Beef, UnixTimestamp } from "@/types";
 import { useGetArbiterStatuses } from "@/hooks/queries";
 import {
   useArbiterAttend,
@@ -13,6 +13,7 @@ import {
 } from "@/hooks/mutations";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { DateTime } from "luxon";
+import { Address } from "viem";
 
 type ButtonProps = {
   id: Address;

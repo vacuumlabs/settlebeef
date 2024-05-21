@@ -1,6 +1,5 @@
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { beefAbi } from "@/abi/beef";
-import type { Address } from "@/types";
 import { NewBeefFormValues } from "@/app/beef/new/page";
 import {
   SLAUGHTERHOUSE_ADDRESS,
@@ -12,7 +11,7 @@ import { ArbiterAccount } from "@/types";
 import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
-import { encodeFunctionData, erc20Abi, isAddress } from "viem";
+import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { queryKeys } from "./queryKeys";
