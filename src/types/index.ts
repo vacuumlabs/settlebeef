@@ -5,14 +5,14 @@ export type UnixTimestamp = bigint;
 // Beef is a disagreement that two people have.
 // It is also a type of meat that comes from cows.
 export type Beef = {
-  address: string;
+  address: Address;
   owner: Address;
   wager: bigint;
   challenger: Address;
   settleStart: UnixTimestamp;
   title: string;
   description: string;
-  arbiters: Address[];
+  arbiters: readonly Address[];
   joinDeadline: UnixTimestamp;
   staking: boolean;
   isCooking: boolean;
