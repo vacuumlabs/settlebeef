@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext } from "react";
+import React from "react";
 import {
   useBeef,
   useEnsNames,
@@ -23,9 +23,8 @@ import {
   styled,
 } from "@mui/material";
 import { redirect } from "next/navigation";
-import { Address, formatEther, isAddressEqual, zeroAddress } from "viem";
+import { Address, formatEther, zeroAddress } from "viem";
 import { getAddressOrEnsName } from "@/utils";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
 import { calculateColorFromStreetCredit } from "@/utils/colors";
@@ -103,14 +102,11 @@ const STEPS = [
 ] as const;
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
-  const { connectedAddress } = useContext(SmartAccountClientContext);
   const { id } = params;
   const beef = useBeef(id as Address);
 
-  const arbiterStatuses = useGetArbiterStatuses(
-    beef?.address ?? zeroAddress,
-    beef?.arbiters ?? [],
-  );
+  const { data: arbiterStatuses, refetch: refetchArbiters } =
+    useGetArbiterStatuses(beef?.address ?? zeroAddress, beef?.arbiters ?? []);
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
@@ -147,15 +143,6 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     beefGone,
     refetch,
   } = beef;
-
-  const isUserArbiter = arbiters.some((arbiter) =>
-    isAddressEqual(arbiter, connectedAddress ?? zeroAddress),
-  );
-  const isUserChallenger = isAddressEqual(
-    challenger,
-    connectedAddress ?? zeroAddress,
-  );
-  const isUserOwner = isAddressEqual(owner, connectedAddress ?? zeroAddress);
 
   const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000);
   const settleStart = new Date(Number(settleStartTimestamp) * 1000);
@@ -339,10 +326,10 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               </Typography>
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
-            {arbiters.map((arbiter, index) => (
+            {arbiterStatuses.map(({ address, status }, index) => (
               <Stack
                 direction={"row"}
-                key={arbiter}
+                key={address}
                 gap={1}
                 justifyContent={"space-between"}
                 alignItems="center"
@@ -350,30 +337,28 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 <Chip
                   label={
                     <Typography color="white" variant="subtitle1">
-                      {arbiterStatuses
-                        ? Number(arbiterStatuses[index]!.streetCredit)
-                        : "-"}
+                      {status?.streetCredit ? Number(status.streetCredit) : "-"}
                     </Typography>
                   }
                   sx={{
                     backgroundColor: calculateColorFromStreetCredit(
-                      arbiterStatuses?.[index]!.streetCredit,
+                      status?.streetCredit,
                     ),
                   }}
                 />
                 <Typography variant="subtitle2">
-                  {getAddressOrEnsName(arbiter, ensNames?.at(2 + index), false)}
+                  {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
                 </Typography>
-                {/* TODO: show attended/settled status */}
-                {arbiterStatuses && (
+
+                {status && (
                   <Typography>
                     {step < 4
-                      ? arbiterStatuses[index]!.hasAttended
+                      ? status.hasAttended
                         ? "✅"
                         : "⌛"
-                      : arbiterStatuses[index]!.hasSettled === 1n
+                      : status.hasSettled === 1n
                         ? "👍🏽"
-                        : arbiterStatuses[index]!.hasSettled === 2n
+                        : status.hasSettled === 2n
                           ? "👎🏽"
                           : "⌛"}
                   </Typography>
@@ -383,12 +368,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           </Stack>
           <BeefControls
             {...{
-              id: id as Address,
               beef,
-              isUserArbiter,
-              isUserChallenger,
-              isUserOwner,
-              refetch,
+              arbiterStatuses,
+              refetch: () => {
+                void refetch();
+                void refetchArbiters?.();
+              },
             }}
           />
         </Stack>
