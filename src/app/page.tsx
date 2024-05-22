@@ -101,7 +101,7 @@ export default function Home() {
                 </Button>
               </Link>
             </Stack>
-            {isLoadingBeefs ? (
+            {isLoadingBeefs || beefs === undefined ? (
               "Loading beef list"
             ) : beefsListData.length === 0 ? (
               "No beef!"
