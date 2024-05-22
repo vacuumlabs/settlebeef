@@ -92,6 +92,16 @@ function StepIcon(props: StepIconProps) {
   );
 }
 
+const STEPS = [
+  { icon: "🥩", text: "Beef creation" },
+  { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+  { icon: "🤺", text: "Challenger joining" },
+  { icon: "👨‍🍳", text: "Beef cooking" },
+  { icon: "🧑‍⚖️", text: "Beef settling" },
+  { icon: "🍽️", text: "Beef ready to serve" },
+  { icon: "😋", text: "Beef served" },
+] as const;
+
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
   const { id } = params;
@@ -101,15 +111,6 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     beef?.address ?? zeroAddress,
     beef?.arbiters ?? [],
   );
-  let steps = [
-    { icon: "🥩", text: "Beef creation" },
-    { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-    { icon: "🤺", text: "Challenger joining" },
-    { icon: "👨‍🍳", text: "Beef cooking" },
-    { icon: "🧑‍⚖️", text: "Beef settling" },
-    { icon: "🍽️", text: "Beef ready to serve" },
-    { icon: "😋", text: "Beef served" },
-  ];
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
@@ -135,13 +136,13 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     owner,
     challenger,
     wager,
-    joinDeadline,
+    joinDeadline: joinDeadlineTimestamp,
     arbiters,
     resultYes,
     resultNo,
     attendCount,
     isCooking,
-    settleStart,
+    settleStart: settleStartTimestamp,
     staking,
     beefGone,
     refetch,
@@ -156,61 +157,98 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   );
   const isUserOwner = isAddressEqual(owner, connectedAddress ?? zeroAddress);
 
-  let step = 0;
-  let deadline: Date | undefined = new Date(Number(joinDeadline) * 1000);
-  let isRotten = false;
-  const now = new Date().getTime();
-  if (attendCount < arbiters.length) {
-    if (now < joinDeadline * 1000n) {
-      step = 1;
-    } else {
-      steps = steps.slice(0, 1);
-      steps.push({ icon: "🤦", text: "Arbiters didn't attend" });
-      steps.push({ icon: "🤢", text: "Beef raw forever" });
-      step = 2;
-      isRotten = true;
-      if (beefGone) {
-        step = 3;
-      }
-    }
-  } else {
-    step = 2;
-    if (isCooking) {
-      if (now < settleStart * 1000n) {
-        deadline = new Date(Number(settleStart) * 1000);
-        step = 3;
+  const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000);
+  const settleStart = new Date(Number(settleStartTimestamp) * 1000);
+
+  // FIXME: this assumes constant settlingDuration of 30 days!
+  const settleDuration = BigInt(60 * 60 * 24 * 30);
+  const settleDeadline = new Date(
+    Number((settleStartTimestamp + settleDuration) * 1000n),
+  );
+
+  const getBeefState = () => {
+    const now = new Date();
+
+    if (attendCount < arbiters.length) {
+      if (now < joinDeadline) {
+        return {
+          step: 1,
+          steps: STEPS,
+          deadline: joinDeadline,
+        };
       } else {
-        step = 4;
-        // FIXME: this assumes constant settlingDuration of 30 days!
-        deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
-        );
-        if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
-          step = 5;
-          deadline = undefined;
-          if (beefGone) {
-            step = 7;
-          }
-        } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
-          deadline = undefined;
-          // FIXME: this assumes constant settlingDuration of 30 days!
-          steps = steps.slice(0, 4);
-          steps.push({ icon: "🤦", text: "Beef wasn't settled" });
-          steps.push({ icon: "🤢", text: "Beef rotten" });
-          isRotten = true;
-        }
+        return {
+          steps: [
+            { icon: "🥩", text: "Beef creation" },
+            { icon: "🤦", text: "Arbiters didn't attend" },
+            { icon: "🤢", text: "Beef raw forever" },
+          ],
+          step: beefGone ? 3 : 2,
+          isRotten: true,
+          deadline: joinDeadline, // TODO: verify
+        };
       }
     } else {
-      steps = steps.slice(0, 2);
-      steps.push({ icon: "🤦", text: "Challenger didn't join" });
-      steps.push({ icon: "🤢", text: "Beef raw forever" });
-      step = 3;
-      isRotten = true;
-      if (beefGone) {
-        step = 4;
+      if (isCooking) {
+        if (now < settleStart) {
+          return {
+            steps: STEPS,
+            step: 3,
+            deadline: settleStart,
+          };
+        } else {
+          const majorityReached =
+            resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2;
+
+          if (majorityReached) {
+            return {
+              steps: STEPS,
+              step: beefGone ? 7 : 5,
+            };
+          } else if (now > settleDeadline) {
+            return {
+              steps: [
+                { icon: "🥩", text: "Beef creation" },
+                { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+                { icon: "🤺", text: "Challenger joining" },
+                { icon: "👨‍🍳", text: "Beef cooking" },
+                { icon: "🤦", text: "Beef wasn't settled" },
+                { icon: "🤢", text: "Beef rotten" },
+              ],
+              step: 4,
+              isRotten: true,
+            };
+          } else {
+            return {
+              steps: STEPS,
+              step: 4,
+              deadline: settleDeadline,
+            };
+          }
+        }
+      } else {
+        return {
+          steps: [
+            { icon: "🥩", text: "Beef creation" },
+            { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+            { icon: "🤦", text: "Challenger didn't join" },
+            { icon: "🤢", text: "Beef raw forever" },
+          ],
+          step: beefGone ? 4 : 3,
+          isRotten: true,
+          deadline: joinDeadline,
+        };
       }
     }
-  }
+  };
+
+  const dateCases: Record<string, Date> = {
+    "Challenger joining": joinDeadline,
+    "Beef cooking": settleStart,
+    "Beef settling": settleDeadline,
+  };
+
+  const { steps, step, isRotten, deadline } = getBeefState();
 
   return (
     <Container sx={{ pt: 4, pb: 6 }}>
@@ -253,18 +291,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             connector={<BeefStepConnector />}
           >
             {steps.map((label, index) => {
-              const stepTimeInSeconds =
-                index === 2
-                  ? Number(joinDeadline)
-                  : index === 3
-                    ? Number(settleStart)
-                    : index === 4
-                      ? Number(settleStart + BigInt(60 * 60 * 24 * 30))
-                      : null;
+              const stepDate = dateCases[label.text]?.toDateString();
 
-              const stepDate = stepTimeInSeconds
-                ? new Date(1000 * stepTimeInSeconds).toDateString()
-                : null;
               return (
                 <Step key={label.text}>
                   <StepLabel
@@ -283,7 +311,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                           <Typography variant="body2">{stepDate}</Typography>
                         </Stack>
                       )}
-                      {index === step && deadline != null && (
+                      {index === step && deadline !== undefined && (
                         <Typography sx={{ fontWeight: 600 }}>
                           <Countdown deadline={deadline} />
                         </Typography>
