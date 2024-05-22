@@ -16,7 +16,11 @@ import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { queryKeys } from "./queryKeys";
 import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
-import { readContract, readContracts } from "wagmi/actions";
+import {
+  readContract,
+  readContracts,
+  waitForTransactionReceipt,
+} from "wagmi/actions";
 import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
@@ -35,6 +39,8 @@ export const useArbiterAttend = (beefId: Address) => {
           args: [],
         }),
       });
+
+      await waitForTransactionReceipt(wagmiConfig, { hash: txHash });
 
       return txHash;
     },
@@ -58,6 +64,8 @@ export const useSettleBeef = (beefId: Address) => {
           args: [verdict],
         }),
       });
+
+      await waitForTransactionReceipt(wagmiConfig, { hash: txHash });
 
       return txHash;
     },
