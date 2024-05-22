@@ -113,21 +113,34 @@ export const useGetBeefs = () => {
   };
 };
 
+/*
+Arbiter can be known by address while his 'status' data is undefined
+Current logic does to require these 2 states to be specifically defined, hence `status` property is optional for convenience
+ */
+export type ArbiterStatus = {
+  address: Address;
+  status?: {
+    hasAttended: boolean;
+    hasSettled: bigint;
+    streetCredit: bigint;
+  };
+};
+
 export const useGetArbiterStatuses = (
-  address: Address,
+  beefAddress: Address,
   arbiters: readonly Address[],
 ) => {
-  const { data } = useReadContracts({
+  const { data, refetch } = useReadContracts({
     contracts: arbiters.flatMap((arbiterAddress) => [
       {
         abi: beefAbi,
-        address,
+        address: beefAddress,
         functionName: "hasAttended",
         args: [arbiterAddress],
       } as const,
       {
         abi: beefAbi,
-        address,
+        address: beefAddress,
         functionName: "hasSettled",
         args: [arbiterAddress],
       } as const,
@@ -148,15 +161,31 @@ export const useGetArbiterStatuses = (
       (_, index) => data.slice(index * 3, index * 3 + 3),
     );
 
-    return chunkedData.map(([hasAttended, hasSettled, streetCredit]) => {
-      return {
-        hasAttended: hasAttended as boolean,
-        hasSettled: hasSettled as bigint,
-        streetCredit: streetCredit as bigint,
-      };
-    });
+    const groupedData: ArbiterStatus[] = chunkedData.map(
+      ([hasAttended, hasSettled, streetCredit], index) => {
+        return {
+          address: arbiters[index]!,
+          status: {
+            hasAttended: hasAttended as boolean,
+            hasSettled: hasSettled as bigint,
+            streetCredit: streetCredit as bigint,
+          },
+        };
+      },
+    );
+
+    return {
+      data: groupedData,
+      refetch,
+    };
   } else {
-    return undefined;
+    return {
+      data: arbiters.map((arbiter) => ({
+        address: arbiter,
+        status: undefined,
+      })),
+      refetch: undefined,
+    };
   }
 };
 

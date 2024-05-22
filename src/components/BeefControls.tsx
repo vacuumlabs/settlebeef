@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Button, Stack } from "@mui/material";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import type { Beef, UnixTimestamp } from "@/types";
-import { useGetArbiterStatuses } from "@/hooks/queries";
+import { ArbiterStatus } from "@/hooks/queries";
 import {
   useArbiterAttend,
   useJoinBeef,
@@ -13,18 +13,15 @@ import {
 } from "@/hooks/mutations";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { DateTime } from "luxon";
-import { Address } from "viem";
+import { Address, isAddressEqual, zeroAddress } from "viem";
 
 type ButtonProps = {
-  id: Address;
+  refetch: () => void;
 };
 
-const WithdrawButton = ({
-  id,
-  beef,
-  refetch,
-}: ButtonProps & { beef: Beef; refetch: () => void }) => {
+const WithdrawButton = ({ beef, refetch }: ButtonProps & { beef: Beef }) => {
   const {
+    address,
     isCooking,
     joinDeadline,
     settleStart,
@@ -44,9 +41,9 @@ const WithdrawButton = ({
     resultYes > Math.floor(arbiters.length / 2) ||
     resultNo > Math.floor(arbiters.length / 2);
 
-  const withdrawRawMutation = useWithdrawRaw(id);
-  const withdrawRottenMutation = useWithdrawRotten(id);
-  const serveMutation = useServeBeef(id);
+  const withdrawRawMutation = useWithdrawRaw(address);
+  const withdrawRottenMutation = useWithdrawRotten(address);
+  const serveMutation = useServeBeef(address);
 
   if (canWithdrawRaw) {
     return (
@@ -89,27 +86,19 @@ const WithdrawButton = ({
 };
 
 const ArbiterButton = ({
-  connectedAddress,
-  id,
+  beefAddress,
+  hasAttended,
+  hasSettled,
   settleStart,
   refetch,
 }: ButtonProps & {
-  connectedAddress: Address;
+  beefAddress: Address;
+  hasSettled: bigint;
+  hasAttended: boolean;
   settleStart: UnixTimestamp;
-  refetch: () => void;
 }) => {
-  const arbiterStatus = useGetArbiterStatuses(
-    id,
-    connectedAddress ? [connectedAddress] : [],
-  );
-  const settleMutation = useSettleBeef(id);
-  const attendMutation = useArbiterAttend(id);
-
-  if (!arbiterStatus?.[0]) {
-    return <Button disabled>Nothing to do</Button>;
-  }
-
-  const { hasSettled, hasAttended } = arbiterStatus[0];
+  const settleMutation = useSettleBeef(beefAddress);
+  const attendMutation = useArbiterAttend(beefAddress);
 
   if (!hasAttended && hasSettled === 0n) {
     return (
@@ -150,18 +139,18 @@ const ArbiterButton = ({
 };
 
 const ChallengerButton = ({
-  id,
+  beefAddress,
   value,
   hasJoined,
   attendCount,
   refetch,
 }: ButtonProps & {
+  beefAddress: Address;
   value: bigint;
   hasJoined: boolean;
   attendCount: bigint;
-  refetch: () => void;
 }) => {
-  const joinBeefMutation = useJoinBeef(id, value);
+  const joinBeefMutation = useJoinBeef(beefAddress, value);
 
   // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
   return hasJoined || attendCount < 3 ? (
@@ -179,38 +168,60 @@ const ChallengerButton = ({
 };
 
 type BeefControlsProps = {
-  id: Address;
   beef: Beef;
-  isUserArbiter: boolean;
-  isUserChallenger: boolean;
-  isUserOwner: boolean;
+  arbiterStatuses: ArbiterStatus[];
   refetch: () => void;
 };
 
 const BeefControls = ({
-  id,
   beef,
-  isUserArbiter,
-  isUserChallenger,
-  isUserOwner,
+  arbiterStatuses,
   refetch,
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, settleStart, attendCount, beefGone } = beef;
+  const {
+    isCooking,
+    wager,
+    settleStart,
+    attendCount,
+    beefGone,
+    challenger,
+    owner,
+  } = beef;
+
+  const isUserChallenger = isAddressEqual(
+    challenger,
+    connectedAddress ?? zeroAddress,
+  );
+  const isUserOwner = isAddressEqual(owner, connectedAddress ?? zeroAddress);
 
   const showWithdrawButton = !beefGone && (isUserOwner || isUserChallenger);
+
+  // Responsibility for the status presence is delegated to the parent
+  const userArbiter = arbiterStatuses.find(({ address }) =>
+    isAddressEqual(address, connectedAddress ?? zeroAddress),
+  );
 
   return (
     connectedAddress && (
       <Stack direction="row" spacing={2}>
-        {isUserArbiter && (
-          <ArbiterButton {...{ id, connectedAddress, settleStart, refetch }} />
+        {userArbiter?.status && (
+          <ArbiterButton
+            {...{
+              beefAddress: beef.address,
+              connectedAddress,
+              settleStart,
+              hasAttended: userArbiter.status.hasAttended,
+              hasSettled: userArbiter.status.hasSettled,
+              refetch,
+            }}
+          />
         )}
         {isUserChallenger && !(isCooking || attendCount < 3) && (
           <ChallengerButton
             {...{
-              id,
+              beefAddress: beef.address,
               hasJoined: isCooking,
               value: wager,
               attendCount,
@@ -218,7 +229,7 @@ const BeefControls = ({
             }}
           />
         )}
-        {showWithdrawButton && <WithdrawButton {...{ id, beef, refetch }} />}
+        {showWithdrawButton && <WithdrawButton {...{ beef, refetch }} />}
       </Stack>
     )
   );
