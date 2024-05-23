@@ -36,6 +36,12 @@ type FormArbiter = {
   value: string;
 };
 
+type FormChallenger = {
+  // TODO: Change to custom enum / generalize the current enum
+  type: ArbiterAccount.ADDRESS | ArbiterAccount.ENS;
+  value: string;
+};
+
 export type NewBeefFormValues = {
   title: string;
   description: string;
@@ -43,7 +49,7 @@ export type NewBeefFormValues = {
   wager: bigint | null;
   joinDeadline: string;
   settleStart: string;
-  challenger: string | null;
+  challenger: FormChallenger;
   staking: boolean;
 };
 
@@ -69,7 +75,10 @@ const NewBeefPage = () => {
         .plus({ months: 6 })
         .set({ second: 0, millisecond: 0 })
         .toISO({ suppressSeconds: true, includeOffset: false }),
-      challenger: "",
+      challenger: {
+        type: ArbiterAccount.ADDRESS,
+        value: "",
+      },
       staking: true,
     },
   });
@@ -77,7 +86,7 @@ const NewBeefPage = () => {
   const { watch, control, handleSubmit, setError } = form;
 
   const addBeef = handleSubmit(async (values) => {
-    // Validate submitted ens names
+    // Validate submitted arbiter ens names
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
@@ -86,14 +95,30 @@ const NewBeefPage = () => {
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
 
-    validatedEnsNames.forEach((ensName, index) => {
+    validatedEnsNames.forEach((resolvedEnsName, index) => {
       if (
-        ensName === null &&
+        resolvedEnsName === null &&
         values.arbiters[index]!.type === ArbiterAccount.ENS
       ) {
         setError(`arbiters.${index}.value`, { message: "ENS name not found" });
       }
     });
+
+    if (values.challenger.type === ArbiterAccount.ENS) {
+      const resolvedAddress = await getEnsAddress(ensConfig, {
+        name: normalize(values.challenger.value),
+      });
+
+      if (resolvedAddress === null) {
+        setError("challenger.value", { message: "ENS name not found" });
+        return;
+      } else {
+        values.challenger = {
+          type: ArbiterAccount.ADDRESS,
+          value: resolvedAddress,
+        };
+      }
+    }
 
     // If any ens name is invalid, return
     if (
@@ -107,9 +132,9 @@ const NewBeefPage = () => {
     }
 
     values.arbiters = values.arbiters.map((arbiter, index) => {
-      const ensName = validatedEnsNames[index];
-      if (arbiter.type === ArbiterAccount.ENS && ensName != null) {
-        return { type: ArbiterAccount.ADDRESS, value: ensName };
+      const resolvedAddress = validatedEnsNames[index];
+      if (arbiter.type === ArbiterAccount.ENS && resolvedAddress != null) {
+        return { type: ArbiterAccount.ADDRESS, value: resolvedAddress };
       }
       return arbiter;
     });
@@ -161,23 +186,47 @@ const NewBeefPage = () => {
               />
             )}
           />
-          <Controller
-            name="challenger"
-            control={control}
-            rules={{
-              required: "Required",
-              validate: (value) =>
-                isAddress(value ?? "") || "Address not valid",
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <TextField
-                {...field}
-                label="Challenger"
-                error={!!error}
-                helperText={error?.message}
+          <Stack gap={1}>
+            <Typography variant="body2">Challenger</Typography>
+            <Stack direction="row" alignItems="flex-start" gap={2}>
+              <Controller
+                name="challenger.type"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} sx={{ width: 200 }}>
+                    <MenuItem value={ArbiterAccount.ADDRESS}>
+                      Wallet address
+                    </MenuItem>
+                    <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
+                  </Select>
+                )}
               />
-            )}
-          />
+              <Controller
+                name="challenger.value"
+                control={control}
+                rules={{
+                  required: "Required",
+                  validate: (value, formValues) =>
+                    formValues.challenger.type === ArbiterAccount.ADDRESS
+                      ? isAddress(value ?? "") || "Address not valid"
+                      : true,
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    sx={{ flexGrow: 1 }}
+                    {...field}
+                    label={
+                      watch("challenger.type") === ArbiterAccount.ENS
+                        ? "ENS Name"
+                        : "Wallet address"
+                    }
+                    error={!!error}
+                    helperText={error?.message}
+                  />
+                )}
+              />
+            </Stack>
+          </Stack>
           <Controller
             name="joinDeadline"
             control={control}
@@ -221,7 +270,7 @@ const NewBeefPage = () => {
           <Controller
             name="wager"
             control={control}
-            rules={{ required: true }}
+            rules={{ required: "Required" }}
             render={({ field, fieldState: { error } }) => (
               <AmountInput
                 label="Amount"

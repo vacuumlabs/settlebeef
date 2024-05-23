@@ -158,7 +158,7 @@ export const useAddBeef = () => {
     if (!connectedAddress) {
       throw new Error("Wallet not connected");
     }
-    if (!challenger || !isAddress(challenger) || !wager) {
+    if (!challenger || !isAddress(challenger.value) || !wager) {
       throw new Error("Invalid request");
     }
 
@@ -202,7 +202,7 @@ export const useAddBeef = () => {
           {
             owner: connectedAddress,
             wager,
-            challenger,
+            challenger: challenger.value as Address,
             settleStart: parseIsoDateToTimestamp(settleStart),
             joinDeadline: parseIsoDateToTimestamp(joinDeadline),
             title,
