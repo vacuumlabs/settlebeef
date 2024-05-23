@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Button, Stack } from "@mui/material";
+import { Button, CircularProgress, Stack } from "@mui/material";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import type { Beef, UnixTimestamp } from "@/types";
 import { ArbiterStatus } from "@/hooks/queries";
@@ -45,44 +45,49 @@ const WithdrawButton = ({ beef, refetch }: ButtonProps & { beef: Beef }) => {
   const withdrawRottenMutation = useWithdrawRotten(address);
   const serveMutation = useServeBeef(address);
 
-  if (canWithdrawRaw) {
-    return (
-      <Button
-        onClick={() =>
-          withdrawRawMutation.mutate(undefined, { onSuccess: refetch })
-        }
-        variant="contained"
-      >
-        Withdraw Raw Beef
-      </Button>
-    );
-  } else if (canWithdrawRotten) {
-    return (
-      <Button
-        onClick={() =>
-          withdrawRottenMutation.mutate(undefined, { onSuccess: refetch })
-        }
-        variant="contained"
-      >
-        Withdraw Rotten Beef
-      </Button>
-    );
-  } else if (canServe) {
-    return (
-      <Button
-        onClick={() => serveMutation.mutate(undefined, { onSuccess: refetch })}
-        variant="contained"
-      >
-        Serve Beef
-      </Button>
-    );
-  } else {
-    return (
-      <Button disabled variant="outlined">
-        Nothing to do
-      </Button>
-    );
-  }
+  const selectMutation = () => {
+    if (canWithdrawRaw) {
+      return {
+        text: "Withdraw Raw Beef",
+        mutation: withdrawRawMutation,
+      };
+    }
+
+    if (canWithdrawRotten) {
+      return {
+        text: "Withdraw Rotten Beef",
+        mutation: withdrawRottenMutation,
+      };
+    }
+
+    if (canServe) {
+      return {
+        text: "Serve Beef",
+        mutation: serveMutation,
+      };
+    }
+
+    return { text: "Nothing to do" };
+  };
+
+  const { text, mutation } = selectMutation();
+
+  return mutation ? (
+    <Button
+      disabled={mutation.isPending || mutation.isSuccess}
+      onClick={() => mutation.mutate(undefined, { onSuccess: refetch })}
+      variant="contained"
+    >
+      {text}
+      {(mutation.isPending || mutation.isSuccess) && (
+        <CircularProgress size={20} sx={{ ml: 2 }} />
+      )}
+    </Button>
+  ) : (
+    <Button disabled variant="outlined">
+      {text}
+    </Button>
+  );
 };
 
 const ArbiterButton = ({
@@ -97,15 +102,30 @@ const ArbiterButton = ({
   hasAttended: boolean;
   settleStart: UnixTimestamp;
 }) => {
-  const settleMutation = useSettleBeef(beefAddress);
-  const attendMutation = useArbiterAttend(beefAddress);
+  const {
+    mutate: settleMutation,
+    isPending: isSettlePending,
+    isSuccess: isSettleSuccess,
+    variables,
+  } = useSettleBeef(beefAddress);
+  const {
+    mutate: attendMutation,
+    isPending: isAttendPending,
+    isSuccess: isAttendSuccess,
+  } = useArbiterAttend(beefAddress);
+
+  const isSettleLoading = isSettlePending || isSettleSuccess;
+  const isAttendLoading = isAttendPending || isAttendSuccess;
 
   if (!hasAttended && hasSettled === 0n) {
     return (
       <Button
-        onClick={() => attendMutation.mutate(undefined, { onSuccess: refetch })}
+        variant="contained"
+        disabled={isAttendLoading}
+        onClick={() => attendMutation(undefined, { onSuccess: refetch })}
       >
         Attend ✋
+        {isAttendLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
       </Button>
     );
   } else if (
@@ -117,15 +137,23 @@ const ArbiterButton = ({
       <Stack direction="row" spacing={2}>
         <Button
           variant="contained"
-          onClick={() => settleMutation.mutate(true, { onSuccess: refetch })}
+          disabled={isSettleLoading}
+          onClick={() => settleMutation(true, { onSuccess: refetch })}
         >
           Settle In Favour 👍
+          {isSettleLoading && variables === true && (
+            <CircularProgress size={20} sx={{ ml: 2 }} />
+          )}
         </Button>
         <Button
           variant="contained"
-          onClick={() => settleMutation.mutate(false, { onSuccess: refetch })}
+          disabled={isSettleLoading}
+          onClick={() => settleMutation(false, { onSuccess: refetch })}
         >
           Settle Against 👎
+          {isSettleLoading && variables === false && (
+            <CircularProgress size={20} sx={{ ml: 2 }} />
+          )}
         </Button>
       </Stack>
     );
@@ -150,7 +178,11 @@ const ChallengerButton = ({
   hasJoined: boolean;
   attendCount: bigint;
 }) => {
-  const joinBeefMutation = useJoinBeef(beefAddress, value);
+  const {
+    mutate: joinMutation,
+    isPending,
+    isSuccess,
+  } = useJoinBeef(beefAddress, value);
 
   // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
   return hasJoined || attendCount < 3 ? (
@@ -160,9 +192,13 @@ const ChallengerButton = ({
   ) : (
     <Button
       variant="contained"
-      onClick={() => joinBeefMutation.mutate(undefined, { onSuccess: refetch })}
+      disabled={isPending || isSuccess}
+      onClick={() => joinMutation(undefined, { onSuccess: refetch })}
     >
       Join Beef
+      {(isPending || isSuccess) && (
+        <CircularProgress size={20} sx={{ ml: 2 }} />
+      )}
     </Button>
   );
 };

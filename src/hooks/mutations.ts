@@ -16,14 +16,11 @@ import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { queryKeys } from "./queryKeys";
 import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
-import {
-  readContract,
-  readContracts,
-  waitForTransactionReceipt,
-} from "wagmi/actions";
+import { readContract, readContracts } from "wagmi/actions";
 import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
+import { publicClient } from "@/utils/chain";
 
 export const useArbiterAttend = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
@@ -40,7 +37,7 @@ export const useArbiterAttend = (beefId: Address) => {
         }),
       });
 
-      await waitForTransactionReceipt(wagmiConfig, { hash: txHash });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -65,7 +62,7 @@ export const useSettleBeef = (beefId: Address) => {
         }),
       });
 
-      await waitForTransactionReceipt(wagmiConfig, { hash: txHash });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -116,6 +113,8 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
         args: [subtractSlippage(amountOut)],
       }),
     });
+
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };
@@ -261,6 +260,8 @@ export const useWithdrawRaw = (beefId: Address) => {
       }),
     });
 
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
     return txHash;
   };
 
@@ -288,6 +289,8 @@ export const useWithdrawRotten = (beefId: Address) => {
       }),
     });
 
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
     return txHash;
   };
 
@@ -314,6 +317,8 @@ export const useServeBeef = (beefId: Address) => {
         args: [amountOut],
       }),
     });
+
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };
