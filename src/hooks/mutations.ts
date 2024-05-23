@@ -23,10 +23,13 @@ import { subtractSlippage } from "@/utils/slippage";
 import { publicClient } from "@/utils/chain";
 
 export const useArbiterAttend = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
+  const { sendTransaction, connectedAddress } = useContext(
+    SmartAccountClientContext,
+  );
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["arbiterAttend", connectedAddress],
     mutationFn: async () => {
       const txHash = await sendTransaction({
         to: beefId,

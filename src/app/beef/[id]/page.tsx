@@ -214,17 +214,24 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           }
         }
       } else {
-        return {
-          steps: [
-            { icon: "🥩", text: "Beef creation" },
-            { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-            { icon: "🤦", text: "Challenger didn't join" },
-            { icon: "🤢", text: "Beef raw forever" },
-          ],
-          step: beefGone ? 4 : 3,
-          isRotten: true,
-          deadline: joinDeadline,
-        };
+        if (now < joinDeadline) {
+          return {
+            steps: STEPS,
+            step: 2,
+            deadline: joinDeadline,
+          };
+        } else {
+          return {
+            steps: [
+              { icon: "🥩", text: "Beef creation" },
+              { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+              { icon: "🤦", text: "Challenger didn't join" },
+              { icon: "🤢", text: "Beef raw forever" },
+            ],
+            step: beefGone ? 4 : 3,
+            isRotten: true,
+          };
+        }
       }
     }
   };
