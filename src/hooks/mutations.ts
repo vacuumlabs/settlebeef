@@ -247,18 +247,21 @@ const getWithdrawAmountOut = async (beefAddress: Address) => {
   return subtractSlippage(amountOut);
 };
 
-export const useWithdrawRaw = (beefId: Address) => {
+export const useWithdrawBeef = (
+  beefId: Address,
+  withdrawType: "withdrawRaw" | "withdrawRotten" | "serveBeef",
+) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
   const queryClient = useQueryClient();
 
-  const withdrawRaw = async () => {
+  const executeMutation = async () => {
     const amountOut = await getWithdrawAmountOut(beefId);
 
     const txHash = await sendTransaction({
       to: beefId,
       data: encodeFunctionData({
         abi: beefAbi,
-        functionName: "withdrawRaw",
+        functionName: withdrawType,
         args: [amountOut],
       }),
     });
@@ -269,65 +272,8 @@ export const useWithdrawRaw = (beefId: Address) => {
   };
 
   return useMutation({
-    mutationFn: withdrawRaw,
-    onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
-    },
-  });
-};
-
-export const useWithdrawRotten = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
-
-  const withdrawRotten = async () => {
-    const amountOut = await getWithdrawAmountOut(beefId);
-
-    const txHash = await sendTransaction({
-      to: beefId,
-      data: encodeFunctionData({
-        abi: beefAbi,
-        functionName: "withdrawRotten",
-        args: [amountOut],
-      }),
-    });
-
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
-
-    return txHash;
-  };
-
-  return useMutation({
-    mutationFn: withdrawRotten,
-    onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
-    },
-  });
-};
-
-export const useServeBeef = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
-
-  const serveBeef = async () => {
-    const amountOut = await getWithdrawAmountOut(beefId);
-
-    const txHash = await sendTransaction({
-      to: beefId,
-      data: encodeFunctionData({
-        abi: beefAbi,
-        functionName: "serveBeef",
-        args: [amountOut],
-      }),
-    });
-
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
-
-    return txHash;
-  };
-
-  return useMutation({
-    mutationFn: serveBeef,
+    mutationFn: executeMutation,
+    mutationKey: [beefId, withdrawType],
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },
