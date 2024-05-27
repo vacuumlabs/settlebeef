@@ -91,7 +91,7 @@ function StepIcon(props: StepIconProps) {
   );
 }
 
-const STEPS = [
+const DEFAULT_STEPS = [
   { icon: "🥩", text: "Beef creation" },
   { icon: "🧑‍⚖️", text: "Arbiters attendance" },
   { icon: "🤺", text: "Challenger joining" },
@@ -156,14 +156,17 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const getBeefState = () => {
     const now = new Date();
 
+    // Arbiters have not joined yet
     if (attendCount < arbiters.length) {
+      // Arbiters still have time join
       if (now < joinDeadline) {
         return {
           step: 1,
-          steps: STEPS,
+          steps: DEFAULT_STEPS,
           deadline: joinDeadline,
         };
       } else {
+        // Arbiters failed to attend
         return {
           steps: [
             { icon: "🥩", text: "Beef creation" },
@@ -177,9 +180,11 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       }
     } else {
       if (isCooking) {
+        // Challenger joined the beef
         if (now < settleStart) {
+          // Wait until `settleStart` when arbiters can vote
           return {
-            steps: STEPS,
+            steps: DEFAULT_STEPS,
             step: 3,
             deadline: settleStart,
           };
@@ -188,11 +193,13 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2;
 
           if (majorityReached) {
+            // Beef is successfully decided
             return {
-              steps: STEPS,
-              step: beefGone ? 7 : 5,
+              steps: DEFAULT_STEPS,
+              step: beefGone ? 7 : 6,
             };
           } else if (now > settleDeadline) {
+            // Arbiters failed to vote and decide the beef
             return {
               steps: [
                 { icon: "🥩", text: "Beef creation" },
@@ -202,25 +209,29 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 { icon: "🤦", text: "Beef wasn't settled" },
                 { icon: "🤢", text: "Beef rotten" },
               ],
-              step: 4,
+              step: 5,
               isRotten: true,
             };
           } else {
+            // Voting in progress until `settleDeadline`
             return {
-              steps: STEPS,
+              steps: DEFAULT_STEPS,
               step: 4,
               deadline: settleDeadline,
             };
           }
         }
       } else {
+        // Challenger has not yet joined the beef
         if (now < joinDeadline) {
+          // Waiting for challenger to join
           return {
-            steps: STEPS,
+            steps: DEFAULT_STEPS,
             step: 2,
             deadline: joinDeadline,
           };
         } else {
+          // Challenger failed to join in time
           return {
             steps: [
               { icon: "🥩", text: "Beef creation" },
