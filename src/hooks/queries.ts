@@ -113,12 +113,9 @@ export const useGetBeefs = () => {
   };
 };
 
-/*
-Arbiter can be known by address while his 'status' data is undefined
-Current logic does to require these 2 states to be specifically defined, hence `status` property is optional for convenience
- */
 export type ArbiterStatus = {
   address: Address;
+  // Status is undefined while its being fetched.
   status?: {
     hasAttended: boolean;
     hasSettled: bigint;
