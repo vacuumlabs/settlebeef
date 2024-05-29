@@ -20,7 +20,6 @@ import { readContract, readContracts } from "wagmi/actions";
 import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
-import { publicClient } from "@/utils/chain";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
 
 const mutationKeys = {
@@ -48,8 +47,6 @@ export const useArbiterAttend = (beefId: Address) => {
         }),
       });
 
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
-
       return txHash;
     },
     onSuccess() {
@@ -73,8 +70,6 @@ export const useSettleBeef = (beefId: Address) => {
           args: [verdict],
         }),
       });
-
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -125,8 +120,6 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
         args: [subtractSlippage(amountOut)],
       }),
     });
-
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };
@@ -279,8 +272,6 @@ export const useWithdrawBeef = (
         args: [amountOut],
       }),
     });
-
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };
