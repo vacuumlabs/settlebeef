@@ -21,6 +21,7 @@ import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
 import { publicClient } from "@/utils/chain";
+import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
 
 const mutationKeys = {
   arbiterAttend: "arbiterAttend",
@@ -168,16 +169,20 @@ export const useAddBeef = () => {
       }
     });
 
-    const addressPromises = arbiters.map(({ type, value }) =>
-      type === ArbiterAccount.ADDRESS
-        ? (value as Address)
-        : getUserGeneratedAddress([
-            {
-              address: value,
-              type: "email" as const,
-            },
-          ]),
-    );
+    const addressPromises = arbiters.map(({ type, value }) => {
+      if (type === ArbiterAccount.TWITTER) {
+        return generateAddressFromTwitterHandle(value);
+      } else if (type === ArbiterAccount.EMAIL) {
+        return getUserGeneratedAddress([
+          {
+            address: value,
+            type: "email" as const,
+          },
+        ]);
+      } else {
+        return value as Address;
+      }
+    });
 
     const arbitersAddresses = await Promise.all(addressPromises);
 

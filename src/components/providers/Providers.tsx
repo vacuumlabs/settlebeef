@@ -74,6 +74,7 @@ const Providers = ({ children }: ProvidersProps) => {
           embeddedWallets: {
             createOnLogin: "users-without-wallets",
           },
+          loginMethods: ["wallet", "twitter"],
           defaultChain: activeChain,
           supportedChains: [activeChain],
         }}
