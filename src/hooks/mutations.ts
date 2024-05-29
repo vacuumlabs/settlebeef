@@ -22,6 +22,13 @@ import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
 import { publicClient } from "@/utils/chain";
 
+const mutationKeys = {
+  arbiterAttend: "arbiterAttend",
+  withdrawBeef: "withdrawBeef",
+  settleBeef: "settleBeef",
+  joinBeef: "joinBeef",
+};
+
 export const useArbiterAttend = (beefId: Address) => {
   const { sendTransaction, connectedAddress } = useContext(
     SmartAccountClientContext,
@@ -29,7 +36,7 @@ export const useArbiterAttend = (beefId: Address) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["arbiterAttend", connectedAddress],
+    mutationKey: [mutationKeys.arbiterAttend, connectedAddress, beefId],
     mutationFn: async () => {
       const txHash = await sendTransaction({
         to: beefId,
@@ -55,6 +62,7 @@ export const useSettleBeef = (beefId: Address) => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [mutationKeys.settleBeef, beefId],
     mutationFn: async (verdict: boolean) => {
       const txHash = await sendTransaction({
         to: beefId,
@@ -123,6 +131,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
   };
 
   return useMutation({
+    mutationKey: [mutationKeys.joinBeef, beefId],
     mutationFn: joinBeef,
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
