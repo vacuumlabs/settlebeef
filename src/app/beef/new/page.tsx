@@ -29,6 +29,7 @@ import { getEnsAddress } from "wagmi/actions";
 import { ensConfig } from "@/components/providers/Providers";
 import { normalize } from "viem/ens";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { useBalance } from "@/hooks/queries";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -58,6 +59,8 @@ const NewBeefPage = () => {
   const { mutate, isPending } = useAddBeef();
   const router = useRouter();
   const { authenticated } = usePrivy();
+  const { data: balance } = useBalance();
+
   const form = useForm<NewBeefFormValues>({
     defaultValues: {
       title: "",
@@ -148,6 +151,11 @@ const NewBeefPage = () => {
       }
       return arbiter;
     });
+
+    if ((values.wager ?? 0n) > (balance?.value ?? 0n)) {
+      setError("wager", { message: "Not enough balance!" });
+      return;
+    }
 
     mutate(values, {
       onSuccess: () => {
