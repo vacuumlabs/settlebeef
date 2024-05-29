@@ -9,12 +9,10 @@ import {
   useState,
 } from "react";
 import { useSendTransaction } from "wagmi";
-import { waitForTransactionReceipt } from "wagmi/actions";
-import { wagmiConfig } from "./Providers";
 import { WalletClientSigner } from "@alchemy/aa-core";
 import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
 import { Address, createWalletClient, custom, WalletClient } from "viem";
-import { activeChain, activeChainAlchemy } from "@/utils/chain";
+import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
 import { getTwitterSmartAccountAddress } from "@/server/actions/getTwitterSmartAccountAddress";
 
 export type SmartAccountClient = Awaited<
@@ -65,7 +63,8 @@ export const SmartAccountClientContextProvider = ({
         return hash;
       } else {
         const hash = await sendTransactionAsync(params);
-        await waitForTransactionReceipt(wagmiConfig, { hash });
+
+        await publicClient.waitForTransactionReceipt({ hash });
         return hash;
       }
     },
