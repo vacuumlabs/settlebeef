@@ -24,7 +24,15 @@ const LoginButton = () => {
 
   const { data: balance, isLoading } = useBalance();
 
-  return authenticated ? (
+  if (!authenticated) {
+    return (
+      <Button variant="contained" color="primary" onClick={login}>
+        Login
+      </Button>
+    );
+  }
+
+  return (
     <Stack direction="row" alignItems="center" gap={3}>
       {ready ? (
         <Stack direction="row" alignItems="center" gap={3}>
@@ -50,10 +58,6 @@ const LoginButton = () => {
         Logout
       </Button>
     </Stack>
-  ) : (
-    <Button variant="contained" color="primary" onClick={login}>
-      Login
-    </Button>
   );
 };
 
