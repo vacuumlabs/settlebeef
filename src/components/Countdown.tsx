@@ -1,62 +1,69 @@
 import React, { useEffect, useRef, useState } from "react";
 
-interface CountdownProps {
+type CountdownProps = {
   deadline: Date;
-}
+};
+
+const secondLabel = "s";
+const minuteLabel = "m";
+const hourLabel = "h";
+const dayLabel = "d";
 
 export const Countdown = ({ deadline }: CountdownProps) => {
-  const [remaining, setRemaining] = useState("");
+  const [formattedRemaining, setFormattedRemaining] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout>();
-
-  const timeToDisplayText = (
-    time: number,
-    title: string,
-    displayAlsoZero: boolean,
-  ) => {
-    if (time === 0 && !displayAlsoZero) {
-      return "";
-    }
-
-    return `${time}${title}`;
-  };
-
-  function diff(a: Date, b: Date) {
-    const ms = a.getTime() - b.getTime();
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const h = Math.floor(m / 60);
-    const d = Math.floor(h / 24);
-    const sx = "s";
-    const mx = "m";
-    const hx = "h";
-    const dx = "d";
-    const result = (
-      [
-        [d, dx, false],
-        [(h % 24) as number, hx, d > 0],
-        [(m % 60) as number, mx, h > 0],
-        [(s % 60) as number, sx, m > 0],
-      ] as [number, string, boolean][]
-    )
-      .map(([time, title, displayAlsoZero]) => {
-        return timeToDisplayText(time, title, displayAlsoZero);
-      })
-      .join(" ")
-      .trim();
-    return result !== "" ? result : `0${sx}`;
-  }
 
   useEffect(() => {
     const refreshCountdown = () => {
-      if (deadline.getTime() >= new Date().getTime()) {
-        setRemaining(diff(deadline, new Date()));
+      const now = new Date();
+
+      if (deadline.getTime() >= now.getTime()) {
+        setFormattedRemaining(diffAndFormat(deadline, now));
         timeoutRef.current = setTimeout(refreshCountdown, 1000);
       } else {
-        setRemaining("");
+        setFormattedRemaining("");
       }
     };
     refreshCountdown();
+
     return () => clearTimeout(timeoutRef.current);
   }, [deadline]);
-  return <> {remaining} </>;
+
+  return <>{formattedRemaining}</>;
+};
+
+const timeToDisplayText = (
+  time: number,
+  label: string,
+  displayAlsoZero: boolean,
+) => {
+  if (time === 0 && !displayAlsoZero) {
+    return "";
+  }
+
+  return `${time}${label}`;
+};
+
+const diffAndFormat = (a: Date, b: Date) => {
+  const ms = a.getTime() - b.getTime();
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+
+  const resultParts = [
+    [d, dayLabel, false],
+    [h % 24, hourLabel, d > 0],
+    [m % 60, minuteLabel, h > 0],
+    [s % 60, secondLabel, m > 0],
+  ] as const;
+
+  const formattedResult = resultParts
+    .map(([time, label, displayAlsoZero]) =>
+      timeToDisplayText(time, label, displayAlsoZero),
+    )
+    .join(" ")
+    .trim();
+
+  return formattedResult !== "" ? formattedResult : `0${secondLabel}`;
 };
