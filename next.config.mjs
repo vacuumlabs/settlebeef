@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+   experimental:  { serverComponentsExternalPackages: [  "@alchemy/aa-core" ]},
+};
 
 export default nextConfig;

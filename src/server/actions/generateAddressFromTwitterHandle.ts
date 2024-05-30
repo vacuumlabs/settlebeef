@@ -5,8 +5,8 @@ import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import { getContract } from "viem";
 import { publicClient } from "@/utils/chain";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
-import { UserDetailsResponseType } from "@/server/actions/getTwitterSmartAccountAddress";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
+import { UserDetailsResponseType } from "@/app/api/twitter-smart-account/route";
 
 const getLightAccountAddress = getContract({
   client: publicClient,
