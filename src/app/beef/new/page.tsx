@@ -20,7 +20,7 @@ import { Controller, useForm } from "react-hook-form";
 import { isAddress } from "viem";
 import { DateTime } from "luxon";
 import { useAddBeef } from "@/hooks/mutations";
-import { ArbiterAccount } from "@/types";
+import { ArbiterAccount, ChallengerAccount } from "@/types";
 import { usePrivy } from "@privy-io/react-auth";
 import NotLoggedIn from "@/components/NotLoggedIn";
 import { enqueueSnackbar } from "notistack";
@@ -39,8 +39,7 @@ type FormArbiter = {
 };
 
 type FormChallenger = {
-  // TODO: Change to custom enum / generalize the current enum
-  type: ArbiterAccount.ADDRESS | ArbiterAccount.ENS | ArbiterAccount.TWITTER;
+  type: ChallengerAccount;
   value: string;
 };
 
@@ -80,7 +79,7 @@ const NewBeefPage = () => {
         .set({ second: 0, millisecond: 0 })
         .toISO({ suppressSeconds: true, includeOffset: false }),
       challenger: {
-        type: ArbiterAccount.ADDRESS,
+        type: ChallengerAccount.ADDRESS,
         value: "",
       },
       staking: true,
@@ -108,7 +107,7 @@ const NewBeefPage = () => {
       }
     });
 
-    if (values.challenger.type === ArbiterAccount.ENS) {
+    if (values.challenger.type === ChallengerAccount.ENS) {
       const resolvedAddress = await getEnsAddress(ensConfig, {
         name: normalize(values.challenger.value),
       });
@@ -118,17 +117,17 @@ const NewBeefPage = () => {
         return;
       } else {
         values.challenger = {
-          type: ArbiterAccount.ADDRESS,
+          type: ChallengerAccount.ADDRESS,
           value: resolvedAddress,
         };
       }
-    } else if (values.challenger.type === ArbiterAccount.TWITTER) {
+    } else if (values.challenger.type === ChallengerAccount.TWITTER) {
       const resolvedAddress = await generateAddressFromTwitterHandle(
         values.challenger.value,
       );
 
       values.challenger = {
-        type: ArbiterAccount.ADDRESS,
+        type: ChallengerAccount.ADDRESS,
         value: resolvedAddress,
       };
     }
@@ -227,11 +226,11 @@ const NewBeefPage = () => {
                   required: "Required",
                   validate: (value, formValues) => {
                     const type = formValues.challenger.type;
-                    if (type === ArbiterAccount.ADDRESS) {
+                    if (type === ChallengerAccount.ADDRESS) {
                       return isAddress(value ?? "") || "Address not valid";
                     }
 
-                    if (type === ArbiterAccount.TWITTER) {
+                    if (type === ChallengerAccount.TWITTER) {
                       if (value === undefined)
                         return "X / Twitter handle not defined";
 
@@ -251,9 +250,9 @@ const NewBeefPage = () => {
                     label={(() => {
                       const type = watch(`challenger.type`);
 
-                      if (type === ArbiterAccount.ENS) {
+                      if (type === ChallengerAccount.ENS) {
                         return "ENS Name";
-                      } else if (type === ArbiterAccount.TWITTER) {
+                      } else if (type === ChallengerAccount.TWITTER) {
                         return "X / Twitter handle";
                       } else {
                         return "Wallet address";
