@@ -1,17 +1,17 @@
 import React from "react";
-import { Box, Container, Typography } from "@mui/material";
+import { Container, Stack, Typography } from "@mui/material";
 
 const NotLoggedIn = () => {
   return (
     <Container>
-      <Box alignItems="center" justifyContent="center" mt="20%" gap={2}>
-        <Typography variant="h1" textAlign="start" mt={6}>
+      <Stack alignItems="center" justifyContent="center" gap={2} mt={25}>
+        <Typography fontSize={96} mt={6}>
           🚫🔥🐄
         </Typography>
-        <Typography variant="h4" textAlign="start">
+        <Typography variant="h4" variantMapping={{ h4: "h1" }}>
           To cook beef, you need to log in. 🐄🏃🔥
         </Typography>
-      </Box>
+      </Stack>
     </Container>
   );
 };
