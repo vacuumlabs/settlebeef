@@ -26,10 +26,14 @@ const BeefRow = ({ address, title, wager }: BeefRowProps) => {
             }}
           >
             <Stack spacing={0.5}>
-              <Typography variant="h4">{title}</Typography>
+              <Typography variant="h4" variantMapping={{ h4: "h3" }}>
+                {title}
+              </Typography>
               <Typography variant="body1">{address}</Typography>
             </Stack>
-            <Typography variant="h3">{formatEther(wager)}&nbsp;Ξ</Typography>
+            <Typography variant="h3" variantMapping={{ h3: "h4" }}>
+              {formatEther(wager)}&nbsp;Ξ
+            </Typography>
           </Stack>
         </CardContent>
       </Card>
