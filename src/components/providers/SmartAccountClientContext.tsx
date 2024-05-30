@@ -13,7 +13,7 @@ import { WalletClientSigner } from "@alchemy/aa-core";
 import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
 import { Address, createWalletClient, custom, WalletClient } from "viem";
 import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
-import { getTwitterSmartAccountAddress } from "@/server/actions/getTwitterSmartAccountAddress";
+import { GetTwitterSmartAccountAddressResponse } from "@/app/api/twitter-smart-account/route";
 
 export type SmartAccountClient = Awaited<
   ReturnType<typeof createLightAccountAlchemyClient>
@@ -136,4 +136,16 @@ export const SmartAccountClientContextProvider = ({
       {children}
     </SmartAccountClientContext.Provider>
   );
+};
+
+const getTwitterSmartAccountAddress = async () => {
+  const response = await fetch("/api/twitter-smart-account");
+
+  const { address } =
+    (await response.json()) as GetTwitterSmartAccountAddressResponse;
+
+  if (address === undefined)
+    throw new Error("Error getting smart account address from twitter / x");
+
+  return address;
 };

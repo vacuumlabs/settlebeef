@@ -1,5 +1,3 @@
-"use server";
-
 import { cookies } from "next/headers";
 import { Address, getContract } from "viem";
 import { sql } from "@vercel/postgres";
@@ -13,6 +11,19 @@ import {
 import { activeChainAlchemy, publicClient } from "@/utils/chain";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
+import { NextRequest, NextResponse } from "next/server";
+
+export type GetTwitterSmartAccountAddressResponse = {
+  address: Address | undefined;
+};
+
+export const GET = async (
+  _: NextRequest,
+): Promise<NextResponse<GetTwitterSmartAccountAddressResponse>> => {
+  const address = await getTwitterSmartAccountAddress();
+
+  return NextResponse.json({ address });
+};
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -31,10 +42,13 @@ export type UserDetailsResponseType = {
   temporary_private_key?: Address;
 };
 
-export const getTwitterSmartAccountAddress = async () => {
+const getTwitterSmartAccountAddress = async () => {
   const authToken = cookies().get("privy-token")?.value;
 
-  if (authToken === undefined) throw new Error("");
+  if (authToken === undefined) {
+    console.error("Auth token not found");
+    return undefined;
+  }
 
   const claims = await privy.verifyAuthToken(authToken);
   const user = await privy.getUser(claims.userId);
@@ -43,13 +57,15 @@ export const getTwitterSmartAccountAddress = async () => {
     ?.address as Address;
 
   if (walletAddress === undefined) {
-    throw new Error(`User ${user.id} does not have an embedded wallet`);
+    console.error(`User ${user.id} does not have an embedded wallet`);
+    return undefined;
   }
 
   const xHandle = user.twitter?.username;
 
   if (!xHandle) {
-    throw new Error("User does not have a X / Twitter connected");
+    console.error(`User ${user.id} does not have a X / Twitter connected`);
+    return undefined;
   }
 
   const { rows } =
