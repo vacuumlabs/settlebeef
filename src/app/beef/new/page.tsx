@@ -1,6 +1,6 @@
 "use client";
 
-import AmountInput from "@/components/AmoutInput";
+import AmountInput from "@/components/AmountInput";
 import { isValidEmail } from "@/utils/validations";
 import {
   Button,
