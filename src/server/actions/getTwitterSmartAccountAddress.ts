@@ -48,18 +48,17 @@ export const getTwitterSmartAccountAddress = async () => {
     throw new Error(`User ${user.id} does not have an embedded wallet`);
   }
 
-  const handle = user.twitter?.username;
+  const xHandle = user.twitter?.username;
 
-  if (!handle) {
-    throw new Error("User does not have a twitter connected");
+  if (!xHandle) {
+    throw new Error("User does not have a X / Twitter connected");
   }
 
   const { rows } =
-    await sql`SELECT smart_account_address, temporary_private_key, owner FROM user_details WHERE handle = ${handle} `;
+    await sql<UserDetailsResponseType>`SELECT smart_account_address, temporary_private_key, owner FROM user_details WHERE x_handle = ${xHandle} `;
 
-  if (rows.length > 0) {
-    const { smart_account_address, temporary_private_key, owner } =
-      rows[0]! as UserDetailsResponseType;
+  if (rows[0]) {
+    const { smart_account_address, temporary_private_key, owner } = rows[0];
 
     if (owner) {
       // User is already the owner of the account
@@ -89,7 +88,7 @@ export const getTwitterSmartAccountAddress = async () => {
         chain: activeChainAlchemy,
       });
 
-      await sql`UPDATE user_details SET owner = ${walletAddress}, temporary_private_key = NULL WHERE handle = ${handle}`;
+      await sql`UPDATE user_details SET owner = ${walletAddress}, temporary_private_key = NULL WHERE x_handle = ${xHandle}`;
 
       return smart_account_address;
     }
@@ -97,8 +96,8 @@ export const getTwitterSmartAccountAddress = async () => {
     // No wallet is pre-generated. We can just create a default one from the embedded wallet's address
     const accountAddress = await getLightAccountAddress([walletAddress, 0n]);
 
-    await sql`INSERT INTO user_details (handle, smart_account_address, owner) 
-      values (${handle}, ${accountAddress}, ${walletAddress})`;
+    await sql`INSERT INTO user_details (x_handle, smart_account_address, owner) 
+      values (${xHandle}, ${accountAddress}, ${walletAddress})`;
 
     return accountAddress;
   }
