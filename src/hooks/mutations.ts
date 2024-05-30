@@ -6,7 +6,7 @@ import {
   UNISWAP_ROUTER_ADDRESS,
   WETH_ADDRESS,
   WSTETH_ADDRESS,
-} from "@/config";
+} from "@/constants";
 import { ArbiterAccount } from "@/types";
 import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
