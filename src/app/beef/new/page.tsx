@@ -233,7 +233,7 @@ const NewBeefPage = () => {
 
                     if (type === ArbiterAccount.TWITTER) {
                       if (value === undefined)
-                        return "Twitter handle not defined";
+                        return "X / Twitter handle not defined";
 
                       return (
                         !value.startsWith("@") ||
@@ -254,7 +254,7 @@ const NewBeefPage = () => {
                       if (type === ArbiterAccount.ENS) {
                         return "ENS Name";
                       } else if (type === ArbiterAccount.TWITTER) {
-                        return "Twitter handle";
+                        return "X / Twitter handle";
                       } else {
                         return "Wallet address";
                       }
@@ -368,7 +368,7 @@ const NewBeefPage = () => {
                         } else if (type === ArbiterAccount.ENS) {
                           return "ENS Name";
                         } else if (type === ArbiterAccount.TWITTER) {
-                          return "Twitter handle";
+                          return "X / Twitter handle";
                         } else {
                           return "Wallet address";
                         }

@@ -16,9 +16,9 @@ const getLightAccountAddress = getContract({
   abi: lightAccountFactoryAbi,
 }).read.getAddress;
 
-export const generateAddressFromTwitterHandle = async (handle: string) => {
+export const generateAddressFromTwitterHandle = async (xHandle: string) => {
   const { rows } =
-    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE handle = ${handle} `;
+    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE x_handle = ${xHandle} `;
 
   if (rows[0]) {
     // Already generated
@@ -29,8 +29,8 @@ export const generateAddressFromTwitterHandle = async (handle: string) => {
   const signerAddress = privateKeyToAddress(privateKey);
   const accountAddress = await getLightAccountAddress([signerAddress, 0n]);
 
-  await sql`INSERT INTO user_details (handle, temporary_private_key, smart_account_address) 
-      values (${handle}, ${privateKey}, ${accountAddress})`;
+  await sql`INSERT INTO user_details (x_handle, temporary_private_key, smart_account_address) 
+      values (${xHandle}, ${privateKey}, ${accountAddress})`;
 
   return accountAddress;
 };
