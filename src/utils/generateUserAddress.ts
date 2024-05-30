@@ -5,9 +5,7 @@ import {
 import { isAddress, getContract } from "viem";
 import { publicClient } from "@/utils/chain";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
-
-const LIGHT_ACCOUNT_FACTORY_ADDRESS =
-  "0x00004EC70002a32400f8ae005A26081065620D20";
+import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 
 const lightAccountFactory = getContract({
   client: publicClient,
