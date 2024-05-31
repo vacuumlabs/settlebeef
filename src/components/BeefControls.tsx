@@ -250,7 +250,10 @@ const decideAction = (
   if (userArbiter?.status !== undefined) {
     const { hasAttended, hasSettled } = userArbiter.status;
 
+    const areAllAttended = arbiterStatuses.length === Number(attendCount);
+
     const arbiterType = getArbiterType(
+      areAllAttended,
       hasAttended,
       hasSettled,
       hasPassedJoinDeadline,
@@ -302,6 +305,7 @@ const getWithdrawalType = (
 };
 
 const getArbiterType = (
+  areAllAttended: boolean,
   hasAttended: boolean,
   hasSettled: bigint,
   hasPassedJoinDeadline: boolean,
@@ -311,7 +315,7 @@ const getArbiterType = (
 
   if (!hasAttended && !hasPassedJoinDeadline) {
     return "attend";
-  } else if (hasAttended && !hasPassedSettleDeadline) {
+  } else if (hasAttended && !hasPassedSettleDeadline && areAllAttended) {
     return "vote";
   }
 

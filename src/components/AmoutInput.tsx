@@ -88,9 +88,11 @@ const AmountInput = forwardRef<HTMLDivElement, AmountInputProps>(
       }
       if (parsedValue <= minValue) {
         setError(`Amount must be greater than ${formatBigint(minValue, 4)}`);
+        return;
       }
       if (maxValue != null && parsedValue > maxValue) {
         setError(`Amount must be at most ${formatBigint(maxValue, 4)}`);
+        return;
       }
 
       setValue(parsedValue);

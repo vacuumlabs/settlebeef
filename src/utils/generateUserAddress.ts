@@ -2,10 +2,16 @@ import {
   GenerateUserAddressParams,
   generateUserAddress,
 } from "@/server/actions/generateUserAddress";
-import { getKernelAddressFromECDSA } from "@zerodev/ecdsa-validator";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { isAddress } from "viem";
-import { publicClient } from "./chain";
+import { isAddress, getContract } from "viem";
+import { publicClient } from "@/utils/chain";
+import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
+import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
+
+const lightAccountFactory = getContract({
+  client: publicClient,
+  address: LIGHT_ACCOUNT_FACTORY_ADDRESS,
+  abi: lightAccountFactoryAbi,
+}).read;
 
 export const getUserGeneratedAddress = async (
   params: GenerateUserAddressParams,
@@ -17,10 +23,5 @@ export const getUserGeneratedAddress = async (
     throw new Error("Failed to pregenerate address");
   }
 
-  return getKernelAddressFromECDSA({
-    eoaAddress: signerAddress,
-    index: BigInt(index),
-    entryPointAddress: ENTRYPOINT_ADDRESS_V07,
-    publicClient: publicClient,
-  });
+  return lightAccountFactory.getAddress([signerAddress, BigInt(index)]);
 };

@@ -6,7 +6,7 @@ import {
   UNISWAP_ROUTER_ADDRESS,
   WETH_ADDRESS,
   WSTETH_ADDRESS,
-} from "@/config";
+} from "@/constants";
 import { ArbiterAccount } from "@/types";
 import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +20,7 @@ import { readContract, readContracts } from "wagmi/actions";
 import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
-import { publicClient } from "@/utils/chain";
+import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
 
 const mutationKeys = {
   arbiterAttend: "arbiterAttend",
@@ -47,8 +47,6 @@ export const useArbiterAttend = (beefId: Address) => {
         }),
       });
 
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
-
       return txHash;
     },
     onSuccess() {
@@ -72,8 +70,6 @@ export const useSettleBeef = (beefId: Address) => {
           args: [verdict],
         }),
       });
-
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -125,8 +121,6 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
       }),
     });
 
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
-
     return txHash;
   };
 
@@ -158,7 +152,7 @@ export const useAddBeef = () => {
     if (!connectedAddress) {
       throw new Error("Wallet not connected");
     }
-    if (!challenger || !isAddress(challenger) || !wager) {
+    if (!challenger || !isAddress(challenger.value) || !wager) {
       throw new Error("Invalid request");
     }
 
@@ -168,16 +162,20 @@ export const useAddBeef = () => {
       }
     });
 
-    const addressPromises = arbiters.map(({ type, value }) =>
-      type === ArbiterAccount.ADDRESS
-        ? (value as Address)
-        : getUserGeneratedAddress([
-            {
-              address: value,
-              type: "email" as const,
-            },
-          ]),
-    );
+    const addressPromises = arbiters.map(({ type, value }) => {
+      if (type === ArbiterAccount.TWITTER) {
+        return generateAddressFromTwitterHandle(value);
+      } else if (type === ArbiterAccount.EMAIL) {
+        return getUserGeneratedAddress([
+          {
+            address: value,
+            type: "email" as const,
+          },
+        ]);
+      } else {
+        return value as Address;
+      }
+    });
 
     const arbitersAddresses = await Promise.all(addressPromises);
 
@@ -202,7 +200,7 @@ export const useAddBeef = () => {
           {
             owner: connectedAddress,
             wager,
-            challenger,
+            challenger: challenger.value as Address,
             settleStart: parseIsoDateToTimestamp(settleStart),
             joinDeadline: parseIsoDateToTimestamp(joinDeadline),
             title,
@@ -274,8 +272,6 @@ export const useWithdrawBeef = (
         args: [amountOut],
       }),
     });
-
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };

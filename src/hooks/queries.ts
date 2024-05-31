@@ -1,7 +1,7 @@
 import { useReadContract, useReadContracts } from "wagmi";
 import type { Beef } from "../types";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
-import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
+import { SLAUGHTERHOUSE_ADDRESS } from "@/constants";
 import { beefAbi } from "@/abi/beef";
 import { useContext } from "react";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";

@@ -20,7 +20,7 @@ import { Controller, useForm } from "react-hook-form";
 import { isAddress } from "viem";
 import { DateTime } from "luxon";
 import { useAddBeef } from "@/hooks/mutations";
-import { ArbiterAccount } from "@/types";
+import { ArbiterAccount, ChallengerAccount } from "@/types";
 import { usePrivy } from "@privy-io/react-auth";
 import NotLoggedIn from "@/components/NotLoggedIn";
 import { enqueueSnackbar } from "notistack";
@@ -28,11 +28,18 @@ import { useRouter } from "next/navigation";
 import { getEnsAddress } from "wagmi/actions";
 import { ensConfig } from "@/components/providers/Providers";
 import { normalize } from "viem/ens";
+import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { useBalance } from "@/hooks/queries";
 
 const NUMBER_OF_ARBITERS = 3;
 
 type FormArbiter = {
   type: ArbiterAccount;
+  value: string;
+};
+
+type FormChallenger = {
+  type: ChallengerAccount;
   value: string;
 };
 
@@ -43,7 +50,7 @@ export type NewBeefFormValues = {
   wager: bigint | null;
   joinDeadline: string;
   settleStart: string;
-  challenger: string | null;
+  challenger: FormChallenger;
   staking: boolean;
 };
 
@@ -51,6 +58,8 @@ const NewBeefPage = () => {
   const { mutate, isPending } = useAddBeef();
   const router = useRouter();
   const { authenticated } = usePrivy();
+  const { data: balance } = useBalance();
+
   const form = useForm<NewBeefFormValues>({
     defaultValues: {
       title: "",
@@ -69,7 +78,10 @@ const NewBeefPage = () => {
         .plus({ months: 6 })
         .set({ second: 0, millisecond: 0 })
         .toISO({ suppressSeconds: true, includeOffset: false }),
-      challenger: "",
+      challenger: {
+        type: ChallengerAccount.TWITTER,
+        value: "",
+      },
       staking: true,
     },
   });
@@ -77,7 +89,7 @@ const NewBeefPage = () => {
   const { watch, control, handleSubmit, setError } = form;
 
   const addBeef = handleSubmit(async (values) => {
-    // Validate submitted ens names
+    // Validate submitted arbiter ens names
     const submittedEnsNames = values.arbiters.map((arbiter) =>
       arbiter.type === ArbiterAccount.ENS
         ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
@@ -86,14 +98,44 @@ const NewBeefPage = () => {
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
 
-    validatedEnsNames.forEach((ensName, index) => {
+    validatedEnsNames.forEach((resolvedEnsName, index) => {
       if (
-        ensName === null &&
+        resolvedEnsName === null &&
         values.arbiters[index]!.type === ArbiterAccount.ENS
       ) {
         setError(`arbiters.${index}.value`, { message: "ENS name not found" });
       }
     });
+
+    if (values.challenger.type === ChallengerAccount.ENS) {
+      const resolvedAddress = await getEnsAddress(ensConfig, {
+        name: normalize(values.challenger.value),
+      });
+
+      if (resolvedAddress === null) {
+        setError("challenger.value", { message: "ENS name not found" });
+        return;
+      } else {
+        values.challenger = {
+          type: ChallengerAccount.ADDRESS,
+          value: resolvedAddress,
+        };
+      }
+    } else if (values.challenger.type === ChallengerAccount.TWITTER) {
+      const value = values.challenger.value;
+
+      const normalizedValue = value.startsWith("@")
+        ? value.replace("@", "")
+        : value;
+
+      const resolvedAddress =
+        await generateAddressFromTwitterHandle(normalizedValue);
+
+      values.challenger = {
+        type: ChallengerAccount.ADDRESS,
+        value: resolvedAddress,
+      };
+    }
 
     // If any ens name is invalid, return
     if (
@@ -107,12 +149,17 @@ const NewBeefPage = () => {
     }
 
     values.arbiters = values.arbiters.map((arbiter, index) => {
-      const ensName = validatedEnsNames[index];
-      if (arbiter.type === ArbiterAccount.ENS && ensName != null) {
-        return { type: ArbiterAccount.ADDRESS, value: ensName };
+      const resolvedAddress = validatedEnsNames[index];
+      if (arbiter.type === ArbiterAccount.ENS && resolvedAddress != null) {
+        return { type: ArbiterAccount.ADDRESS, value: resolvedAddress };
       }
       return arbiter;
     });
+
+    if ((values.wager ?? 0n) > (balance?.value ?? 0n)) {
+      setError("wager", { message: "Not enough balance!" });
+      return;
+    }
 
     mutate(values, {
       onSuccess: () => {
@@ -161,23 +208,62 @@ const NewBeefPage = () => {
               />
             )}
           />
-          <Controller
-            name="challenger"
-            control={control}
-            rules={{
-              required: "Required",
-              validate: (value) =>
-                isAddress(value ?? "") || "Address not valid",
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <TextField
-                {...field}
-                label="Challenger"
-                error={!!error}
-                helperText={error?.message}
+          <Stack gap={1}>
+            <Typography variant="body2">Challenger</Typography>
+            <Stack direction="row" alignItems="flex-start" gap={2}>
+              <Controller
+                name="challenger.type"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} sx={{ width: 200 }}>
+                    <MenuItem value={ArbiterAccount.ADDRESS}>
+                      Wallet address
+                    </MenuItem>
+                    <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
+                    <MenuItem value={ArbiterAccount.TWITTER}>Twitter</MenuItem>
+                  </Select>
+                )}
               />
-            )}
-          />
+              <Controller
+                name="challenger.value"
+                control={control}
+                rules={{
+                  required: "Required",
+                  validate: (value, formValues) => {
+                    const type = formValues.challenger.type;
+                    if (type === ChallengerAccount.ADDRESS) {
+                      return isAddress(value ?? "") || "Address not valid";
+                    }
+
+                    if (type === ChallengerAccount.TWITTER && value === "") {
+                      return "X / Twitter handle not defined";
+                    }
+
+                    return true;
+                  },
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    sx={{ flexGrow: 1 }}
+                    {...field}
+                    label={(() => {
+                      const type = watch(`challenger.type`);
+
+                      if (type === ChallengerAccount.ENS) {
+                        return "ENS Name";
+                      } else if (type === ChallengerAccount.TWITTER) {
+                        return "X / Twitter handle";
+                      } else {
+                        return "Wallet address";
+                      }
+                    })()}
+                    error={!!error}
+                    helperText={error?.message}
+                  />
+                )}
+              />
+            </Stack>
+          </Stack>
           <Controller
             name="joinDeadline"
             control={control}
@@ -221,7 +307,7 @@ const NewBeefPage = () => {
           <Controller
             name="wager"
             control={control}
-            rules={{ required: true }}
+            rules={{ required: "Required" }}
             render={({ field, fieldState: { error } }) => (
               <AmountInput
                 label="Amount"
@@ -242,7 +328,9 @@ const NewBeefPage = () => {
                   render={({ field }) => (
                     <Select {...field} sx={{ width: 200 }}>
                       <MenuItem value={ArbiterAccount.EMAIL}>Email</MenuItem>
-                      {/* <MenuItem value={ArbiterAccount.TWITTER}>Twitter</MenuItem> */}
+                      <MenuItem value={ArbiterAccount.TWITTER}>
+                        Twitter
+                      </MenuItem>
                       <MenuItem value={ArbiterAccount.ADDRESS}>
                         Wallet address
                       </MenuItem>
@@ -270,14 +358,19 @@ const NewBeefPage = () => {
                       sx={{ flexGrow: 1 }}
                       error={!!error}
                       helperText={error?.message}
-                      label={
-                        watch(`arbiters.${index}.type`) === ArbiterAccount.EMAIL
-                          ? "Email address"
-                          : watch(`arbiters.${index}.type`) ===
-                              ArbiterAccount.ENS
-                            ? "ENS Name"
-                            : "Wallet address"
-                      }
+                      label={(() => {
+                        const type = watch(`arbiters.${index}.type`);
+
+                        if (type === ArbiterAccount.EMAIL) {
+                          return "Email address";
+                        } else if (type === ArbiterAccount.ENS) {
+                          return "ENS Name";
+                        } else if (type === ArbiterAccount.TWITTER) {
+                          return "X / Twitter handle";
+                        } else {
+                          return "Wallet address";
+                        }
+                      })()}
                     />
                   )}
                 />
