@@ -30,13 +30,15 @@ export const handleError = (error: Error | undefined) => {
   );
 };
 
-const zdAppId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || "";
+const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "";
 
 export const wagmiConfig = createConfig({
   chains: [activeChain],
   connectors: [injected()],
   transports: {
-    [activeChain.id]: http(`https://rpc.zerodev.app/api/v2/bundler/${zdAppId}`),
+    [activeChain.id]: http(
+      `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}`,
+    ),
   },
 });
 
