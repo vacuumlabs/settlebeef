@@ -79,7 +79,7 @@ const NewBeefPage = () => {
         .set({ second: 0, millisecond: 0 })
         .toISO({ suppressSeconds: true, includeOffset: false }),
       challenger: {
-        type: ChallengerAccount.ADDRESS,
+        type: ChallengerAccount.TWITTER,
         value: "",
       },
       staking: true,
@@ -122,9 +122,14 @@ const NewBeefPage = () => {
         };
       }
     } else if (values.challenger.type === ChallengerAccount.TWITTER) {
-      const resolvedAddress = await generateAddressFromTwitterHandle(
-        values.challenger.value,
-      );
+      const value = values.challenger.value;
+
+      const normalizedValue = value.startsWith("@")
+        ? value.replace("@", "")
+        : value;
+
+      const resolvedAddress =
+        await generateAddressFromTwitterHandle(normalizedValue);
 
       values.challenger = {
         type: ChallengerAccount.ADDRESS,
@@ -230,14 +235,8 @@ const NewBeefPage = () => {
                       return isAddress(value ?? "") || "Address not valid";
                     }
 
-                    if (type === ChallengerAccount.TWITTER) {
-                      if (value === undefined)
-                        return "X / Twitter handle not defined";
-
-                      return (
-                        !value.startsWith("@") ||
-                        "Handle should not start with @"
-                      );
+                    if (type === ChallengerAccount.TWITTER && value === "") {
+                      return "X / Twitter handle not defined";
                     }
 
                     return true;
