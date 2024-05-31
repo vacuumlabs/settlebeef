@@ -11,7 +11,7 @@ import {
 import { useSendTransaction } from "wagmi";
 import { WalletClientSigner } from "@alchemy/aa-core";
 import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
-import { Address, createWalletClient, custom, WalletClient } from "viem";
+import { Address, createWalletClient, custom } from "viem";
 import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
 import { GetTwitterSmartAccountAddressResponse } from "@/app/api/twitter-smart-account/route";
 
@@ -86,14 +86,12 @@ export const SmartAccountClientContextProvider = ({
 
     const eip1193provider = await embeddedWallet.getEthereumProvider();
 
-    const privyClient: WalletClient = createWalletClient({
+    const privyClient = createWalletClient({
       account: embeddedWallet.address as Address,
       chain: activeChain,
       transport: custom(eip1193provider),
     });
 
-    // TODO: Viem version issue?
-    // @ts-ignore
     const privySigner = new WalletClientSigner(privyClient, "json-rpc");
 
     const accountAddress = await getAccountAddress;
