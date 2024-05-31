@@ -1,6 +1,5 @@
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { beefAbi } from "@/abi/beef";
-import type { Address } from "@/types";
 import { NewBeefFormValues } from "@/app/beef/new/page";
 import {
   SLAUGHTERHOUSE_ADDRESS,
@@ -12,7 +11,7 @@ import { ArbiterAccount } from "@/types";
 import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
-import { encodeFunctionData, erc20Abi, isAddress } from "viem";
+import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { queryKeys } from "./queryKeys";
@@ -21,12 +20,23 @@ import { readContract, readContracts } from "wagmi/actions";
 import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { wagmiConfig } from "@/components/providers/Providers";
 import { subtractSlippage } from "@/utils/slippage";
+import { publicClient } from "@/utils/chain";
+
+const mutationKeys = {
+  arbiterAttend: "arbiterAttend",
+  withdrawBeef: "withdrawBeef",
+  settleBeef: "settleBeef",
+  joinBeef: "joinBeef",
+};
 
 export const useArbiterAttend = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
+  const { sendTransaction, connectedAddress } = useContext(
+    SmartAccountClientContext,
+  );
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [mutationKeys.arbiterAttend, connectedAddress, beefId],
     mutationFn: async () => {
       const txHash = await sendTransaction({
         to: beefId,
@@ -36,6 +46,8 @@ export const useArbiterAttend = (beefId: Address) => {
           args: [],
         }),
       });
+
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -50,6 +62,7 @@ export const useSettleBeef = (beefId: Address) => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [mutationKeys.settleBeef, beefId],
     mutationFn: async (verdict: boolean) => {
       const txHash = await sendTransaction({
         to: beefId,
@@ -59,6 +72,8 @@ export const useSettleBeef = (beefId: Address) => {
           args: [verdict],
         }),
       });
+
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     },
@@ -110,10 +125,13 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
       }),
     });
 
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
     return txHash;
   };
 
   return useMutation({
+    mutationKey: [mutationKeys.joinBeef, beefId],
     mutationFn: joinBeef,
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
@@ -238,81 +256,33 @@ const getWithdrawAmountOut = async (beefAddress: Address) => {
   return subtractSlippage(amountOut);
 };
 
-export const useWithdrawRaw = (beefId: Address) => {
+export const useWithdrawBeef = (
+  beefId: Address,
+  withdrawType: "withdrawRaw" | "withdrawRotten" | "serveBeef",
+) => {
   const { sendTransaction } = useContext(SmartAccountClientContext);
   const queryClient = useQueryClient();
 
-  const withdrawRaw = async () => {
+  const executeMutation = async () => {
     const amountOut = await getWithdrawAmountOut(beefId);
 
     const txHash = await sendTransaction({
       to: beefId,
       data: encodeFunctionData({
         abi: beefAbi,
-        functionName: "withdrawRaw",
+        functionName: withdrawType,
         args: [amountOut],
       }),
     });
+
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     return txHash;
   };
 
   return useMutation({
-    mutationFn: withdrawRaw,
-    onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
-    },
-  });
-};
-
-export const useWithdrawRotten = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
-
-  const withdrawRotten = async () => {
-    const amountOut = await getWithdrawAmountOut(beefId);
-
-    const txHash = await sendTransaction({
-      to: beefId,
-      data: encodeFunctionData({
-        abi: beefAbi,
-        functionName: "withdrawRotten",
-        args: [amountOut],
-      }),
-    });
-
-    return txHash;
-  };
-
-  return useMutation({
-    mutationFn: withdrawRotten,
-    onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
-    },
-  });
-};
-
-export const useServeBeef = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
-
-  const serveBeef = async () => {
-    const amountOut = await getWithdrawAmountOut(beefId);
-
-    const txHash = await sendTransaction({
-      to: beefId,
-      data: encodeFunctionData({
-        abi: beefAbi,
-        functionName: "serveBeef",
-        args: [amountOut],
-      }),
-    });
-
-    return txHash;
-  };
-
-  return useMutation({
-    mutationFn: serveBeef,
+    mutationFn: executeMutation,
+    mutationKey: [beefId, withdrawType],
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
     },

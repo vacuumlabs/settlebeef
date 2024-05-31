@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext } from "react";
+import React from "react";
 import {
   useBeef,
   useEnsNames,
@@ -23,9 +23,8 @@ import {
   styled,
 } from "@mui/material";
 import { redirect } from "next/navigation";
-import { Address, formatEther } from "viem";
+import { Address, formatEther, zeroAddress } from "viem";
 import { getAddressOrEnsName } from "@/utils";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
 import { calculateColorFromStreetCredit } from "@/utils/colors";
@@ -92,24 +91,22 @@ function StepIcon(props: StepIconProps) {
   );
 }
 
-const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
-  const { connectedAddress } = useContext(SmartAccountClientContext);
-  const { id } = params;
-  const beef = useBeef(id);
-  const arbiterStatuses = useGetArbiterStatuses(
-    (beef?.address ?? "0x0") as Address,
-    beef?.arbiters ?? [],
-  );
+const DEFAULT_STEPS = [
+  { icon: "🥩", text: "Beef creation" },
+  { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+  { icon: "🤺", text: "Challenger joining" },
+  { icon: "👨‍🍳", text: "Beef cooking" },
+  { icon: "🧑‍⚖️", text: "Beef settling" },
+  { icon: "🍽️", text: "Beef ready to serve" },
+  { icon: "😋", text: "Beef served" },
+] as const;
 
-  let steps = [
-    { icon: "🥩", text: "Beef creation" },
-    { icon: "🧑‍⚖️", text: "Arbiters attendance" },
-    { icon: "🤺", text: "Challenger joining" },
-    { icon: "👨‍🍳", text: "Beef cooking" },
-    { icon: "🧑‍⚖️", text: "Beef settling" },
-    { icon: "🍽️", text: "Beef ready to serve" },
-    { icon: "😋", text: "Beef served" },
-  ];
+const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
+  const { id } = params;
+  const beef = useBeef(id as Address);
+
+  const { data: arbiterStatuses, refetch: refetchArbiters } =
+    useGetArbiterStatuses(beef?.address ?? zeroAddress, beef?.arbiters ?? []);
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
@@ -135,85 +132,128 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     owner,
     challenger,
     wager,
-    joinDeadline,
+    joinDeadline: joinDeadlineTimestamp,
     arbiters,
     resultYes,
     resultNo,
     attendCount,
     isCooking,
-    settleStart,
+    settleStart: settleStartTimestamp,
     staking,
     beefGone,
     refetch,
   } = beef;
 
-  const isUserArbiter =
-    connectedAddress != null &&
-    arbiters
-      .map((it) => it.toLowerCase())
-      .includes(connectedAddress.toLowerCase());
-  const isUserChallenger =
-    connectedAddress != null &&
-    connectedAddress.toLowerCase() === challenger.toLowerCase();
-  const isUserOwner =
-    connectedAddress != null &&
-    connectedAddress.toLowerCase() === owner.toLowerCase();
+  const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000);
+  const settleStart = new Date(Number(settleStartTimestamp) * 1000);
 
-  let step = 0;
-  let deadline: Date | undefined = new Date(Number(joinDeadline) * 1000);
-  let isRotten = false;
-  const now = new Date().getTime();
-  if (attendCount < arbiters.length) {
-    if (now < joinDeadline * 1000n) {
-      step = 1;
-    } else {
-      steps = steps.slice(0, 1);
-      steps.push({ icon: "🤦", text: "Arbiters didn't attend" });
-      steps.push({ icon: "🤢", text: "Beef raw forever" });
-      step = 2;
-      isRotten = true;
-      if (beefGone) {
-        step = 3;
-      }
-    }
-  } else {
-    step = 2;
-    if (isCooking) {
-      if (now < settleStart * 1000n) {
-        deadline = new Date(Number(settleStart) * 1000);
-        step = 3;
+  // FIXME: this assumes constant settlingDuration of 30 days!
+  const settleDuration = BigInt(60 * 60 * 24 * 30);
+  const settleDeadline = new Date(
+    Number((settleStartTimestamp + settleDuration) * 1000n),
+  );
+
+  const getBeefState = () => {
+    const now = new Date();
+
+    // Arbiters have not joined yet
+    if (attendCount < arbiters.length) {
+      // Arbiters still have time join
+      if (now < joinDeadline) {
+        return {
+          step: 1,
+          steps: DEFAULT_STEPS,
+          deadline: joinDeadline,
+        };
       } else {
-        step = 4;
-        // FIXME: this assumes constant settlingDuration of 30 days!
-        deadline = new Date(
-          Number(settleStart + BigInt(60 * 60 * 24 * 30)) * 1000,
-        );
-        if (resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2) {
-          step = 5;
-          deadline = undefined;
-          if (beefGone) {
-            step = 7;
+        // Arbiters failed to attend
+        return {
+          steps: [
+            { icon: "🥩", text: "Beef creation" },
+            { icon: "🤦", text: "Arbiters didn't attend" },
+            { icon: "🤢", text: "Beef raw forever" },
+          ],
+          step: beefGone ? 3 : 2,
+          isRotten: true,
+          deadline: joinDeadline, // TODO: verify
+        };
+      }
+    } else {
+      if (isCooking) {
+        // Challenger joined the beef
+        if (now < settleStart) {
+          // Wait until `settleStart` when arbiters can vote
+          return {
+            steps: DEFAULT_STEPS,
+            step: 3,
+            deadline: settleStart,
+          };
+        } else {
+          const majorityReached =
+            resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2;
+
+          if (majorityReached) {
+            // Beef is successfully decided
+            return {
+              steps: DEFAULT_STEPS,
+              step: beefGone ? 7 : 6,
+            };
+          } else if (now > settleDeadline) {
+            // Arbiters failed to vote and decide the beef
+            return {
+              steps: [
+                { icon: "🥩", text: "Beef creation" },
+                { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+                { icon: "🤺", text: "Challenger joining" },
+                { icon: "👨‍🍳", text: "Beef cooking" },
+                { icon: "🤦", text: "Beef wasn't settled" },
+                { icon: "🤢", text: "Beef rotten" },
+              ],
+              step: 5,
+              isRotten: true,
+            };
+          } else {
+            // Voting in progress until `settleDeadline`
+            return {
+              steps: DEFAULT_STEPS,
+              step: 4,
+              deadline: settleDeadline,
+            };
           }
-        } else if (now > (settleStart + BigInt(60 * 60 * 24 * 30)) * 1000n) {
-          deadline = undefined;
-          // FIXME: this assumes constant settlingDuration of 30 days!
-          steps = steps.slice(0, 4);
-          steps.push({ icon: "🤦", text: "Beef wasn't settled" });
-          steps.push({ icon: "🤢", text: "Beef rotten" });
-          isRotten = true;
+        }
+      } else {
+        // Challenger has not yet joined the beef
+        if (now < joinDeadline) {
+          // Waiting for challenger to join
+          return {
+            steps: DEFAULT_STEPS,
+            step: 2,
+            deadline: joinDeadline,
+          };
+        } else {
+          // Challenger failed to join in time
+          return {
+            steps: [
+              { icon: "🥩", text: "Beef creation" },
+              { icon: "🧑‍⚖️", text: "Arbiters attendance" },
+              { icon: "🤦", text: "Challenger didn't join" },
+              { icon: "🤢", text: "Beef raw forever" },
+            ],
+            step: beefGone ? 4 : 3,
+            isRotten: true,
+          };
         }
       }
-    } else {
-      steps = steps.slice(0, 2);
-      steps.push({ icon: "🤦", text: "Challenger didn't join" });
-      steps.push({ icon: "🤢", text: "Beef raw forever" });
-      step = 3;
-      isRotten = true;
-      if (beefGone) {
-        step = 4;
-      }
     }
-  }
+  };
+
+  const dateCases: Record<string, Date> = {
+    "Challenger joining": joinDeadline,
+    "Beef cooking": settleStart,
+    "Beef settling": settleDeadline,
+  };
+
+  const { steps, step, isRotten, deadline } = getBeefState();
 
   return (
     <Container sx={{ pt: 4, pb: 6 }}>
@@ -256,18 +296,8 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             connector={<BeefStepConnector />}
           >
             {steps.map((label, index) => {
-              const stepTimeInSeconds =
-                index === 2
-                  ? Number(joinDeadline)
-                  : index === 3
-                    ? Number(settleStart)
-                    : index === 4
-                      ? Number(settleStart + BigInt(60 * 60 * 24 * 30))
-                      : null;
+              const stepDate = dateCases[label.text]?.toDateString();
 
-              const stepDate = stepTimeInSeconds
-                ? new Date(1000 * stepTimeInSeconds).toDateString()
-                : null;
               return (
                 <Step key={label.text}>
                   <StepLabel
@@ -286,7 +316,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                           <Typography variant="body2">{stepDate}</Typography>
                         </Stack>
                       )}
-                      {index === step && deadline != null && (
+                      {index === step && deadline !== undefined && (
                         <Typography sx={{ fontWeight: 600 }}>
                           <Countdown deadline={deadline} />
                         </Typography>
@@ -314,10 +344,10 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               </Typography>
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
-            {arbiters.map((arbiter, index) => (
+            {arbiterStatuses.map(({ address, status }, index) => (
               <Stack
                 direction={"row"}
-                key={arbiter}
+                key={address}
                 gap={1}
                 justifyContent={"space-between"}
                 alignItems="center"
@@ -325,30 +355,28 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 <Chip
                   label={
                     <Typography color="white" variant="subtitle1">
-                      {arbiterStatuses
-                        ? Number(arbiterStatuses[index]!.streetCredit)
-                        : "-"}
+                      {status?.streetCredit ? Number(status.streetCredit) : "-"}
                     </Typography>
                   }
                   sx={{
                     backgroundColor: calculateColorFromStreetCredit(
-                      arbiterStatuses?.[index]!.streetCredit,
+                      status?.streetCredit,
                     ),
                   }}
                 />
                 <Typography variant="subtitle2">
-                  {getAddressOrEnsName(arbiter, ensNames?.at(2 + index), false)}
+                  {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
                 </Typography>
-                {/* TODO: show attended/settled status */}
-                {arbiterStatuses && (
+
+                {status && (
                   <Typography>
                     {step < 4
-                      ? arbiterStatuses[index]!.hasAttended
+                      ? status.hasAttended
                         ? "✅"
                         : "⌛"
-                      : arbiterStatuses[index]!.hasSettled === 1n
+                      : status.hasSettled === 1n
                         ? "👍🏽"
-                        : arbiterStatuses[index]!.hasSettled === 2n
+                        : status.hasSettled === 2n
                           ? "👎🏽"
                           : "⌛"}
                   </Typography>
@@ -358,12 +386,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           </Stack>
           <BeefControls
             {...{
-              id: id as Address,
               beef,
-              isUserArbiter,
-              isUserChallenger,
-              isUserOwner,
-              refetch,
+              arbiterStatuses,
+              refetch: () => {
+                void refetch();
+                void refetchArbiters?.();
+              },
             }}
           />
         </Stack>

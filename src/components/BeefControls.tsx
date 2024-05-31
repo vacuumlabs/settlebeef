@@ -1,226 +1,321 @@
 import React, { useContext } from "react";
-import { Button, Stack } from "@mui/material";
+import { Button, CircularProgress, Stack } from "@mui/material";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import type { Address, Beef, UnixTimestamp } from "@/types";
-import { useGetArbiterStatuses } from "@/hooks/queries";
+import type { Beef } from "@/types";
+import { ArbiterStatus } from "@/hooks/queries";
 import {
   useArbiterAttend,
   useJoinBeef,
-  useServeBeef,
   useSettleBeef,
-  useWithdrawRaw,
-  useWithdrawRotten,
+  useWithdrawBeef,
 } from "@/hooks/mutations";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { DateTime } from "luxon";
+import { Address, isAddressEqual } from "viem";
 
 type ButtonProps = {
-  id: Address;
+  beefAddress: Address;
+  refetch: () => void;
 };
 
 const WithdrawButton = ({
-  id,
-  beef,
+  beefAddress,
   refetch,
-}: ButtonProps & { beef: Beef; refetch: () => void }) => {
-  const {
-    isCooking,
-    joinDeadline,
-    settleStart,
-    resultYes,
-    resultNo,
-    arbiters,
-  } = beef;
+  type,
+}: ButtonProps & { type: "withdrawRaw" | "withdrawRotten" | "serveBeef" }) => {
+  const { mutate, isPending, isSuccess } = useWithdrawBeef(beefAddress, type);
 
-  const canWithdrawRaw =
-    !isCooking &&
-    parseIsoDateToTimestamp(DateTime.now().toISO()) > joinDeadline;
-  const canWithdrawRotten =
-    isCooking &&
-    parseIsoDateToTimestamp(DateTime.now().toISO()) >
-      settleStart + BigInt(30 * 24 * 60 * 60);
-  const canServe =
-    resultYes > Math.floor(arbiters.length / 2) ||
-    resultNo > Math.floor(arbiters.length / 2);
+  const selectText = () => {
+    if (type === "withdrawRaw") {
+      return "Withdraw Raw Beef";
+    } else if (type === "withdrawRotten") {
+      return "Withdraw Rotten Beef";
+    } else {
+      return "Serve Beef";
+    }
+  };
 
-  const withdrawRawMutation = useWithdrawRaw(id);
-  const withdrawRottenMutation = useWithdrawRotten(id);
-  const serveMutation = useServeBeef(id);
+  const text = selectText();
 
-  if (canWithdrawRaw) {
-    return (
-      <Button
-        onClick={() =>
-          withdrawRawMutation.mutate(undefined, { onSuccess: refetch })
-        }
-        variant="contained"
-      >
-        Withdraw Raw Beef
-      </Button>
-    );
-  } else if (canWithdrawRotten) {
-    return (
-      <Button
-        onClick={() =>
-          withdrawRottenMutation.mutate(undefined, { onSuccess: refetch })
-        }
-        variant="contained"
-      >
-        Withdraw Rotten Beef
-      </Button>
-    );
-  } else if (canServe) {
-    return (
-      <Button
-        onClick={() => serveMutation.mutate(undefined, { onSuccess: refetch })}
-        variant="contained"
-      >
-        Serve Beef
-      </Button>
-    );
-  } else {
-    return (
-      <Button disabled variant="outlined">
-        Nothing to do
-      </Button>
-    );
-  }
+  return (
+    <Button
+      onClick={() => mutate(undefined, { onSuccess: refetch })}
+      disabled={isPending || isSuccess}
+      variant="contained"
+    >
+      {text}
+      {(isPending || isSuccess) && (
+        <CircularProgress size={20} sx={{ ml: 2 }} />
+      )}
+    </Button>
+  );
 };
 
 const ArbiterButton = ({
-  connectedAddress,
-  id,
-  settleStart,
+  beefAddress,
+  actionType,
   refetch,
-}: ButtonProps & {
-  connectedAddress: Address;
-  settleStart: UnixTimestamp;
-  refetch: () => void;
-}) => {
-  const arbiterStatus = useGetArbiterStatuses(
-    id,
-    connectedAddress ? [connectedAddress] : [],
-  );
-  const settleMutation = useSettleBeef(id);
-  const attendMutation = useArbiterAttend(id);
+}: ButtonProps & { actionType: "attend" | "vote" }) => {
+  const {
+    mutate: settleMutation,
+    isPending: isSettlePending,
+    isSuccess: isSettleSuccess,
+    variables,
+  } = useSettleBeef(beefAddress);
+  const {
+    mutate: attendMutation,
+    isPending: isAttendPending,
+    isSuccess: isAttendSuccess,
+  } = useArbiterAttend(beefAddress);
 
-  if (!arbiterStatus?.[0]) {
-    return <Button disabled>Nothing to do</Button>;
-  }
+  const isSettleLoading = isSettlePending || isSettleSuccess;
+  const isAttendLoading = isAttendPending || isAttendSuccess;
 
-  const { hasSettled, hasAttended } = arbiterStatus[0];
-
-  if (!hasAttended && hasSettled === 0n) {
-    return (
+  return actionType === "attend" ? (
+    <Button
+      variant="contained"
+      disabled={isAttendLoading}
+      onClick={() => attendMutation(undefined, { onSuccess: refetch })}
+    >
+      Attend ✋
+      {isAttendLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+    </Button>
+  ) : (
+    <Stack direction="row" spacing={2}>
       <Button
-        onClick={() => attendMutation.mutate(undefined, { onSuccess: refetch })}
+        variant="contained"
+        disabled={isSettleLoading}
+        onClick={() => settleMutation(true, { onSuccess: refetch })}
       >
-        Attend ✋
+        Settle In Favour 👍
+        {isSettleLoading && variables === true && (
+          <CircularProgress size={20} sx={{ ml: 2 }} />
+        )}
       </Button>
-    );
-  } else if (
-    hasAttended &&
-    hasSettled === 0n &&
-    parseIsoDateToTimestamp(DateTime.now().toISO()) > settleStart
-  ) {
-    return (
-      <Stack direction="row" spacing={2}>
-        <Button
-          variant="contained"
-          onClick={() => settleMutation.mutate(true, { onSuccess: refetch })}
-        >
-          Settle In Favour 👍
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => settleMutation.mutate(false, { onSuccess: refetch })}
-        >
-          Settle Against 👎
-        </Button>
-      </Stack>
-    );
-  } else {
-    return (
-      <Button disabled variant="outlined">
-        Nothing to do
+      <Button
+        variant="contained"
+        disabled={isSettleLoading}
+        onClick={() => settleMutation(false, { onSuccess: refetch })}
+      >
+        Settle Against 👎
+        {isSettleLoading && variables === false && (
+          <CircularProgress size={20} sx={{ ml: 2 }} />
+        )}
       </Button>
-    );
-  }
+    </Stack>
+  );
 };
 
 const ChallengerButton = ({
-  id,
+  beefAddress,
   value,
-  hasJoined,
-  attendCount,
   refetch,
-}: ButtonProps & {
-  value: bigint;
-  hasJoined: boolean;
-  attendCount: bigint;
-  refetch: () => void;
-}) => {
-  const joinBeefMutation = useJoinBeef(id, value);
+}: ButtonProps & { value: bigint }) => {
+  const { mutate, isPending, isSuccess } = useJoinBeef(beefAddress, value);
 
-  // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
-  return hasJoined || attendCount < 3 ? (
-    <Button disabled variant="outlined">
-      Nothing to do
-    </Button>
-  ) : (
+  return (
     <Button
       variant="contained"
-      onClick={() => joinBeefMutation.mutate(undefined, { onSuccess: refetch })}
+      disabled={isPending || isSuccess}
+      onClick={() => mutate(undefined, { onSuccess: refetch })}
     >
       Join Beef
+      {(isPending || isSuccess) && (
+        <CircularProgress size={20} sx={{ ml: 2 }} />
+      )}
     </Button>
   );
 };
 
 type BeefControlsProps = {
-  id: Address;
   beef: Beef;
-  isUserArbiter: boolean;
-  isUserChallenger: boolean;
-  isUserOwner: boolean;
+  arbiterStatuses: ArbiterStatus[];
   refetch: () => void;
 };
 
 const BeefControls = ({
-  id,
   beef,
-  isUserArbiter,
-  isUserChallenger,
-  isUserOwner,
+  arbiterStatuses,
   refetch,
 }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext);
 
-  const { isCooking, wager, settleStart, attendCount, beefGone } = beef;
+  if (connectedAddress === undefined) {
+    return null;
+  }
+
+  const { action, type } = decideAction(
+    beef,
+    arbiterStatuses,
+    connectedAddress,
+  );
+
+  // User is not a part of the beef - don't show anything
+  if (action === undefined) {
+    return null;
+  }
+
+  return (
+    <>
+      {action === "arbiter" && (
+        <ArbiterButton
+          refetch={refetch}
+          beefAddress={beef.address}
+          actionType={type}
+        />
+      )}
+      {action === "withdrawal" && (
+        <WithdrawButton
+          refetch={refetch}
+          beefAddress={beef.address}
+          type={type}
+        />
+      )}
+      {action === "joinBeef" && (
+        <ChallengerButton
+          refetch={refetch}
+          beefAddress={beef.address}
+          value={beef.wager}
+        />
+      )}
+      {action === "noAction" && (
+        <Button disabled variant="outlined">
+          Nothing to do
+        </Button>
+      )}
+    </>
+  );
+};
+
+const decideAction = (
+  beef: Beef,
+  arbiterStatuses: ArbiterStatus[],
+  userAddress: Address,
+) => {
+  const {
+    challenger,
+    owner,
+    beefGone,
+    settleStart,
+    isCooking,
+    attendCount,
+    joinDeadline,
+  } = beef;
+
+  const nowTimestamp = parseIsoDateToTimestamp(DateTime.now().toISO());
+  const hasPassedJoinDeadline = nowTimestamp > joinDeadline;
+  const hasPassedSettleDeadline =
+    nowTimestamp > settleStart + BigInt(30 * 24 * 60 * 60);
+
+  const isUserChallenger = isAddressEqual(challenger, userAddress);
+  const isUserOwner = isAddressEqual(owner, userAddress);
 
   const showWithdrawButton = !beefGone && (isUserOwner || isUserChallenger);
 
-  return (
-    connectedAddress && (
-      <Stack direction="row" spacing={2}>
-        {isUserArbiter && (
-          <ArbiterButton {...{ id, connectedAddress, settleStart, refetch }} />
-        )}
-        {isUserChallenger && !(isCooking || attendCount < 3) && (
-          <ChallengerButton
-            {...{
-              id,
-              hasJoined: isCooking,
-              value: wager,
-              attendCount,
-              refetch,
-            }}
-          />
-        )}
-        {showWithdrawButton && <WithdrawButton {...{ id, beef, refetch }} />}
-      </Stack>
-    )
+  // Responsibility for the status presence is delegated to the parent
+  const userArbiter = arbiterStatuses.find(({ address }) =>
+    isAddressEqual(address, userAddress),
   );
+
+  // The user is not a part of the beef
+  if (!isUserOwner && !isUserChallenger && userArbiter === undefined) {
+    return {
+      action: undefined,
+      type: undefined,
+    };
+  }
+
+  const noAction = {
+    action: "noAction",
+    type: undefined,
+  } as const;
+
+  if (showWithdrawButton) {
+    const withdrawalType = getWithdrawalType(
+      beef,
+      hasPassedJoinDeadline,
+      hasPassedSettleDeadline,
+    );
+
+    if (withdrawalType !== undefined) {
+      return {
+        action: "withdrawal",
+        type: withdrawalType,
+      } as const;
+    }
+
+    return noAction;
+  }
+
+  if (userArbiter?.status !== undefined) {
+    const { hasAttended, hasSettled } = userArbiter.status;
+
+    const arbiterType = getArbiterType(
+      hasAttended,
+      hasSettled,
+      hasPassedJoinDeadline,
+      hasPassedSettleDeadline,
+    );
+
+    if (arbiterType !== undefined) {
+      return {
+        action: "arbiter",
+        type: arbiterType,
+      } as const;
+    }
+
+    return noAction;
+  }
+
+  // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
+  if (
+    isUserChallenger &&
+    !(isCooking || attendCount < 3) &&
+    !hasPassedJoinDeadline
+  ) {
+    return {
+      action: "joinBeef",
+      type: undefined,
+    } as const;
+  }
+
+  return noAction;
+};
+
+const getWithdrawalType = (
+  { isCooking, resultYes, resultNo, arbiters }: Beef,
+  hasPassedJoinDeadline: boolean,
+  hasPassedSettleDeadline: boolean,
+) => {
+  const quorum = Math.floor(arbiters.length / 2);
+  const majorityReached = resultYes > quorum || resultNo > quorum;
+
+  if (!isCooking && hasPassedJoinDeadline) {
+    return "withdrawRaw";
+  } else if (isCooking && hasPassedSettleDeadline) {
+    return "withdrawRotten";
+  } else if (majorityReached) {
+    return "serveBeef";
+  }
+
+  return undefined;
+};
+
+const getArbiterType = (
+  hasAttended: boolean,
+  hasSettled: bigint,
+  hasPassedJoinDeadline: boolean,
+  hasPassedSettleDeadline: boolean,
+) => {
+  if (hasSettled !== 0n) return undefined;
+
+  if (!hasAttended && !hasPassedJoinDeadline) {
+    return "attend";
+  } else if (hasAttended && !hasPassedSettleDeadline) {
+    return "vote";
+  }
+
+  return undefined;
 };
 
 export default BeefControls;

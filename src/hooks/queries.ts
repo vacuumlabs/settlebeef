@@ -1,5 +1,5 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import type { Address, Beef } from "../types";
+import type { Beef } from "../types";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { SLAUGHTERHOUSE_ADDRESS } from "@/config";
 import { beefAbi } from "@/abi/beef";
@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "./queryKeys";
 import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
 import { getBalance, getEnsName } from "wagmi/actions";
+import { Address, isAddress } from "viem";
 
 export const useEnsName = (address: Address | undefined) => {
   return useQuery({
@@ -43,14 +44,14 @@ export const useEnsNames = (addresses: (Address | undefined)[]) => {
 };
 
 export const useBeef = (
-  id: string,
+  address: Address,
 ): (Beef & { refetch: () => Promise<unknown> }) | null | undefined => {
   const { data, isError, refetch } = useReadContract({
     abi: beefAbi,
-    address: id as Address,
+    address,
     functionName: "getInfo",
     query: {
-      enabled: id.startsWith("0x"),
+      enabled: isAddress(address),
     },
   });
 
@@ -63,7 +64,7 @@ export const useBeef = (
         refetch,
         ...data.params,
         arbiters: [...data.params.arbiters],
-        address: id,
+        address,
         isCooking: data.cooking,
         resultYes: data.resultYes,
         resultNo: data.resultNo,
@@ -84,79 +85,105 @@ const useGetBeefsArray = () => {
 export const useGetBeefs = () => {
   const { data: beefAddresses } = useGetBeefsArray();
 
+  const beefContractCalls =
+    beefAddresses?.map((address) => {
+      return {
+        abi: beefAbi,
+        address,
+        functionName: "getInfo",
+      } as const;
+    }) ?? [];
+
   const query = useReadContracts({
-    contracts:
-      beefAddresses?.map(
-        (address) =>
-          ({
-            abi: beefAbi,
-            address,
-            functionName: "getInfo",
-          }) as const,
-      ) ?? [],
+    contracts: beefContractCalls,
     query: { enabled: !!beefAddresses },
     allowFailure: false,
   });
+
+  const dataWithAddress =
+    beefAddresses &&
+    query.data?.map((beef, index) => ({
+      ...beef,
+      address: beefAddresses[index]!,
+    }));
+
   return {
     ...query,
-    data:
-      beefAddresses &&
-      query.data?.map((beef, index) => ({
-        ...beef,
-        address: beefAddresses[index]!,
-      })),
+    data: dataWithAddress,
+  };
+};
+
+export type ArbiterStatus = {
+  address: Address;
+  // Status is undefined while its being fetched.
+  status?: {
+    hasAttended: boolean;
+    hasSettled: bigint;
+    streetCredit: bigint;
   };
 };
 
 export const useGetArbiterStatuses = (
-  beefId: Address,
-  arbiterAddresses: Address[],
+  beefAddress: Address,
+  arbiters: readonly Address[],
 ) => {
-  const { data } = useReadContracts({
-    contracts: [
-      ...arbiterAddresses.flatMap((arbiterAddress) => [
-        {
-          abi: beefAbi,
-          address: beefId,
-          functionName: "hasAttended",
-          args: [arbiterAddress],
-        } as const,
-        {
-          abi: beefAbi,
-          address: beefId,
-          functionName: "hasSettled",
-          args: [arbiterAddress],
-        } as const,
-        {
-          abi: slaughterhouseAbi,
-          address: SLAUGHTERHOUSE_ADDRESS,
-          functionName: "streetCredit",
-          args: [arbiterAddress],
-        } as const,
-      ]),
-    ],
+  const { data, refetch } = useReadContracts({
+    contracts: arbiters.flatMap((arbiterAddress) => [
+      {
+        abi: beefAbi,
+        address: beefAddress,
+        functionName: "hasAttended",
+        args: [arbiterAddress],
+      } as const,
+      {
+        abi: beefAbi,
+        address: beefAddress,
+        functionName: "hasSettled",
+        args: [arbiterAddress],
+      } as const,
+      {
+        abi: slaughterhouseAbi,
+        address: SLAUGHTERHOUSE_ADDRESS,
+        functionName: "streetCredit",
+        args: [arbiterAddress],
+      } as const,
+    ]),
     allowFailure: false,
   });
 
-  return data != null
-    ? data
-        .reduce(
-          (acc, curr, idx) => {
-            if (idx % 3 === 0) {
-              acc.push([curr] as unknown as [boolean, bigint, bigint]);
-            } else {
-              acc[acc.length - 1]?.push(curr);
-            }
-            return acc;
+  if (data) {
+    // Chunk data to groups of 3 elements (one readContract call)
+    const chunkedData = Array.from(
+      { length: Math.ceil(data.length / 3) },
+      (_, index) => data.slice(index * 3, index * 3 + 3),
+    );
+
+    const groupedData: ArbiterStatus[] = chunkedData.map(
+      ([hasAttended, hasSettled, streetCredit], index) => {
+        return {
+          address: arbiters[index]!,
+          status: {
+            hasAttended: hasAttended as boolean,
+            hasSettled: hasSettled as bigint,
+            streetCredit: streetCredit as bigint,
           },
-          [] as Array<[boolean, bigint, bigint]>,
-        )
-        .map(([hasAttended, hasSettled, streetCredit]) => ({
-          hasAttended,
-          hasSettled,
-          streetCredit,
-        }))
-    : undefined;
+        };
+      },
+    );
+
+    return {
+      data: groupedData,
+      refetch,
+    };
+  } else {
+    return {
+      data: arbiters.map((arbiter) => ({
+        address: arbiter,
+        status: undefined,
+      })),
+      refetch: undefined,
+    };
+  }
 };
 
 export const useBalance = () => {
