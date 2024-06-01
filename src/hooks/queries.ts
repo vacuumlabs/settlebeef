@@ -1,15 +1,15 @@
-import { useReadContract, useReadContracts } from "wagmi";
-import type { Beef } from "../types";
-import { slaughterhouseAbi } from "@/abi/slaughterhouse";
-import { SLAUGHTERHOUSE_ADDRESS } from "@/constants";
-import { beefAbi } from "@/abi/beef";
 import { useContext } from "react";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "./queryKeys";
-import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
-import { getBalance, getEnsName } from "wagmi/actions";
 import { Address, isAddress } from "viem";
+import { useReadContract, useReadContracts } from "wagmi";
+import { getBalance, getEnsName } from "wagmi/actions";
+import { beefAbi } from "@/abi/beef";
+import { slaughterhouseAbi } from "@/abi/slaughterhouse";
+import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
+import { SLAUGHTERHOUSE_ADDRESS } from "@/constants";
+import type { Beef } from "@/types";
+import { queryKeys } from "./queryKeys";
 
 export const useEnsName = (address: Address | undefined) => {
   return useQuery({

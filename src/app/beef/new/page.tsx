@@ -1,7 +1,5 @@
 "use client";
 
-import AmountInput from "@/components/AmountInput";
-import { isValidEmail } from "@/utils/validations";
 import {
   Button,
   Checkbox,
@@ -16,20 +14,22 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { usePrivy } from "@privy-io/react-auth";
+import { DateTime } from "luxon";
+import { useRouter } from "next/navigation";
+import { enqueueSnackbar } from "notistack";
 import { Controller, useForm } from "react-hook-form";
 import { isAddress } from "viem";
-import { DateTime } from "luxon";
-import { useAddBeef } from "@/hooks/mutations";
-import { ArbiterAccount, ChallengerAccount } from "@/types";
-import { usePrivy } from "@privy-io/react-auth";
-import NotLoggedIn from "@/components/NotLoggedIn";
-import { enqueueSnackbar } from "notistack";
-import { useRouter } from "next/navigation";
-import { getEnsAddress } from "wagmi/actions";
-import { ensConfig } from "@/components/providers/Providers";
 import { normalize } from "viem/ens";
-import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { getEnsAddress } from "wagmi/actions";
+import AmountInput from "@/components/AmountInput";
+import NotLoggedIn from "@/components/NotLoggedIn";
+import { ensConfig } from "@/components/providers/Providers";
+import { useAddBeef } from "@/hooks/mutations";
 import { useBalance } from "@/hooks/queries";
+import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { ArbiterAccount, ChallengerAccount } from "@/types";
+import { isValidEmail } from "@/utils/validations";
 
 const NUMBER_OF_ARBITERS = 3;
 

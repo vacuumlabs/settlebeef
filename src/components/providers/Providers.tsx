@@ -1,21 +1,21 @@
 "use client";
 
+import { ThemeProvider } from "@mui/material";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { SmartAccountClientContextProvider } from "./SmartAccountClientContext";
-import { http } from "viem";
-import { activeChain } from "@/utils/chain";
-import { injected } from "wagmi/connectors";
-import { WagmiProvider, createConfig } from "@privy-io/wagmi";
-import { ellipsizeText } from "@/utils/general";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
-import { ThemeProvider } from "@mui/material";
-import theme from "@/utils/theme";
+import { http } from "viem";
 import { mainnet } from "viem/chains";
+import { injected } from "wagmi/connectors";
+import { activeChain } from "@/utils/chain";
+import { ellipsizeText } from "@/utils/general";
+import theme from "@/utils/theme";
+import { SmartAccountClientContextProvider } from "./SmartAccountClientContext";
 
 type ProvidersProps = {
   children: React.ReactNode;

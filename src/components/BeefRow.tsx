@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
-import { formatEther } from "viem";
 import Link from "next/link";
+import { formatEther } from "viem";
 import { Beef } from "@/types";
 
 export type BeefRowProps = Pick<Beef, "address" | "title" | "wager">;

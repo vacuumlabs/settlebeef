@@ -1,12 +1,11 @@
-import { SxProps, TextField, Theme } from "@mui/material";
 import React, {
   ChangeEventHandler,
   forwardRef,
   useEffect,
   useState,
 } from "react";
+import { SxProps, TextField, Theme } from "@mui/material";
 import { formatEther, parseEther } from "viem";
-
 import { formatBigint, sliceStringDecimals } from "@/utils/general";
 
 const DECIMALS = 6;
