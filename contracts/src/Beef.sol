@@ -32,6 +32,9 @@ contract Beef is OwnableUpgradeable {
         uint128 resultNo;
         uint256 attendCount;
         bool beefGone;
+        uint256 totalBasisPoints;
+        uint256 protocolRewardBasisPoints;
+        uint256 arbitersRewardBasisPoints;
     }
 
     uint256 public constant settlingDuration = 30 days;
@@ -55,6 +58,15 @@ contract Beef is OwnableUpgradeable {
     bool public cooking;
     bool public beefGone;
     Slaughterhouse public slaughterhouse;
+
+    // @notice The portion of rewards allocated to the protocol, measured in basis points (1 point = 1 / totalPoints %)
+    uint256 public protocolRewardBasisPoints;
+
+    // @notice The portion of total rewards allocated to the arbiters, measured in basis points (1 point = 1 / totalPoints %)
+    uint256 public arbitersRewardBasisPoints;
+
+    // @notice The total basis points representing 100% (e.g., 10,000 basis points = 100%)
+    uint256 public totalBasisPoints;
 
     // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
     bool public staking;
@@ -93,7 +105,10 @@ contract Beef is OwnableUpgradeable {
         uint256 settleStart,
         string title,
         string description,
-        address[] arbiters
+        address[] arbiters,
+        uint256 protocolRewardBasisPoints,
+        uint256 arbitersRewardBasisPoints,
+        uint256 totalBasisPoints
     );
     event ArbiterAttended(address indexed arbiter);
     event BeefCooking();
@@ -140,7 +155,10 @@ contract Beef is OwnableUpgradeable {
         address _weth,
         address _wsteth,
         address _uniswapV2Router,
-        address _slaughterhouse
+        address _slaughterhouse,
+        uint256 _totalBasisPoints,
+        uint256 _protocolRewardBasisPoints,
+        uint256 _arbitersRewardBasisPoints
     ) public payable initializer {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
@@ -160,6 +178,9 @@ contract Beef is OwnableUpgradeable {
         WSTETH = IERC20(_wsteth);
         uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
         slaughterhouse = Slaughterhouse(_slaughterhouse);
+        totalBasisPoints = _totalBasisPoints;
+        protocolRewardBasisPoints = _protocolRewardBasisPoints;
+        arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
 
         __Ownable_init(params.owner);
 
@@ -167,7 +188,7 @@ contract Beef is OwnableUpgradeable {
             _stakeBeef(amountOutMin);
         }
 
-        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters);
+        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters, totalBasisPoints, protocolRewardBasisPoints, arbitersRewardBasisPoints);
     }
 
     // @notice Get the current information about beef.
@@ -188,7 +209,10 @@ contract Beef is OwnableUpgradeable {
             resultYes: resultYes,
             resultNo: resultNo,
             attendCount: attendCount,
-            beefGone: beefGone
+            beefGone: beefGone,
+            totalBasisPoints: totalBasisPoints,
+            protocolRewardBasisPoints: protocolRewardBasisPoints,
+            arbitersRewardBasisPoints: arbitersRewardBasisPoints
         });
     }
 
@@ -260,18 +284,36 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
+        uint256 balance = address(this).balance;
+
+        uint256 protocolReward = balance * protocolRewardBasisPoints / totalBasisPoints;
+        uint256 totalArbiterReward = balance * arbitersRewardBasisPoints / totalBasisPoints;
+        uint256 beefReward = balance - totalArbiterReward - protocolReward;
+
+        uint256 individualArbiterReward = totalArbiterReward / arbitersRequiredCount;
+
         if (resultYes > resultNo) {
             if (msg.sender != owner()) {
                 revert BeefNotOwner(owner(), msg.sender);
             }
-            payable(owner()).transfer(address(this).balance);
+            payable(owner()).transfer(beefReward);
             emit BeefServed(owner());
         } else {
             if (msg.sender != challenger) {
                 revert BeefNotChallenger(challenger, msg.sender);
             }
-            payable(challenger).transfer(address(this).balance);
+            payable(challenger).transfer(beefReward);
             emit BeefServed(challenger);
+        }
+
+        payable(address(slaughterhouse)).transfer(protocolReward);
+
+        for (uint256 i; i < arbiters.length;) {
+            payable(arbiters[i]).transfer(individualArbiterReward);
+
+            unchecked {
+                ++i;
+            }
         }
 
         StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);

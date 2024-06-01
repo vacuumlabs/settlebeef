@@ -11,9 +11,10 @@ contract SlaughterhouseTest is Test {
     address public WETH = address(0x1);
     address public WSTETH = address(0x2);
     address public uniswapV2Router = address(0x3);
+    address public slaughterhouseOwner = address(5);
 
     function setUp() public {
-        slaughterhouse = new Slaughterhouse(WETH, WSTETH, uniswapV2Router);
+        slaughterhouse = new Slaughterhouse(WETH, WSTETH, uniswapV2Router, slaughterhouseOwner, 100, 10);
     }
 
     function test_packageBeef_packagesBeef() public {
@@ -48,5 +49,8 @@ contract SlaughterhouseTest is Test {
         assertEq(address(beef.WETH()), WETH, "Beef WETH mismatch");
         assertEq(address(beef.WSTETH()), WSTETH, "Beef WSTETH mismatch");
         assertEq(address(beef.uniswapV2Router()), uniswapV2Router, "Beef uniswapV2Router mismatch");
+        assertEq(beef.protocolRewardBasisPoints(), slaughterhouse.protocolRewardBasisPoints(), "Beef protocolRewardsBasisPoints mismatch");
+        assertEq(beef.arbitersRewardBasisPoints(), slaughterhouse.arbitersRewardBasisPoints(), "Beef arbitersRewardsBasisPoints mismatch");
+        assertEq(beef.totalBasisPoints(), slaughterhouse.totalBasisPoints(), "Beef totalBasisPoints mismatch");
     }
 }

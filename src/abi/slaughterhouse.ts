@@ -2,20 +2,19 @@ export const slaughterhouseAbi = [
   {
     type: "constructor",
     inputs: [
+      { name: "_weth", type: "address", internalType: "address" },
+      { name: "_wsteth", type: "address", internalType: "address" },
+      { name: "_uniswapV2Router", type: "address", internalType: "address" },
+      { name: "initialOwner", type: "address", internalType: "address" },
       {
-        name: "_weth",
-        type: "address",
-        internalType: "address",
+        name: "_protocolRewardBasisPoints",
+        type: "uint256",
+        internalType: "uint256",
       },
       {
-        name: "_wsteth",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_uniswapV2Router",
-        type: "address",
-        internalType: "address",
+        name: "_arbitersRewardBasisPoints",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "nonpayable",
@@ -24,90 +23,56 @@ export const slaughterhouseAbi = [
     type: "function",
     name: "WETH",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "WSTETH",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "arbitersRewardBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "beefImplementation",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "beefs",
-    inputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "canUpdateStreetCredit",
-    inputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getBeefs",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address[]",
-        internalType: "address[]",
-      },
-    ],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "owner",
+    inputs: [],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
@@ -119,98 +84,80 @@ export const slaughterhouseAbi = [
         type: "tuple",
         internalType: "struct Beef.ConstructorParams",
         components: [
-          {
-            name: "owner",
-            type: "address",
-            internalType: "address",
-          },
-          {
-            name: "wager",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "challenger",
-            type: "address",
-            internalType: "address",
-          },
-          {
-            name: "settleStart",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "title",
-            type: "string",
-            internalType: "string",
-          },
-          {
-            name: "description",
-            type: "string",
-            internalType: "string",
-          },
-          {
-            name: "arbiters",
-            type: "address[]",
-            internalType: "address[]",
-          },
-          {
-            name: "joinDeadline",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "staking",
-            type: "bool",
-            internalType: "bool",
-          },
+          { name: "owner", type: "address", internalType: "address" },
+          { name: "wager", type: "uint256", internalType: "uint256" },
+          { name: "challenger", type: "address", internalType: "address" },
+          { name: "settleStart", type: "uint256", internalType: "uint256" },
+          { name: "title", type: "string", internalType: "string" },
+          { name: "description", type: "string", internalType: "string" },
+          { name: "arbiters", type: "address[]", internalType: "address[]" },
+          { name: "joinDeadline", type: "uint256", internalType: "uint256" },
+          { name: "staking", type: "bool", internalType: "bool" },
         ],
       },
-      {
-        name: "amountOutMin",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
     ],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address payable",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address payable" }],
     stateMutability: "payable",
   },
   {
     type: "function",
-    name: "streetCredit",
+    name: "protocolRewardBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "renounceOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "setRewardBasisPoints",
     inputs: [
       {
-        name: "",
-        type: "address",
-        internalType: "address",
+        name: "_protocolRewardBasisPoints",
+        type: "uint256",
+        internalType: "uint256",
       },
-    ],
-    outputs: [
       {
-        name: "",
-        type: "int256",
-        internalType: "int256",
+        name: "_arbitersRewardBasisPoints",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "streetCredit",
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "int256", internalType: "int256" }],
     stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "transferOwnership",
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "uniswapV2Router",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
@@ -222,12 +169,15 @@ export const slaughterhouseAbi = [
         type: "uint8[]",
         internalType: "enum StreetCredit.Vote[]",
       },
-      {
-        name: "to",
-        type: "address[]",
-        internalType: "address[]",
-      },
+      { name: "to", type: "address[]", internalType: "address[]" },
     ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "withdrawRewards",
+    inputs: [],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -235,12 +185,7 @@ export const slaughterhouseAbi = [
     type: "event",
     name: "BeefPackaged",
     inputs: [
-      {
-        name: "beef",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
+      { name: "beef", type: "address", indexed: true, internalType: "address" },
       {
         name: "owner",
         type: "address",
@@ -257,13 +202,75 @@ export const slaughterhouseAbi = [
     anonymous: false,
   },
   {
+    type: "event",
+    name: "OwnershipTransferred",
+    inputs: [
+      {
+        name: "previousOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "newOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "RewardBasisPointsChanged",
+    inputs: [
+      {
+        name: "newProtocolRewardBasisPoints",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+      {
+        name: "newArbitersRewardBasisPoints",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "RewardsWithdrawn",
+    inputs: [
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  { type: "error", name: "ERC1167FailedCreateClone", inputs: [] },
+  {
     type: "error",
-    name: "ERC1167FailedCreateClone",
-    inputs: [],
+    name: "InvalidBasisPoints",
+    inputs: [
+      { name: "totalBasisPoints", type: "uint256", internalType: "uint256" },
+      { name: "providedBasisPoints", type: "uint256", internalType: "uint256" },
+    ],
   },
   {
     type: "error",
-    name: "StreetCreditTransferForbidden",
-    inputs: [],
+    name: "OwnableInvalidOwner",
+    inputs: [{ name: "owner", type: "address", internalType: "address" }],
   },
+  {
+    type: "error",
+    name: "OwnableUnauthorizedAccount",
+    inputs: [{ name: "account", type: "address", internalType: "address" }],
+  },
+  { type: "error", name: "StreetCreditTransferForbidden", inputs: [] },
+  { type: "error", name: "ZeroBalance", inputs: [] },
 ] as const;

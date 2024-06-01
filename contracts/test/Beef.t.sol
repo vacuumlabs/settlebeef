@@ -11,15 +11,18 @@ import {Beef} from "../src/Beef.sol";
 contract BeefTest is Test {
     Beef public beef;
     address[] arbiters = new address[](3);
+    address slaughterhouse = address(5);
+    address beefOwner = address(10);
+    address challenger = address(1);
 
     function setUp() public {
         arbiters[0] = makeAddr("alice");
         arbiters[1] = makeAddr("bob");
         arbiters[2] = makeAddr("charlie");
         Beef.ConstructorParams memory params = Beef.ConstructorParams({
-            owner: address(this),
+            owner: beefOwner,
             wager: 1000,
-            challenger: address(0),
+            challenger: challenger,
             settleStart: block.timestamp + 30 days,
             title: "Test Beef",
             description: "This is a test beef.",
@@ -29,7 +32,12 @@ contract BeefTest is Test {
         });
         Beef beefImpl = new Beef();
         beef = Beef(payable(Clones.clone(address(beefImpl))));
-        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0), address(0));
+
+        vm.prank(beefOwner);
+        vm.deal(beefOwner, params.wager);
+
+        // 2% Protocol, 3% Arbiters rewards
+        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0), slaughterhouse, 10000, 200, 300);
     }
 
     function test_arbiterAttend_reverts_ifAlreadyAttended() public {
@@ -37,5 +45,44 @@ contract BeefTest is Test {
         beef.arbiterAttend();
         vm.expectRevert(abi.encodeWithSelector(Beef.BeefArbiterAlreadyAttended.selector, arbiters[0]));
         beef.arbiterAttend();
+    }
+
+    function testRewardsDistribution() public {
+        vm.startPrank(arbiters[0]);
+        beef.arbiterAttend();
+        vm.startPrank(arbiters[1]);
+        beef.arbiterAttend();
+        vm.startPrank(arbiters[2]);
+        beef.arbiterAttend();
+
+        vm.startPrank(challenger);
+        vm.deal(challenger, 1000);
+
+        beef.joinBeef{value: 1000}(0);
+
+        // Warp to settleStart
+        vm.warp(block.timestamp + 31 days);
+
+        vm.startPrank(arbiters[0]);
+        beef.settleBeef(true);
+        vm.startPrank(arbiters[1]);
+        beef.settleBeef(false);
+        vm.startPrank(arbiters[2]);
+        beef.settleBeef(true);
+
+        // Silence slaughterhouse streetCredit calls
+        vm.mockCall(slaughterhouse, abi.encodeWithSelector(beef.slaughterhouse().updateStreetCredit.selector), abi.encode(0));
+
+        // Beef owner won the challenge
+        vm.startPrank(beefOwner);
+        beef.serveBeef(0);
+
+        assertEq(arbiters[0].balance, 20);
+        assertEq(arbiters[1].balance, 20);
+        assertEq(arbiters[2].balance, 20);
+        assertEq(slaughterhouse.balance, 40);
+
+        // Original wager + challenger wager - arbitersRewards - protocolRewards
+        assertEq(beefOwner.balance, 1900);
     }
 }
