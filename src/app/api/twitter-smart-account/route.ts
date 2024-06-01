@@ -1,17 +1,17 @@
-import { cookies } from "next/headers";
-import { Address, getContract } from "viem";
-import { sql } from "@vercel/postgres";
-import { LocalAccountSigner } from "@alchemy/aa-core";
 import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
+import { LocalAccountSigner } from "@alchemy/aa-core";
 import {
   LinkedAccountWithMetadata,
   PrivyClient,
   WalletWithMetadata,
 } from "@privy-io/server-auth";
-import { activeChainAlchemy, publicClient } from "@/utils/chain";
+import { sql } from "@vercel/postgres";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { Address, getContract } from "viem";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
-import { NextRequest, NextResponse } from "next/server";
+import { activeChainAlchemy, publicClient } from "@/utils/chain";
 
 export type GetTwitterSmartAccountAddressResponse = {
   address: Address | undefined;

@@ -1,7 +1,7 @@
-import { AppBar, Stack, Toolbar, Typography } from "@mui/material";
 import React from "react";
-import LoginButton from "./LoginButton";
+import { AppBar, Stack, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
+import LoginButton from "./LoginButton";
 
 const Header = () => {
   return (

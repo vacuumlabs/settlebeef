@@ -1,11 +1,11 @@
+import { isAddress, getContract } from "viem";
+import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
+import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 import {
   GenerateUserAddressParams,
   generateUserAddress,
 } from "@/server/actions/generateUserAddress";
-import { isAddress, getContract } from "viem";
 import { publicClient } from "@/utils/chain";
-import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
-import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 
 const lightAccountFactory = getContract({
   client: publicClient,

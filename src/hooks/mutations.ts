@@ -1,26 +1,26 @@
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
+import { useContext } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
+import { readContract, readContracts } from "wagmi/actions";
 import { beefAbi } from "@/abi/beef";
+import { slaughterhouseAbi } from "@/abi/slaughterhouse";
+import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
 import { NewBeefFormValues } from "@/app/beef/new/page";
+import { wagmiConfig } from "@/components/providers/Providers";
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import {
   SLAUGHTERHOUSE_ADDRESS,
   UNISWAP_ROUTER_ADDRESS,
   WETH_ADDRESS,
   WSTETH_ADDRESS,
 } from "@/constants";
-import { ArbiterAccount } from "@/types";
-import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useContext } from "react";
-import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
-import { slaughterhouseAbi } from "@/abi/slaughterhouse";
-import { parseIsoDateToTimestamp } from "@/utils/general";
-import { queryKeys } from "./queryKeys";
-import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
-import { readContract, readContracts } from "wagmi/actions";
-import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
-import { wagmiConfig } from "@/components/providers/Providers";
-import { subtractSlippage } from "@/utils/slippage";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
+import { ArbiterAccount } from "@/types";
+import { parseIsoDateToTimestamp } from "@/utils/general";
+import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
+import { subtractSlippage } from "@/utils/slippage";
+import { queryKeys } from "./queryKeys";
 
 const mutationKeys = {
   arbiterAttend: "arbiterAttend",
@@ -158,7 +158,7 @@ export const useAddBeef = () => {
 
     arbiters.forEach((arbiter) => {
       if (arbiter.type === ArbiterAccount.EMAIL) {
-        sendBeefRequestEmail(arbiter.value);
+        void sendBeefRequestEmail(arbiter.value);
       }
     });
 
@@ -200,7 +200,7 @@ export const useAddBeef = () => {
           {
             owner: connectedAddress,
             wager,
-            challenger: challenger.value as Address,
+            challenger: challenger.value,
             settleStart: parseIsoDateToTimestamp(settleStart),
             joinDeadline: parseIsoDateToTimestamp(joinDeadline),
             title,

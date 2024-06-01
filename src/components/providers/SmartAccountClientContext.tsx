@@ -1,5 +1,4 @@
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import {
+import React, {
   Dispatch,
   SetStateAction,
   createContext,
@@ -8,12 +7,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useSendTransaction } from "wagmi";
-import { WalletClientSigner } from "@alchemy/aa-core";
 import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
+import { WalletClientSigner } from "@alchemy/aa-core";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { Address, createWalletClient, custom } from "viem";
-import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
+import { useSendTransaction } from "wagmi";
 import { GetTwitterSmartAccountAddressResponse } from "@/app/api/twitter-smart-account/route";
+import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
 
 export type SmartAccountClient = Awaited<
   ReturnType<typeof createLightAccountAlchemyClient>
@@ -114,7 +114,7 @@ export const SmartAccountClientContextProvider = ({
       // Connecting twitter's smart account take a little longer, and we don't want to display the embedded address
       connectedAddress:
         client?.account.address ??
-        (!!user?.twitter ? undefined : (wallets[0]?.address as Address)),
+        (user?.twitter ? undefined : (wallets[0]?.address as Address)),
       client,
       setClient,
       createClient,

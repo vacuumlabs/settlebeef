@@ -1,13 +1,13 @@
 "use client";
 
+import { useContext } from "react";
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
-import { useContext } from "react";
-import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import { useBalance, useEnsName } from "@/hooks/queries";
 import { QueryGuard } from "@/hooks/QueryGuard";
-import { formatBigint } from "@/utils/general";
 import { getAddressOrEnsName } from "@/utils";
+import { formatBigint } from "@/utils/general";
+import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();

@@ -1,12 +1,12 @@
 "use server";
 
 import { sql } from "@vercel/postgres";
-import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import { getContract } from "viem";
-import { publicClient } from "@/utils/chain";
+import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
-import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 import { UserDetailsResponseType } from "@/app/api/twitter-smart-account/route";
+import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
+import { publicClient } from "@/utils/chain";
 
 const getLightAccountAddress = getContract({
   client: publicClient,
