@@ -33,6 +33,7 @@ contract Slaughterhouse is StreetCredit, Ownable2Step {
 
     error InvalidBasisPoints(uint256 totalBasisPoints, uint256 providedBasisPoints);
     error ZeroBalance();
+    error EthTransferFailed();
 
     event BeefPackaged(address indexed beef, address indexed owner, address indexed challenger);
     event RewardBasisPointsChanged(uint256 newProtocolRewardBasisPoints, uint256 newArbitersRewardBasisPoints);
@@ -81,7 +82,7 @@ contract Slaughterhouse is StreetCredit, Ownable2Step {
             revert ZeroBalance();
         }
 
-        payable(owner()).transfer(balance);
+        _transferEth(owner(), balance);
 
         emit RewardsWithdrawn(balance);
     }
@@ -95,5 +96,13 @@ contract Slaughterhouse is StreetCredit, Ownable2Step {
         arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
 
         emit RewardBasisPointsChanged(protocolRewardBasisPoints, arbitersRewardBasisPoints);
+    }
+
+    function _transferEth(address recipient, uint256 amount) internal {
+        (bool isSent,) = recipient.call{value: amount}("");
+
+        if (!isSent) {
+            revert EthTransferFailed();
+        }
     }
 }
