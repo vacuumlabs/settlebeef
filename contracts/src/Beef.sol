@@ -96,6 +96,7 @@ contract Beef is OwnableUpgradeable {
     error BeefNotRaw();
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
+    error EthTransferFailed();
 
     event BeefCreated(
         address indexed owner,
@@ -291,20 +292,20 @@ contract Beef is OwnableUpgradeable {
             if (msg.sender != owner()) {
                 revert BeefNotOwner(owner(), msg.sender);
             }
-            payable(owner()).transfer(beefReward);
+            _transferEth(owner(), beefReward);
             emit BeefServed(owner());
         } else {
             if (msg.sender != challenger) {
                 revert BeefNotChallenger(challenger, msg.sender);
             }
-            payable(challenger).transfer(beefReward);
+            _transferEth(challenger, beefReward);
             emit BeefServed(challenger);
         }
 
-        payable(address(slaughterhouse)).transfer(protocolReward);
+        _transferEth(slaughterhouse, protocolReward);
 
         for (uint256 i; i < arbiters.length;) {
-            payable(arbiters[i]).transfer(individualArbiterReward);
+            _transferEth(arbiters[i], individualArbiterReward);
 
             unchecked {
                 ++i;
@@ -342,8 +343,8 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
-        payable(owner()).transfer(address(this).balance / 2);
-        payable(challenger).transfer(address(this).balance / 2);
+        _transferEth(owner(), address(this).balance / 2);
+        _transferEth(challenger, address(this).balance / 2);
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }
@@ -361,7 +362,7 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
-        payable(owner()).transfer(address(this).balance);
+        _transferEth(owner(), address(this).balance);
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }
@@ -384,6 +385,14 @@ contract Beef is OwnableUpgradeable {
         uint256 amountIn = IERC20(WSTETH).balanceOf(address(this));
         WSTETH.approve(address(uniswapV2Router), amountIn);
         uniswapV2Router.swapExactTokensForETH(amountIn, amountOutMin, path, address(this), block.timestamp);
+    }
+
+    function _transferEth(address recipient, uint256 amount) internal {
+        (bool isSent,) = recipient.call{value: amount}("");
+
+        if (!isSent) {
+            revert EthTransferFailed();
+        }
     }
 
     // @notice Fallback function to receive ETH.
