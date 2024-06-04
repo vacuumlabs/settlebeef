@@ -68,7 +68,7 @@ contract Slaughterhouse is StreetCredit, Ownable {
         returns (address payable)
     {
         address payable beef = payable(Clones.clone(beefImplementation));
-        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this), totalBasisPoints, protocolRewardBasisPoints, arbitersRewardBasisPoints);
+        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
         beefs.push(beef);
         canUpdateStreetCredit[beef] = true;
         emit BeefPackaged(beef, params.owner, params.challenger);

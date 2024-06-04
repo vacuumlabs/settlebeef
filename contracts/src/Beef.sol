@@ -32,13 +32,15 @@ contract Beef is OwnableUpgradeable {
         uint128 resultNo;
         uint256 attendCount;
         bool beefGone;
-        uint256 totalBasisPoints;
         uint256 protocolRewardBasisPoints;
         uint256 arbitersRewardBasisPoints;
     }
 
     uint256 public constant settlingDuration = 30 days;
     uint256 public constant arbitersRequiredCount = 3;
+
+    // @notice The total basis points representing 100% (i.e., 10,000 basis points = 100%)
+    uint256 public constant totalBasisPoints = 10_000;
 
     // @notice Address of the challenger - the counterparty to the beef.
     address public challenger;
@@ -64,9 +66,6 @@ contract Beef is OwnableUpgradeable {
 
     // @notice The portion of total rewards allocated to the arbiters, measured in basis points (1 point = 1 / totalPoints %)
     uint256 public arbitersRewardBasisPoints;
-
-    // @notice The total basis points representing 100% (e.g., 10,000 basis points = 100%)
-    uint256 public totalBasisPoints;
 
     // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
     bool public staking;
@@ -107,8 +106,7 @@ contract Beef is OwnableUpgradeable {
         string description,
         address[] arbiters,
         uint256 protocolRewardBasisPoints,
-        uint256 arbitersRewardBasisPoints,
-        uint256 totalBasisPoints
+        uint256 arbitersRewardBasisPoints
     );
     event ArbiterAttended(address indexed arbiter);
     event BeefCooking();
@@ -156,7 +154,6 @@ contract Beef is OwnableUpgradeable {
         address _wsteth,
         address _uniswapV2Router,
         address _slaughterhouse,
-        uint256 _totalBasisPoints,
         uint256 _protocolRewardBasisPoints,
         uint256 _arbitersRewardBasisPoints
     ) public payable initializer {
@@ -178,7 +175,6 @@ contract Beef is OwnableUpgradeable {
         WSTETH = IERC20(_wsteth);
         uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
         slaughterhouse = Slaughterhouse(_slaughterhouse);
-        totalBasisPoints = _totalBasisPoints;
         protocolRewardBasisPoints = _protocolRewardBasisPoints;
         arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
 
@@ -188,7 +184,7 @@ contract Beef is OwnableUpgradeable {
             _stakeBeef(amountOutMin);
         }
 
-        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters, totalBasisPoints, protocolRewardBasisPoints, arbitersRewardBasisPoints);
+        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters, protocolRewardBasisPoints, arbitersRewardBasisPoints);
     }
 
     // @notice Get the current information about beef.
@@ -210,7 +206,6 @@ contract Beef is OwnableUpgradeable {
             resultNo: resultNo,
             attendCount: attendCount,
             beefGone: beefGone,
-            totalBasisPoints: totalBasisPoints,
             protocolRewardBasisPoints: protocolRewardBasisPoints,
             arbitersRewardBasisPoints: arbitersRewardBasisPoints
         });
