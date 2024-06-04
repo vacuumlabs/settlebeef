@@ -6,9 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-
 import {Slaughterhouse} from "./Slaughterhouse.sol";
-import {StreetCredit} from "./StreetCredit.sol";
 
 contract Beef is OwnableUpgradeable {
     using Address for address;
@@ -324,17 +322,6 @@ contract Beef is OwnableUpgradeable {
         }
 
         _transferEth(address(slaughterhouse), protocolReward);
-
-        StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);
-        for (uint256 i; i < arbiters.length;) {
-            streetCreditUpdateBooleans[i] = hasSettled[arbiters[i]] == 0
-                ? StreetCredit.Vote.Abstain
-                : hasSettled[arbiters[i]] == correctSettle ? StreetCredit.Vote.Correct : StreetCredit.Vote.Incorrect;
-            unchecked {
-                ++i;
-            }
-        }
-        slaughterhouse.updateStreetCredit(streetCreditUpdateBooleans, arbiters);
 
         beefGone = true;
     }
