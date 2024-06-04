@@ -345,8 +345,11 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
-        _transferEth(owner(), address(this).balance / 2);
-        _transferEth(challenger, address(this).balance / 2);
+        uint256 amount = address(this).balance / 2;
+
+        _transferEth(owner(), amount);
+        _transferEth(challenger, amount);
+
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }
