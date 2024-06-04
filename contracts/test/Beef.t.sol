@@ -37,7 +37,7 @@ contract BeefTest is Test {
         vm.deal(beefOwner, params.wager);
 
         // 2% Protocol, 3% Arbiters rewards
-        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0), slaughterhouse, 10000, 200, 300);
+        beef.initialize{value: params.wager}(params, 0, address(0), address(0), address(0), slaughterhouse, 200, 300);
     }
 
     function test_arbiterAttend_reverts_ifAlreadyAttended() public {
