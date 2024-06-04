@@ -186,6 +186,9 @@ contract Beef is OwnableUpgradeable {
         emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters, protocolRewardBasisPoints, arbitersRewardBasisPoints);
     }
 
+    // Disabled to prevent the owner from locking funds for the challenger
+    function transferOwnership(address newOwner) public override onlyOwner {}
+
     // @notice Get the current information about beef.
     function getInfo() public view returns (BeefInfo memory) {
         return BeefInfo({
