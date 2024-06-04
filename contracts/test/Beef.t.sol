@@ -78,9 +78,11 @@ contract BeefTest is Test {
         beef.serveBeef(0);
 
         assertEq(arbiters[0].balance, 20);
-        assertEq(arbiters[1].balance, 20);
+        // Voted 'incorrectly'
+        assertEq(arbiters[1].balance, 0);
         assertEq(arbiters[2].balance, 20);
-        assertEq(slaughterhouse.balance, 40);
+        // Base reward + 1 arbiter reward for incorrect voting
+        assertEq(slaughterhouse.balance, 60);
 
         // Original wager + challenger wager - arbitersRewards - protocolRewards
         assertEq(beefOwner.balance, 1900);

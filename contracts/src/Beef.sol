@@ -286,8 +286,6 @@ contract Beef is OwnableUpgradeable {
         uint256 totalArbiterReward = balance * arbitersRewardBasisPoints / totalBasisPoints;
         uint256 beefReward = balance - totalArbiterReward - protocolReward;
 
-        uint256 individualArbiterReward = totalArbiterReward / arbitersRequiredCount;
-
         if (resultYes > resultNo) {
             if (msg.sender != owner()) {
                 revert BeefNotOwner(owner(), msg.sender);
@@ -302,18 +300,32 @@ contract Beef is OwnableUpgradeable {
             emit BeefServed(challenger);
         }
 
-        _transferEth(slaughterhouse, protocolReward);
+        uint256 individualArbiterReward = totalArbiterReward / arbitersRequiredCount;
+        uint256 correctSettle = resultYes > resultNo ? 1 : 2;
 
+        // TODO: Switch to claim-based reward system
         for (uint256 i; i < arbiters.length;) {
-            _transferEth(arbiters[i], individualArbiterReward);
+            address arbiterAddress = arbiters[i];
+
+            if (hasSettled[arbiterAddress] == correctSettle) {
+                (bool isSent,) = arbiterAddress.call{value: individualArbiterReward}("");
+
+                if (!isSent) {
+                    protocolReward += individualArbiterReward;
+                }
+            } else {
+                // The arbiter voted incorrectly / didn't vote -> rewards are claimed by the protocol
+                protocolReward += individualArbiterReward;
+            }
 
             unchecked {
                 ++i;
             }
         }
 
+        _transferEth(address(slaughterhouse), protocolReward);
+
         StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);
-        uint256 correctSettle = resultYes > resultNo ? 1 : 2;
         for (uint256 i; i < arbiters.length;) {
             streetCreditUpdateBooleans[i] = hasSettled[arbiters[i]] == 0
                 ? StreetCredit.Vote.Abstain
