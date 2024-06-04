@@ -13,10 +13,19 @@ contract Deploy is Script {
         address WSTETH = vm.envAddress("WSTETH_ADDRESS");
         address uniswapV2Router = vm.envAddress("UNIV2ROUTER_ADDRESS");
         address initialOwner = vm.envAddress("CONTRACT_OWNER_ADDRESS");
+        uint256 protocolRewardBasisPoints = vm.envUint("PROTOCOL_REWARD_BASIS_POINTS");
+        uint256 arbitersRewardBasisPoints = vm.envUint("ARBITERS_REWARD_BASIS_POINTS");
         vm.broadcast();
 
-        // TODO: Initialize reward basis points of out env variables?
-        Slaughterhouse slaughterhouse = new Slaughterhouse(WETH, WSTETH, uniswapV2Router, initialOwner, 0, 0);
+        Slaughterhouse slaughterhouse = new Slaughterhouse(
+            WETH,
+            WSTETH,
+            uniswapV2Router,
+            initialOwner,
+            protocolRewardBasisPoints,
+            arbitersRewardBasisPoints
+        );
+
         console2.log("Slaughterhouse:", address(slaughterhouse));
         console2.log("Beef implementation:", slaughterhouse.beefImplementation());
     }
