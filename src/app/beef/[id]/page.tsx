@@ -23,7 +23,6 @@ import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
 import { useBeef, useEnsNames, useGetArbiterStatuses } from "@/hooks/queries";
 import { getAddressOrEnsName } from "@/utils";
-import { calculateColorFromStreetCredit } from "@/utils/colors";
 
 type BeefDetailPageProps = {
   params: {
@@ -348,18 +347,6 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 justifyContent={"space-between"}
                 alignItems="center"
               >
-                <Chip
-                  label={
-                    <Typography color="white" variant="subtitle1">
-                      {status?.streetCredit ? Number(status.streetCredit) : "-"}
-                    </Typography>
-                  }
-                  sx={{
-                    backgroundColor: calculateColorFromStreetCredit(
-                      status?.streetCredit,
-                    ),
-                  }}
-                />
                 <Typography variant="subtitle2">
                   {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
                 </Typography>
