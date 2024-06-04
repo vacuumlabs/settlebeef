@@ -35,6 +35,13 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
+    name: "acceptOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
     name: "arbitersRewardBasisPoints",
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
@@ -52,13 +59,6 @@ export const slaughterhouseAbi = [
     name: "beefs",
     inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     outputs: [{ name: "", type: "address", internalType: "address" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "canUpdateStreetCredit",
-    inputs: [{ name: "", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
@@ -102,6 +102,13 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
+    name: "pendingOwner",
+    inputs: [],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "protocolRewardBasisPoints",
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
@@ -134,13 +141,6 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
-    name: "streetCredit",
-    inputs: [{ name: "", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "int256", internalType: "int256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "totalBasisPoints",
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
@@ -162,20 +162,6 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
-    name: "updateStreetCredit",
-    inputs: [
-      {
-        name: "votes",
-        type: "uint8[]",
-        internalType: "enum StreetCredit.Vote[]",
-      },
-      { name: "to", type: "address[]", internalType: "address[]" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
     name: "withdrawRewards",
     inputs: [],
     outputs: [],
@@ -194,6 +180,25 @@ export const slaughterhouseAbi = [
       },
       {
         name: "challenger",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "OwnershipTransferStarted",
+    inputs: [
+      {
+        name: "previousOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "newOwner",
         type: "address",
         indexed: true,
         internalType: "address",
@@ -253,6 +258,7 @@ export const slaughterhouseAbi = [
     anonymous: false,
   },
   { type: "error", name: "ERC1167FailedCreateClone", inputs: [] },
+  { type: "error", name: "EthTransferFailed", inputs: [] },
   {
     type: "error",
     name: "InvalidBasisPoints",
@@ -271,6 +277,5 @@ export const slaughterhouseAbi = [
     name: "OwnableUnauthorizedAccount",
     inputs: [{ name: "account", type: "address", internalType: "address" }],
   },
-  { type: "error", name: "StreetCreditTransferForbidden", inputs: [] },
   { type: "error", name: "ZeroBalance", inputs: [] },
 ] as const;

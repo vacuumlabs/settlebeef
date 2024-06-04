@@ -119,7 +119,6 @@ export type ArbiterStatus = {
   status?: {
     hasAttended: boolean;
     hasSettled: bigint;
-    streetCredit: bigint;
   };
 };
 
@@ -141,12 +140,6 @@ export const useGetArbiterStatuses = (
         functionName: "hasSettled",
         args: [arbiterAddress],
       } as const,
-      {
-        abi: slaughterhouseAbi,
-        address: SLAUGHTERHOUSE_ADDRESS,
-        functionName: "streetCredit",
-        args: [arbiterAddress],
-      } as const,
     ]),
     allowFailure: false,
   });
@@ -154,18 +147,17 @@ export const useGetArbiterStatuses = (
   if (data) {
     // Chunk data to groups of 3 elements (one readContract call)
     const chunkedData = Array.from(
-      { length: Math.ceil(data.length / 3) },
-      (_, index) => data.slice(index * 3, index * 3 + 3),
+      { length: Math.ceil(data.length / 2) },
+      (_, index) => data.slice(index * 2, index * 2 + 2),
     );
 
     const groupedData: ArbiterStatus[] = chunkedData.map(
-      ([hasAttended, hasSettled, streetCredit], index) => {
+      ([hasAttended, hasSettled], index) => {
         return {
           address: arbiters[index]!,
           status: {
             hasAttended: hasAttended as boolean,
             hasSettled: hasSettled as bigint,
-            streetCredit: streetCredit as bigint,
           },
         };
       },

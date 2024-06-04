@@ -118,11 +118,6 @@ export const beefAbi = [
           { name: "attendCount", type: "uint256", internalType: "uint256" },
           { name: "beefGone", type: "bool", internalType: "bool" },
           {
-            name: "totalBasisPoints",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
             name: "protocolRewardBasisPoints",
             type: "uint256",
             internalType: "uint256",
@@ -176,7 +171,6 @@ export const beefAbi = [
       { name: "_wsteth", type: "address", internalType: "address" },
       { name: "_uniswapV2Router", type: "address", internalType: "address" },
       { name: "_slaughterhouse", type: "address", internalType: "address" },
-      { name: "_totalBasisPoints", type: "uint256", internalType: "uint256" },
       {
         name: "_protocolRewardBasisPoints",
         type: "uint256",
@@ -414,12 +408,6 @@ export const beefAbi = [
         indexed: false,
         internalType: "uint256",
       },
-      {
-        name: "totalBasisPoints",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
     ],
     anonymous: false,
   },
@@ -587,6 +575,7 @@ export const beefAbi = [
       { name: "requiredSettleCount", type: "uint256", internalType: "uint256" },
     ],
   },
+  { type: "error", name: "EthTransferFailed", inputs: [] },
   { type: "error", name: "InvalidInitialization", inputs: [] },
   { type: "error", name: "NotInitializing", inputs: [] },
   {
