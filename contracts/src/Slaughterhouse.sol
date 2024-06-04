@@ -5,10 +5,9 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {Beef} from "./Beef.sol";
-import {StreetCredit} from "./StreetCredit.sol";
 
 // @notice Factory contract for creating Beef contracts. User entrypoint in Settlebeef.
-contract Slaughterhouse is StreetCredit, Ownable2Step {
+contract Slaughterhouse is Ownable2Step {
 
     // @notice The total basis points representing 100% (10,000 basis points = 100%)
     uint256 public constant totalBasisPoints = 10000;
@@ -71,7 +70,6 @@ contract Slaughterhouse is StreetCredit, Ownable2Step {
         address payable beef = payable(Clones.clone(beefImplementation));
         Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
         beefs.push(beef);
-        canUpdateStreetCredit[beef] = true;
         emit BeefPackaged(beef, params.owner, params.challenger);
         return beef;
     }

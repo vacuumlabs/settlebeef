@@ -70,9 +70,6 @@ contract BeefTest is Test {
         vm.startPrank(arbiters[2]);
         beef.settleBeef(true);
 
-        // Silence slaughterhouse streetCredit calls
-        vm.mockCall(slaughterhouse, abi.encodeWithSelector(beef.slaughterhouse().updateStreetCredit.selector), abi.encode(0));
-
         // Beef owner won the challenge
         vm.startPrank(beefOwner);
         beef.serveBeef(0);
