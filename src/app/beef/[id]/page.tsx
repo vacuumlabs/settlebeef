@@ -86,6 +86,20 @@ function StepIcon(props: StepIconProps) {
   );
 }
 
+export type BeefActions = {
+  owner?: "withdrawRaw" | "withdrawRotten" | "serveBeef";
+  challenger?: "joinBeef" | "withdrawRotten" | "serveBeef";
+  arbiter?: "attend" | "vote";
+};
+
+type BeefState = {
+  step: number;
+  steps: { icon: string; text: string }[] | typeof DEFAULT_STEPS;
+  isRotten?: boolean;
+  deadline?: Date;
+  actions: BeefActions;
+};
+
 const DEFAULT_STEPS = [
   { icon: "🥩", text: "Beef creation" },
   { icon: "🧑‍⚖️", text: "Arbiters attendance" },
@@ -148,7 +162,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     Number((settleStartTimestamp + settleDuration) * 1000n),
   );
 
-  const getBeefState = () => {
+  const getBeefState = (): BeefState => {
     const now = new Date();
 
     // Arbiters have not joined yet
@@ -159,6 +173,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           step: 1,
           steps: DEFAULT_STEPS,
           deadline: joinDeadline,
+          actions: {
+            arbiter: "attend",
+          },
         };
       } else {
         // Arbiters failed to attend
@@ -171,6 +188,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           step: beefGone ? 3 : 2,
           isRotten: true,
           deadline: joinDeadline, // TODO: verify
+          actions: {
+            owner: beefGone ? undefined : "withdrawRaw",
+          },
         };
       }
     } else {
@@ -182,6 +202,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             steps: DEFAULT_STEPS,
             step: 3,
             deadline: settleStart,
+            actions: {},
           };
         } else {
           const majorityReached =
@@ -192,6 +213,10 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             return {
               steps: DEFAULT_STEPS,
               step: beefGone ? 7 : 6,
+              actions: {
+                owner: beefGone ? undefined : "serveBeef",
+                challenger: beefGone ? undefined : "serveBeef",
+              },
             };
           } else if (now > settleDeadline) {
             // Arbiters failed to vote and decide the beef
@@ -204,8 +229,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 { icon: "🤦", text: "Beef wasn't settled" },
                 { icon: "🤢", text: "Beef rotten" },
               ],
-              step: 5,
+              step: beefGone ? 6 : 5,
               isRotten: true,
+              actions: {
+                owner: beefGone ? undefined : "withdrawRotten",
+                challenger: beefGone ? undefined : "withdrawRotten",
+              },
             };
           } else {
             // Voting in progress until `settleDeadline`
@@ -213,6 +242,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               steps: DEFAULT_STEPS,
               step: 4,
               deadline: settleDeadline,
+              actions: {
+                arbiter: "vote",
+              },
             };
           }
         }
@@ -224,6 +256,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             steps: DEFAULT_STEPS,
             step: 2,
             deadline: joinDeadline,
+            actions: {
+              challenger: "joinBeef",
+            },
           };
         } else {
           // Challenger failed to join in time
@@ -236,6 +271,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             ],
             step: beefGone ? 4 : 3,
             isRotten: true,
+            actions: {
+              owner: beefGone ? undefined : "withdrawRaw",
+            },
           };
         }
       }
@@ -248,7 +286,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     "Beef settling": settleDeadline,
   };
 
-  const { steps, step, isRotten, deadline } = getBeefState();
+  const { steps, step, isRotten, deadline, actions } = getBeefState();
 
   return (
     <Container sx={{ pt: 4, pb: 6 }}>
@@ -370,6 +408,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           <BeefControls
             {...{
               beef,
+              beefActions: actions,
               arbiterStatuses,
               refetch: () => {
                 void refetch();
