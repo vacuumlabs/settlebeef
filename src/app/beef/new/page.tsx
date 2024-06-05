@@ -305,20 +305,42 @@ const NewBeefPage = () => {
               />
             )}
           />
-          <Controller
-            name="wager"
-            control={control}
-            rules={{ required: "Required" }}
-            render={({ field, fieldState: { error } }) => (
-              <AmountInput
-                label="Amount"
-                {...field}
-                setValue={field.onChange}
-                errorMessage={error?.message}
-                setError={(message) => setError("wager", { message })}
-              />
-            )}
-          />
+          <Stack gap={1}>
+            <Controller
+              name="wager"
+              control={control}
+              rules={{ required: "Required" }}
+              render={({ field, fieldState: { error } }) => (
+                <AmountInput
+                  label="Amount"
+                  {...field}
+                  setValue={field.onChange}
+                  errorMessage={error?.message}
+                  setError={(message) => setError("wager", { message })}
+                />
+              )}
+            />
+            <Stack direction="row" gap={1} alignItems="center">
+              <Typography variant="subtitle2" color="grey">
+                A 0.5% fee will be taken from this amount for each arbiter and
+                the protocol.
+              </Typography>
+              <Tooltip
+                title={
+                  <Typography>
+                    Settlebeef takes a 1% fee from the total amount of settled
+                    beef. <br />
+                    Each correctly voting arbiter gets a 1% fee from the total
+                    amount of the settled beef. <br />
+                    In total, 4% of the total amount will go towards fees, 2%
+                    from your deposit, 2% from the challenger&apos;s.
+                  </Typography>
+                }
+              >
+                <Typography>❓</Typography>
+              </Tooltip>
+            </Stack>
+          </Stack>
           {Array.from({ length: NUMBER_OF_ARBITERS }).map((_, index) => (
             <Stack gap={1} key={index}>
               <Typography variant="body2">{`Arbiter #${index + 1}`}</Typography>
