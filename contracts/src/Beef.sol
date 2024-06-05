@@ -6,9 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-
 import {Slaughterhouse} from "./Slaughterhouse.sol";
-import {StreetCredit} from "./StreetCredit.sol";
 
 contract Beef is OwnableUpgradeable {
     using Address for address;
@@ -32,10 +30,15 @@ contract Beef is OwnableUpgradeable {
         uint128 resultNo;
         uint256 attendCount;
         bool beefGone;
+        uint256 protocolRewardBasisPoints;
+        uint256 arbitersRewardBasisPoints;
     }
 
     uint256 public constant settlingDuration = 30 days;
     uint256 public constant arbitersRequiredCount = 3;
+
+    // @notice The total basis points representing 100% (i.e., 10,000 basis points = 100%)
+    uint256 public constant totalBasisPoints = 10_000;
 
     // @notice Address of the challenger - the counterparty to the beef.
     address public challenger;
@@ -55,6 +58,12 @@ contract Beef is OwnableUpgradeable {
     bool public cooking;
     bool public beefGone;
     Slaughterhouse public slaughterhouse;
+
+    // @notice The portion of rewards allocated to the protocol, measured in basis points (1 point = 1 / totalPoints %)
+    uint256 public protocolRewardBasisPoints;
+
+    // @notice The portion of total rewards allocated to the arbiters, measured in basis points (1 point = 1 / totalPoints %)
+    uint256 public arbitersRewardBasisPoints;
 
     // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
     bool public staking;
@@ -85,6 +94,8 @@ contract Beef is OwnableUpgradeable {
     error BeefNotRaw();
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
+    error EthTransferFailed();
+    error OwnershipTransferDisabled();
 
     event BeefCreated(
         address indexed owner,
@@ -93,7 +104,9 @@ contract Beef is OwnableUpgradeable {
         uint256 settleStart,
         string title,
         string description,
-        address[] arbiters
+        address[] arbiters,
+        uint256 protocolRewardBasisPoints,
+        uint256 arbitersRewardBasisPoints
     );
     event ArbiterAttended(address indexed arbiter);
     event BeefCooking();
@@ -140,7 +153,9 @@ contract Beef is OwnableUpgradeable {
         address _weth,
         address _wsteth,
         address _uniswapV2Router,
-        address _slaughterhouse
+        address payable _slaughterhouse,
+        uint256 _protocolRewardBasisPoints,
+        uint256 _arbitersRewardBasisPoints
     ) public payable initializer {
         if (msg.value != params.wager) {
             revert BeefInvalidWager(params.wager, msg.value);
@@ -160,6 +175,8 @@ contract Beef is OwnableUpgradeable {
         WSTETH = IERC20(_wsteth);
         uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
         slaughterhouse = Slaughterhouse(_slaughterhouse);
+        protocolRewardBasisPoints = _protocolRewardBasisPoints;
+        arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
 
         __Ownable_init(params.owner);
 
@@ -167,7 +184,12 @@ contract Beef is OwnableUpgradeable {
             _stakeBeef(amountOutMin);
         }
 
-        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters);
+        emit BeefCreated(params.owner, challenger, wager, settleStart, title, description, arbiters, protocolRewardBasisPoints, arbitersRewardBasisPoints);
+    }
+
+    // Disabled to prevent the owner from locking funds for the challenger
+    function transferOwnership(address newOwner) public override onlyOwner {
+        revert OwnershipTransferDisabled();
     }
 
     // @notice Get the current information about beef.
@@ -188,7 +210,9 @@ contract Beef is OwnableUpgradeable {
             resultYes: resultYes,
             resultNo: resultNo,
             attendCount: attendCount,
-            beefGone: beefGone
+            beefGone: beefGone,
+            protocolRewardBasisPoints: protocolRewardBasisPoints,
+            arbitersRewardBasisPoints: arbitersRewardBasisPoints
         });
     }
 
@@ -260,31 +284,44 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
+        uint256 balance = address(this).balance;
+
+        uint256 protocolReward = balance * protocolRewardBasisPoints / totalBasisPoints;
+        uint256 totalArbiterReward = balance * arbitersRewardBasisPoints / totalBasisPoints;
+        uint256 beefReward = balance - totalArbiterReward - protocolReward;
+
         if (resultYes > resultNo) {
             if (msg.sender != owner()) {
                 revert BeefNotOwner(owner(), msg.sender);
             }
-            payable(owner()).transfer(address(this).balance);
+            _transferEth(owner(), beefReward);
             emit BeefServed(owner());
         } else {
             if (msg.sender != challenger) {
                 revert BeefNotChallenger(challenger, msg.sender);
             }
-            payable(challenger).transfer(address(this).balance);
+            _transferEth(challenger, beefReward);
             emit BeefServed(challenger);
         }
 
-        StreetCredit.Vote[] memory streetCreditUpdateBooleans = new StreetCredit.Vote[](arbiters.length);
+        uint256 individualArbiterReward = totalArbiterReward / arbitersRequiredCount;
         uint256 correctSettle = resultYes > resultNo ? 1 : 2;
+
+        // TODO: Switch to claim-based reward system
         for (uint256 i; i < arbiters.length;) {
-            streetCreditUpdateBooleans[i] = hasSettled[arbiters[i]] == 0
-                ? StreetCredit.Vote.Abstain
-                : hasSettled[arbiters[i]] == correctSettle ? StreetCredit.Vote.Correct : StreetCredit.Vote.Incorrect;
+            address arbiterAddress = arbiters[i];
+
+            // Note: Cases where arbiter settled incorrectly / didn't settle / reverted transfer are claimed by protocol
+            if (hasSettled[arbiterAddress] == correctSettle) {
+                arbiterAddress.call{value: individualArbiterReward}("");
+            }
+
             unchecked {
                 ++i;
             }
         }
-        slaughterhouse.updateStreetCredit(streetCreditUpdateBooleans, arbiters);
+
+        _transferEth(address(slaughterhouse), address(this).balance);
 
         beefGone = true;
     }
@@ -305,8 +342,11 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
-        payable(owner()).transfer(address(this).balance / 2);
-        payable(challenger).transfer(address(this).balance / 2);
+        uint256 amount = address(this).balance / 2;
+
+        _transferEth(owner(), amount);
+        _transferEth(challenger, amount);
+
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }
@@ -324,7 +364,7 @@ contract Beef is OwnableUpgradeable {
             _unstakeBeef(amountOutMin);
         }
 
-        payable(owner()).transfer(address(this).balance);
+        _transferEth(owner(), address(this).balance);
         emit BeefWithdrawn(cooking);
         beefGone = true;
     }
@@ -347,6 +387,14 @@ contract Beef is OwnableUpgradeable {
         uint256 amountIn = IERC20(WSTETH).balanceOf(address(this));
         WSTETH.approve(address(uniswapV2Router), amountIn);
         uniswapV2Router.swapExactTokensForETH(amountIn, amountOutMin, path, address(this), block.timestamp);
+    }
+
+    function _transferEth(address recipient, uint256 amount) internal {
+        (bool isSent,) = recipient.call{value: amount}("");
+
+        if (!isSent) {
+            revert EthTransferFailed();
+        }
     }
 
     // @notice Fallback function to receive ETH.

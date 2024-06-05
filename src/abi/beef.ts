@@ -1,37 +1,18 @@
 export const beefAbi = [
-  {
-    type: "constructor",
-    inputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "fallback",
-    stateMutability: "payable",
-  },
+  { type: "constructor", inputs: [], stateMutability: "nonpayable" },
+  { type: "fallback", stateMutability: "payable" },
   {
     type: "function",
     name: "WETH",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract IERC20",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "contract IERC20" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "WSTETH",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract IERC20",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "contract IERC20" }],
     stateMutability: "view",
   },
   {
@@ -44,98 +25,57 @@ export const beefAbi = [
   {
     type: "function",
     name: "arbiters",
-    inputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "arbitersRequiredCount",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "arbitersRewardBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "attendCount",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "beefGone",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "challenger",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "cooking",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "description",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "string",
-        internalType: "string",
-      },
-    ],
+    outputs: [{ name: "", type: "string", internalType: "string" }],
     stateMutability: "view",
   },
   {
@@ -153,36 +93,12 @@ export const beefAbi = [
             type: "tuple",
             internalType: "struct Beef.ConstructorParams",
             components: [
-              {
-                name: "owner",
-                type: "address",
-                internalType: "address",
-              },
-              {
-                name: "wager",
-                type: "uint256",
-                internalType: "uint256",
-              },
-              {
-                name: "challenger",
-                type: "address",
-                internalType: "address",
-              },
-              {
-                name: "settleStart",
-                type: "uint256",
-                internalType: "uint256",
-              },
-              {
-                name: "title",
-                type: "string",
-                internalType: "string",
-              },
-              {
-                name: "description",
-                type: "string",
-                internalType: "string",
-              },
+              { name: "owner", type: "address", internalType: "address" },
+              { name: "wager", type: "uint256", internalType: "uint256" },
+              { name: "challenger", type: "address", internalType: "address" },
+              { name: "settleStart", type: "uint256", internalType: "uint256" },
+              { name: "title", type: "string", internalType: "string" },
+              { name: "description", type: "string", internalType: "string" },
               {
                 name: "arbiters",
                 type: "address[]",
@@ -193,37 +109,23 @@ export const beefAbi = [
                 type: "uint256",
                 internalType: "uint256",
               },
-              {
-                name: "staking",
-                type: "bool",
-                internalType: "bool",
-              },
+              { name: "staking", type: "bool", internalType: "bool" },
             ],
           },
+          { name: "cooking", type: "bool", internalType: "bool" },
+          { name: "resultYes", type: "uint128", internalType: "uint128" },
+          { name: "resultNo", type: "uint128", internalType: "uint128" },
+          { name: "attendCount", type: "uint256", internalType: "uint256" },
+          { name: "beefGone", type: "bool", internalType: "bool" },
           {
-            name: "cooking",
-            type: "bool",
-            internalType: "bool",
-          },
-          {
-            name: "resultYes",
-            type: "uint128",
-            internalType: "uint128",
-          },
-          {
-            name: "resultNo",
-            type: "uint128",
-            internalType: "uint128",
-          },
-          {
-            name: "attendCount",
+            name: "protocolRewardBasisPoints",
             type: "uint256",
             internalType: "uint256",
           },
           {
-            name: "beefGone",
-            type: "bool",
-            internalType: "bool",
+            name: "arbitersRewardBasisPoints",
+            type: "uint256",
+            internalType: "uint256",
           },
         ],
       },
@@ -233,39 +135,15 @@ export const beefAbi = [
   {
     type: "function",
     name: "hasAttended",
-    inputs: [
-      {
-        name: "arbiter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "arbiter", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "hasSettled",
-    inputs: [
-      {
-        name: "arbiter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "result",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    inputs: [{ name: "arbiter", type: "address", internalType: "address" }],
+    outputs: [{ name: "result", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
@@ -277,77 +155,35 @@ export const beefAbi = [
         type: "tuple",
         internalType: "struct Beef.ConstructorParams",
         components: [
-          {
-            name: "owner",
-            type: "address",
-            internalType: "address",
-          },
-          {
-            name: "wager",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "challenger",
-            type: "address",
-            internalType: "address",
-          },
-          {
-            name: "settleStart",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "title",
-            type: "string",
-            internalType: "string",
-          },
-          {
-            name: "description",
-            type: "string",
-            internalType: "string",
-          },
-          {
-            name: "arbiters",
-            type: "address[]",
-            internalType: "address[]",
-          },
-          {
-            name: "joinDeadline",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "staking",
-            type: "bool",
-            internalType: "bool",
-          },
+          { name: "owner", type: "address", internalType: "address" },
+          { name: "wager", type: "uint256", internalType: "uint256" },
+          { name: "challenger", type: "address", internalType: "address" },
+          { name: "settleStart", type: "uint256", internalType: "uint256" },
+          { name: "title", type: "string", internalType: "string" },
+          { name: "description", type: "string", internalType: "string" },
+          { name: "arbiters", type: "address[]", internalType: "address[]" },
+          { name: "joinDeadline", type: "uint256", internalType: "uint256" },
+          { name: "staking", type: "bool", internalType: "bool" },
         ],
       },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
+      { name: "_weth", type: "address", internalType: "address" },
+      { name: "_wsteth", type: "address", internalType: "address" },
+      { name: "_uniswapV2Router", type: "address", internalType: "address" },
       {
-        name: "amountOutMin",
+        name: "_slaughterhouse",
+        type: "address",
+        internalType: "address payable",
+      },
+      {
+        name: "_protocolRewardBasisPoints",
         type: "uint256",
         internalType: "uint256",
       },
       {
-        name: "_weth",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_wsteth",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_uniswapV2Router",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_slaughterhouse",
-        type: "address",
-        internalType: "address",
+        name: "_arbitersRewardBasisPoints",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     outputs: [],
@@ -357,11 +193,7 @@ export const beefAbi = [
     type: "function",
     name: "joinBeef",
     inputs: [
-      {
-        name: "amountOutMin",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -370,26 +202,21 @@ export const beefAbi = [
     type: "function",
     name: "joinDeadline",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "owner",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "protocolRewardBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
@@ -403,37 +230,21 @@ export const beefAbi = [
     type: "function",
     name: "resultNo",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint128",
-        internalType: "uint128",
-      },
-    ],
+    outputs: [{ name: "", type: "uint128", internalType: "uint128" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "resultYes",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint128",
-        internalType: "uint128",
-      },
-    ],
+    outputs: [{ name: "", type: "uint128", internalType: "uint128" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "serveBeef",
     inputs: [
-      {
-        name: "amountOutMin",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -441,13 +252,7 @@ export const beefAbi = [
   {
     type: "function",
     name: "settleBeef",
-    inputs: [
-      {
-        name: "verdict",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "verdict", type: "bool", internalType: "bool" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -455,26 +260,14 @@ export const beefAbi = [
     type: "function",
     name: "settleStart",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "settlingDuration",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
@@ -482,11 +275,7 @@ export const beefAbi = [
     name: "slaughterhouse",
     inputs: [],
     outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract Slaughterhouse",
-      },
+      { name: "", type: "address", internalType: "contract Slaughterhouse" },
     ],
     stateMutability: "view",
   },
@@ -494,38 +283,27 @@ export const beefAbi = [
     type: "function",
     name: "staking",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "title",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "string",
-        internalType: "string",
-      },
-    ],
+    outputs: [{ name: "", type: "string", internalType: "string" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalBasisPoints",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "transferOwnership",
-    inputs: [
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -546,24 +324,14 @@ export const beefAbi = [
     type: "function",
     name: "wager",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "withdrawRaw",
     inputs: [
-      {
-        name: "amountOutMin",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -572,11 +340,7 @@ export const beefAbi = [
     type: "function",
     name: "withdrawRotten",
     inputs: [
-      {
-        name: "amountOutMin",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -594,12 +358,7 @@ export const beefAbi = [
     ],
     anonymous: false,
   },
-  {
-    type: "event",
-    name: "BeefCooking",
-    inputs: [],
-    anonymous: false,
-  },
+  { type: "event", name: "BeefCooking", inputs: [], anonymous: false },
   {
     type: "event",
     name: "BeefCreated",
@@ -628,12 +387,7 @@ export const beefAbi = [
         indexed: false,
         internalType: "uint256",
       },
-      {
-        name: "title",
-        type: "string",
-        indexed: false,
-        internalType: "string",
-      },
+      { name: "title", type: "string", indexed: false, internalType: "string" },
       {
         name: "description",
         type: "string",
@@ -645,6 +399,18 @@ export const beefAbi = [
         type: "address[]",
         indexed: false,
         internalType: "address[]",
+      },
+      {
+        name: "protocolRewardBasisPoints",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+      {
+        name: "arbitersRewardBasisPoints",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
       },
     ],
     anonymous: false,
@@ -672,12 +438,7 @@ export const beefAbi = [
         indexed: true,
         internalType: "address",
       },
-      {
-        name: "verdict",
-        type: "bool",
-        indexed: false,
-        internalType: "bool",
-      },
+      { name: "verdict", type: "bool", indexed: false, internalType: "bool" },
     ],
     anonymous: false,
   },
@@ -726,238 +487,110 @@ export const beefAbi = [
     ],
     anonymous: false,
   },
-  {
-    type: "error",
-    name: "BeefAlreadyGone",
-    inputs: [],
-  },
+  { type: "error", name: "BeefAlreadyGone", inputs: [] },
   {
     type: "error",
     name: "BeefArbiterAlreadyAttended",
-    inputs: [
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "sender", type: "address", internalType: "address" }],
   },
   {
     type: "error",
     name: "BeefArbiterAlreadySettled",
-    inputs: [
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "sender", type: "address", internalType: "address" }],
   },
   {
     type: "error",
     name: "BeefInvalidArbitersCount",
     inputs: [
-      {
-        name: "providedCount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "requiredCount",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "providedCount", type: "uint256", internalType: "uint256" },
+      { name: "requiredCount", type: "uint256", internalType: "uint256" },
     ],
   },
   {
     type: "error",
     name: "BeefInvalidWager",
     inputs: [
-      {
-        name: "declaredWager",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "providedWager",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "declaredWager", type: "uint256", internalType: "uint256" },
+      { name: "providedWager", type: "uint256", internalType: "uint256" },
     ],
   },
-  {
-    type: "error",
-    name: "BeefIsCooking",
-    inputs: [],
-  },
+  { type: "error", name: "BeefIsCooking", inputs: [] },
   {
     type: "error",
     name: "BeefIsNotCooked",
     inputs: [
-      {
-        name: "deadline",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "timestamp",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "deadline", type: "uint256", internalType: "uint256" },
+      { name: "timestamp", type: "uint256", internalType: "uint256" },
     ],
   },
   {
     type: "error",
     name: "BeefIsRotten",
     inputs: [
-      {
-        name: "deadline",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "timestamp",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "deadline", type: "uint256", internalType: "uint256" },
+      { name: "timestamp", type: "uint256", internalType: "uint256" },
     ],
   },
   {
     type: "error",
     name: "BeefNotArbiter",
-    inputs: [
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "sender", type: "address", internalType: "address" }],
   },
   {
     type: "error",
     name: "BeefNotChallenger",
     inputs: [
-      {
-        name: "declaredChallenger",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "declaredChallenger", type: "address", internalType: "address" },
+      { name: "sender", type: "address", internalType: "address" },
     ],
   },
   {
     type: "error",
     name: "BeefNotOwner",
     inputs: [
-      {
-        name: "declaredOwner",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "declaredOwner", type: "address", internalType: "address" },
+      { name: "sender", type: "address", internalType: "address" },
     ],
   },
   {
     type: "error",
     name: "BeefNotOwnerNorChallenger",
     inputs: [
-      {
-        name: "declaredOwner",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "declaredChallenger",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "sender",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "declaredOwner", type: "address", internalType: "address" },
+      { name: "declaredChallenger", type: "address", internalType: "address" },
+      { name: "sender", type: "address", internalType: "address" },
     ],
   },
-  {
-    type: "error",
-    name: "BeefNotRaw",
-    inputs: [],
-  },
+  { type: "error", name: "BeefNotRaw", inputs: [] },
   {
     type: "error",
     name: "BeefNotRotten",
     inputs: [
-      {
-        name: "deadline",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "timestamp",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "deadline", type: "uint256", internalType: "uint256" },
+      { name: "timestamp", type: "uint256", internalType: "uint256" },
     ],
   },
   {
     type: "error",
     name: "BeefNotSettled",
     inputs: [
-      {
-        name: "resultYes",
-        type: "uint128",
-        internalType: "uint128",
-      },
-      {
-        name: "resultNo",
-        type: "uint128",
-        internalType: "uint128",
-      },
-      {
-        name: "requiredSettleCount",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "resultYes", type: "uint128", internalType: "uint128" },
+      { name: "resultNo", type: "uint128", internalType: "uint128" },
+      { name: "requiredSettleCount", type: "uint256", internalType: "uint256" },
     ],
   },
-  {
-    type: "error",
-    name: "InvalidInitialization",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "NotInitializing",
-    inputs: [],
-  },
+  { type: "error", name: "EthTransferFailed", inputs: [] },
+  { type: "error", name: "InvalidInitialization", inputs: [] },
+  { type: "error", name: "NotInitializing", inputs: [] },
   {
     type: "error",
     name: "OwnableInvalidOwner",
-    inputs: [
-      {
-        name: "owner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "owner", type: "address", internalType: "address" }],
   },
   {
     type: "error",
     name: "OwnableUnauthorizedAccount",
-    inputs: [
-      {
-        name: "account",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "account", type: "address", internalType: "address" }],
   },
+  { type: "error", name: "OwnershipTransferDisabled", inputs: [] },
 ] as const;
