@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Button, CircularProgress, Stack } from "@mui/material";
-import { DateTime } from "luxon";
 import { Address, isAddressEqual } from "viem";
+import { BeefActions } from "@/app/beef/[id]/page";
 import {
   useArbiterAttend,
   useJoinBeef,
@@ -10,7 +10,6 @@ import {
 } from "@/hooks/mutations";
 import { ArbiterStatus } from "@/hooks/queries";
 import type { Beef } from "@/types";
-import { parseIsoDateToTimestamp } from "@/utils/general";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 
 type ButtonProps = {
@@ -129,12 +128,14 @@ const ChallengerButton = ({
 
 type BeefControlsProps = {
   beef: Beef;
+  beefActions: BeefActions;
   arbiterStatuses: ArbiterStatus[];
   refetch: () => void;
 };
 
 const BeefControls = ({
   beef,
+  beefActions,
   arbiterStatuses,
   refetch,
 }: BeefControlsProps) => {
@@ -145,7 +146,9 @@ const BeefControls = ({
   }
 
   const { action, type } = decideAction(
-    beef,
+    beef.owner,
+    beef.challenger,
+    beefActions,
     arbiterStatuses,
     connectedAddress,
   );
@@ -188,29 +191,14 @@ const BeefControls = ({
 };
 
 const decideAction = (
-  beef: Beef,
+  owner: Address,
+  challenger: Address,
+  beefActions: BeefActions,
   arbiterStatuses: ArbiterStatus[],
   userAddress: Address,
 ) => {
-  const {
-    challenger,
-    owner,
-    beefGone,
-    settleStart,
-    isCooking,
-    attendCount,
-    joinDeadline,
-  } = beef;
-
-  const nowTimestamp = parseIsoDateToTimestamp(DateTime.now().toISO());
-  const hasPassedJoinDeadline = nowTimestamp > joinDeadline;
-  const hasPassedSettleDeadline =
-    nowTimestamp > settleStart + BigInt(30 * 24 * 60 * 60);
-
   const isUserChallenger = isAddressEqual(challenger, userAddress);
   const isUserOwner = isAddressEqual(owner, userAddress);
-
-  const showWithdrawButton = !beefGone && (isUserOwner || isUserChallenger);
 
   // Responsibility for the status presence is delegated to the parent
   const userArbiter = arbiterStatuses.find(({ address }) =>
@@ -230,96 +218,52 @@ const decideAction = (
     type: undefined,
   } as const;
 
-  if (showWithdrawButton) {
-    const withdrawalType = getWithdrawalType(
-      beef,
-      hasPassedJoinDeadline,
-      hasPassedSettleDeadline,
-    );
+  if (isUserOwner) {
+    if (beefActions.owner === undefined) return noAction;
 
-    if (withdrawalType !== undefined) {
+    return {
+      action: "withdrawal",
+      type: beefActions.owner,
+    } as const;
+  }
+
+  if (isUserChallenger) {
+    if (beefActions.challenger === undefined) return noAction;
+
+    if (beefActions.challenger === "joinBeef") {
+      return {
+        action: "joinBeef",
+        type: undefined,
+      } as const;
+    } else {
       return {
         action: "withdrawal",
-        type: withdrawalType,
+        type: beefActions.challenger,
       } as const;
     }
-
-    return noAction;
   }
 
   if (userArbiter?.status !== undefined) {
     const { hasAttended, hasSettled } = userArbiter.status;
 
-    const areAllAttended = arbiterStatuses.length === Number(attendCount);
-
-    const arbiterType = getArbiterType(
-      areAllAttended,
-      hasAttended,
-      hasSettled,
-      hasPassedJoinDeadline,
-      hasPassedSettleDeadline,
-    );
-
-    if (arbiterType !== undefined) {
+    if (beefActions.arbiter === "attend" && !hasAttended) {
       return {
         action: "arbiter",
-        type: arbiterType,
+        type: "attend",
+      } as const;
+    }
+
+    if (beefActions.arbiter === "vote" && hasSettled === 0n) {
+      return {
+        action: "arbiter",
+        type: "vote",
       } as const;
     }
 
     return noAction;
   }
 
-  // FIXME: FUTURE PROOF: remove the magic number and replace with data from cotract
-  if (
-    isUserChallenger &&
-    !(isCooking || attendCount < 3) &&
-    !hasPassedJoinDeadline
-  ) {
-    return {
-      action: "joinBeef",
-      type: undefined,
-    } as const;
-  }
-
   return noAction;
-};
-
-const getWithdrawalType = (
-  { isCooking, resultYes, resultNo, arbiters }: Beef,
-  hasPassedJoinDeadline: boolean,
-  hasPassedSettleDeadline: boolean,
-) => {
-  const quorum = Math.floor(arbiters.length / 2);
-  const majorityReached = resultYes > quorum || resultNo > quorum;
-
-  if (!isCooking && hasPassedJoinDeadline) {
-    return "withdrawRaw";
-  } else if (isCooking && hasPassedSettleDeadline) {
-    return "withdrawRotten";
-  } else if (majorityReached) {
-    return "serveBeef";
-  }
-
-  return undefined;
-};
-
-const getArbiterType = (
-  areAllAttended: boolean,
-  hasAttended: boolean,
-  hasSettled: bigint,
-  hasPassedJoinDeadline: boolean,
-  hasPassedSettleDeadline: boolean,
-) => {
-  if (hasSettled !== 0n) return undefined;
-
-  if (!hasAttended && !hasPassedJoinDeadline) {
-    return "attend";
-  } else if (hasAttended && !hasPassedSettleDeadline && areAllAttended) {
-    return "vote";
-  }
-
-  return undefined;
 };
 
 export default BeefControls;
