@@ -219,7 +219,9 @@ const NewBeefPage = () => {
                       Wallet address
                     </MenuItem>
                     <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
-                    <MenuItem value={ArbiterAccount.TWITTER}>Twitter</MenuItem>
+                    <MenuItem value={ArbiterAccount.TWITTER}>
+                      X / Twitter
+                    </MenuItem>
                   </Select>
                 )}
               />
@@ -327,7 +329,7 @@ const NewBeefPage = () => {
                   render={({ field }) => (
                     <Select {...field} sx={{ width: 200 }}>
                       <MenuItem value={ArbiterAccount.TWITTER}>
-                        Twitter
+                        X / Twitter
                       </MenuItem>
                       <MenuItem value={ArbiterAccount.ADDRESS}>
                         Wallet address
