@@ -1,8 +1,6 @@
 "use client";
 
-import BeefList from "@/components/BeefList";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
-import { useGetBeefs } from "@/hooks/queries";
+import { useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -14,8 +12,10 @@ import {
   Typography,
 } from "@mui/material";
 import Link from "next/link";
-import { useContext, useState } from "react";
+import BeefList from "@/components/BeefList";
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { ShowMyBeefs } from "@/components/ShowMyBeefs";
+import { useGetBeefs } from "@/hooks/queries";
 
 interface TabPanelProps {
   children?: React.ReactNode;

@@ -1,18 +1,17 @@
-import { SxProps, TextField, Theme } from "@mui/material";
 import React, {
   ChangeEventHandler,
   forwardRef,
   useEffect,
   useState,
 } from "react";
+import { SxProps, TextField, Theme } from "@mui/material";
 import { formatEther, parseEther } from "viem";
-
 import { formatBigint, sliceStringDecimals } from "@/utils/general";
 
 const DECIMALS = 6;
 
 const formatValue = (value: bigint | null | undefined) => {
-  if (value == null) {
+  if (value === null || value === undefined) {
     return "";
   }
 
@@ -24,7 +23,7 @@ const parseValue = (value: string) => {
   try {
     return parseEther(value);
   } catch {
-    return;
+    return undefined;
   }
 };
 
@@ -90,7 +89,7 @@ const AmountInput = forwardRef<HTMLDivElement, AmountInputProps>(
         setError(`Amount must be greater than ${formatBigint(minValue, 4)}`);
         return;
       }
-      if (maxValue != null && parsedValue > maxValue) {
+      if (maxValue !== undefined && parsedValue > maxValue) {
         setError(`Amount must be at most ${formatBigint(maxValue, 4)}`);
         return;
       }

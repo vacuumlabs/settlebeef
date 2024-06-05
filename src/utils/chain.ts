@@ -1,6 +1,6 @@
+import { baseSepolia as baseSepoliaAlchemy } from "@alchemy/aa-core";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
-import { baseSepolia as baseSepoliaAlchemy } from "@alchemy/aa-core";
 
 export const activeChain = baseSepolia;
 // Alchemy tries to be nice and add its RPC url, breaking compatibility in the process...

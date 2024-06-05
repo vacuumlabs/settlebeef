@@ -1,6 +1,6 @@
 "use client";
-import { Open_Sans, Space_Mono } from "next/font/google";
 import { createTheme } from "@mui/material";
+import { Open_Sans, Space_Mono } from "next/font/google";
 
 const roboto = Open_Sans({
   weight: ["300", "400", "500", "700"],

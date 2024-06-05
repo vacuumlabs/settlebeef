@@ -2,11 +2,6 @@
 
 import React from "react";
 import {
-  useBeef,
-  useEnsNames,
-  useGetArbiterStatuses,
-} from "../../../hooks/queries";
-import {
   Box,
   Chip,
   Container,
@@ -24,9 +19,10 @@ import {
 } from "@mui/material";
 import { redirect } from "next/navigation";
 import { Address, formatEther, zeroAddress } from "viem";
-import { getAddressOrEnsName } from "@/utils";
 import BeefControls from "@/components/BeefControls";
 import { Countdown } from "@/components/Countdown";
+import { useBeef, useEnsNames, useGetArbiterStatuses } from "@/hooks/queries";
+import { getAddressOrEnsName } from "@/utils";
 import { calculateColorFromStreetCredit } from "@/utils/colors";
 
 type BeefDetailPageProps = {

@@ -1,8 +1,8 @@
-import { Beef } from "@/types";
-import { Address, isAddressEqual } from "viem";
 import { Button, Paper, Stack, Typography } from "@mui/material";
 import Link from "next/link";
+import { Address, isAddressEqual } from "viem";
 import BeefList from "@/components/BeefList";
+import { Beef } from "@/types";
 
 type ShowMyBeefsProps = {
   address: Address;

@@ -1,13 +1,13 @@
 "use client";
 
+import { useContext } from "react";
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
-import { useContext } from "react";
-import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 import { useBalance, useEnsName } from "@/hooks/queries";
 import { QueryGuard } from "@/hooks/QueryGuard";
-import { formatBigint } from "@/utils/general";
 import { getAddressOrEnsName } from "@/utils";
+import { formatBigint } from "@/utils/general";
+import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
@@ -24,7 +24,15 @@ const LoginButton = () => {
 
   const { data: balance, isLoading } = useBalance();
 
-  return authenticated ? (
+  if (!authenticated) {
+    return (
+      <Button variant="contained" color="primary" onClick={login}>
+        Login
+      </Button>
+    );
+  }
+
+  return (
     <Stack direction="row" alignItems="center" gap={3}>
       {ready ? (
         <Stack direction="row" alignItems="center" gap={3}>
@@ -50,10 +58,6 @@ const LoginButton = () => {
         Logout
       </Button>
     </Stack>
-  ) : (
-    <Button variant="contained" color="primary" onClick={login}>
-      Login
-    </Button>
   );
 };
 

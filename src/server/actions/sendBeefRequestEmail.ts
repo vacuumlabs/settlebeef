@@ -1,9 +1,9 @@
 "use server";
 
-import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
 
 export const sendBeefRequestEmail = async (to: string) => {
-  const transporter = nodemailer.createTransport({
+  const transporter = createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false,

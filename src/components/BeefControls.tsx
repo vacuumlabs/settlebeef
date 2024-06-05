@@ -1,17 +1,17 @@
 import React, { useContext } from "react";
 import { Button, CircularProgress, Stack } from "@mui/material";
-import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
-import type { Beef } from "@/types";
-import { ArbiterStatus } from "@/hooks/queries";
+import { DateTime } from "luxon";
+import { Address, isAddressEqual } from "viem";
 import {
   useArbiterAttend,
   useJoinBeef,
   useSettleBeef,
   useWithdrawBeef,
 } from "@/hooks/mutations";
+import { ArbiterStatus } from "@/hooks/queries";
+import type { Beef } from "@/types";
 import { parseIsoDateToTimestamp } from "@/utils/general";
-import { DateTime } from "luxon";
-import { Address, isAddressEqual } from "viem";
+import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 
 type ButtonProps = {
   beefAddress: Address;
