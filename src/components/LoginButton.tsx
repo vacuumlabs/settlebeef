@@ -3,6 +3,7 @@
 import { useContext } from "react";
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
+import { useDisconnect } from "wagmi";
 import { useBalance, useEnsName } from "@/hooks/queries";
 import { QueryGuard } from "@/hooks/QueryGuard";
 import { getAddressOrEnsName } from "@/utils";
@@ -13,12 +14,15 @@ const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
   const { connectedAddress, setClient } = useContext(SmartAccountClientContext);
   const ensNameQuery = useEnsName(connectedAddress);
+  const { disconnect } = useDisconnect();
 
   const { login } = useLogin();
 
   const { logout } = useLogout({
     onSuccess: () => {
       setClient(undefined);
+      // Manually disconnect wagmi to clean up state in wagmi hooks
+      disconnect();
     },
   });
 
