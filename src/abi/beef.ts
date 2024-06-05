@@ -592,4 +592,5 @@ export const beefAbi = [
     name: "OwnableUnauthorizedAccount",
     inputs: [{ name: "account", type: "address", internalType: "address" }],
   },
+  { type: "error", name: "OwnershipTransferDisabled", inputs: [] },
 ] as const;
