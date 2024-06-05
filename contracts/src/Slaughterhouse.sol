@@ -68,7 +68,7 @@ contract Slaughterhouse is Ownable2Step {
         returns (address payable)
     {
         address payable beef = payable(Clones.clone(beefImplementation));
-        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, address(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
+        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, payable(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
         beefs.push(beef);
         emit BeefPackaged(beef, params.owner, params.challenger);
         return beef;
@@ -103,4 +103,6 @@ contract Slaughterhouse is Ownable2Step {
             revert EthTransferFailed();
         }
     }
+
+    receive() external payable {}
 }

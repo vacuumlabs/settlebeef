@@ -7,15 +7,18 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import {Beef} from "../src/Beef.sol";
+import {Slaughterhouse} from "../src/Slaughterhouse.sol";
 
 contract BeefTest is Test {
     Beef public beef;
-    address[] arbiters = new address[](3);
-    address slaughterhouse = address(5);
-    address beefOwner = address(10);
-    address challenger = address(1);
+    address[] public arbiters = new address[](3);
+    address payable public slaughterhouse;
+    address public beefOwner = address(10);
+    address public challenger = address(1);
 
     function setUp() public {
+        slaughterhouse = payable(new Slaughterhouse(address(11), address(12), address(13), address(14), 200, 300));
+
         arbiters[0] = makeAddr("alice");
         arbiters[1] = makeAddr("bob");
         arbiters[2] = makeAddr("charlie");
