@@ -170,7 +170,11 @@ export const beefAbi = [
       { name: "_weth", type: "address", internalType: "address" },
       { name: "_wsteth", type: "address", internalType: "address" },
       { name: "_uniswapV2Router", type: "address", internalType: "address" },
-      { name: "_slaughterhouse", type: "address", internalType: "address" },
+      {
+        name: "_slaughterhouse",
+        type: "address",
+        internalType: "address payable",
+      },
       {
         name: "_protocolRewardBasisPoints",
         type: "uint256",

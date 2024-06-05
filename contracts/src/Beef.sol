@@ -152,7 +152,7 @@ contract Beef is OwnableUpgradeable {
         address _weth,
         address _wsteth,
         address _uniswapV2Router,
-        address _slaughterhouse,
+        address payable _slaughterhouse,
         uint256 _protocolRewardBasisPoints,
         uint256 _arbitersRewardBasisPoints
     ) public payable initializer {
