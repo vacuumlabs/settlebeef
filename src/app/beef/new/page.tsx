@@ -29,7 +29,6 @@ import { useAddBeef } from "@/hooks/mutations";
 import { useBalance } from "@/hooks/queries";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
 import { ArbiterAccount, ChallengerAccount } from "@/types";
-import { isValidEmail } from "@/utils/validations";
 
 const NUMBER_OF_ARBITERS = 3;
 
@@ -65,9 +64,9 @@ const NewBeefPage = () => {
       title: "",
       description: "",
       arbiters: [
-        { type: ArbiterAccount.EMAIL, value: "" },
-        { type: ArbiterAccount.EMAIL, value: "" },
-        { type: ArbiterAccount.EMAIL, value: "" },
+        { type: ArbiterAccount.TWITTER, value: "" },
+        { type: ArbiterAccount.TWITTER, value: "" },
+        { type: ArbiterAccount.TWITTER, value: "" },
       ],
       wager: null,
       joinDeadline: DateTime.now()
@@ -220,7 +219,9 @@ const NewBeefPage = () => {
                       Wallet address
                     </MenuItem>
                     <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
-                    <MenuItem value={ArbiterAccount.TWITTER}>Twitter</MenuItem>
+                    <MenuItem value={ArbiterAccount.TWITTER}>
+                      X / Twitter
+                    </MenuItem>
                   </Select>
                 )}
               />
@@ -327,9 +328,8 @@ const NewBeefPage = () => {
                   control={control}
                   render={({ field }) => (
                     <Select {...field} sx={{ width: 200 }}>
-                      <MenuItem value={ArbiterAccount.EMAIL}>Email</MenuItem>
                       <MenuItem value={ArbiterAccount.TWITTER}>
-                        Twitter
+                        X / Twitter
                       </MenuItem>
                       <MenuItem value={ArbiterAccount.ADDRESS}>
                         Wallet address
@@ -347,10 +347,7 @@ const NewBeefPage = () => {
                       formValues.arbiters[index]?.type ===
                       ArbiterAccount.ADDRESS
                         ? isAddress(value) || "Address not valid"
-                        : formValues.arbiters[index]?.type ===
-                            ArbiterAccount.EMAIL
-                          ? isValidEmail(value) || "Email not valid"
-                          : true,
+                        : true,
                   }}
                   render={({ field, fieldState: { error } }) => (
                     <TextField
@@ -361,9 +358,7 @@ const NewBeefPage = () => {
                       label={(() => {
                         const type = watch(`arbiters.${index}.type`);
 
-                        if (type === ArbiterAccount.EMAIL) {
-                          return "Email address";
-                        } else if (type === ArbiterAccount.ENS) {
+                        if (type === ArbiterAccount.ENS) {
                           return "ENS Name";
                         } else if (type === ArbiterAccount.TWITTER) {
                           return "X / Twitter handle";
