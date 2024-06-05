@@ -15,10 +15,8 @@ import {
   WSTETH_ADDRESS,
 } from "@/constants";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
-import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail";
 import { ArbiterAccount } from "@/types";
 import { parseIsoDateToTimestamp } from "@/utils/general";
-import { getUserGeneratedAddress } from "@/utils/generateUserAddress";
 import { subtractSlippage } from "@/utils/slippage";
 import { queryKeys } from "./queryKeys";
 
@@ -156,22 +154,9 @@ export const useAddBeef = () => {
       throw new Error("Invalid request");
     }
 
-    arbiters.forEach((arbiter) => {
-      if (arbiter.type === ArbiterAccount.EMAIL) {
-        void sendBeefRequestEmail(arbiter.value);
-      }
-    });
-
     const addressPromises = arbiters.map(({ type, value }) => {
       if (type === ArbiterAccount.TWITTER) {
         return generateAddressFromTwitterHandle(value);
-      } else if (type === ArbiterAccount.EMAIL) {
-        return getUserGeneratedAddress([
-          {
-            address: value,
-            type: "email" as const,
-          },
-        ]);
       } else {
         return value as Address;
       }
