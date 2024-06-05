@@ -95,6 +95,7 @@ contract Beef is OwnableUpgradeable {
     error BeefNotRotten(uint256 deadline, uint256 timestamp);
     error BeefNotSettled(uint128 resultYes, uint128 resultNo, uint256 requiredSettleCount);
     error EthTransferFailed();
+    error OwnershipTransferDisabled();
 
     event BeefCreated(
         address indexed owner,
@@ -187,7 +188,9 @@ contract Beef is OwnableUpgradeable {
     }
 
     // Disabled to prevent the owner from locking funds for the challenger
-    function transferOwnership(address newOwner) public override onlyOwner {}
+    function transferOwnership(address newOwner) public override onlyOwner {
+        revert OwnershipTransferDisabled();
+    }
 
     // @notice Get the current information about beef.
     function getInfo() public view returns (BeefInfo memory) {
@@ -308,15 +311,9 @@ contract Beef is OwnableUpgradeable {
         for (uint256 i; i < arbiters.length;) {
             address arbiterAddress = arbiters[i];
 
+            // Note: Cases where arbiter settled incorrectly / didn't settle / reverted transfer are claimed by protocol
             if (hasSettled[arbiterAddress] == correctSettle) {
-                (bool isSent,) = arbiterAddress.call{value: individualArbiterReward}("");
-
-                if (!isSent) {
-                    protocolReward += individualArbiterReward;
-                }
-            } else {
-                // The arbiter voted incorrectly / didn't vote -> rewards are claimed by the protocol
-                protocolReward += individualArbiterReward;
+                arbiterAddress.call{value: individualArbiterReward}("");
             }
 
             unchecked {
@@ -324,7 +321,7 @@ contract Beef is OwnableUpgradeable {
             }
         }
 
-        _transferEth(address(slaughterhouse), protocolReward);
+        _transferEth(address(slaughterhouse), address(this).balance);
 
         beefGone = true;
     }
