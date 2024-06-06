@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Address, getContract } from "viem";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
-import { activeChainAlchemy, publicClient } from "@/utils/chain";
+import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
 
 export type GetGeneratedSmartAccountAddressResponse = {
   address: Address | undefined;
@@ -75,7 +75,7 @@ const getSmartAccountAddress = async () => {
   const { rows } = await sql<UserDetailsResponseType>`
     SELECT smart_account_address, temporary_private_key, owner 
     FROM user_details
-    WHERE (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
+    WHERE chain_id = ${activeChain.id} AND (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
     `;
 
   if (rows[0]) {
@@ -121,8 +121,8 @@ const getSmartAccountAddress = async () => {
     // No wallet is pre-generated. We can just create a default one from the embedded wallet's address
     const accountAddress = await getLightAccountAddress([walletAddress, 0n]);
 
-    await sql`INSERT INTO user_details (x_handle, email, smart_account_address, owner) 
-      values (${xHandle}, ${email}, ${accountAddress}, ${walletAddress})`;
+    await sql`INSERT INTO user_details (x_handle, email, smart_account_address, owner, chain_id) 
+      values (${xHandle}, ${email}, ${accountAddress}, ${walletAddress}, ${activeChain.id})`;
 
     return accountAddress;
   }
