@@ -6,7 +6,7 @@ import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { UserDetailsResponseType } from "@/app/api/generated-smart-account/route";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
-import { publicClient } from "@/utils/chain";
+import { activeChain, publicClient } from "@/utils/chain";
 
 const getLightAccountAddress = getContract({
   client: publicClient,
@@ -16,7 +16,7 @@ const getLightAccountAddress = getContract({
 
 export const generateAddressForHandle = async (xHandle: string) => {
   const { rows } =
-    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE x_handle = ${xHandle} `;
+    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE x_handle = ${xHandle}  AND chain_id = ${activeChain.id}`;
 
   if (rows[0]) {
     // Already generated
@@ -27,8 +27,8 @@ export const generateAddressForHandle = async (xHandle: string) => {
   const signerAddress = privateKeyToAddress(privateKey);
   const accountAddress = await getLightAccountAddress([signerAddress, 0n]);
 
-  await sql`INSERT INTO user_details (x_handle, temporary_private_key, smart_account_address) 
-      values (${xHandle}, ${privateKey}, ${accountAddress})`;
+  await sql`INSERT INTO user_details (x_handle, temporary_private_key, smart_account_address, chain_id) 
+      values (${xHandle}, ${privateKey}, ${accountAddress}, ${activeChain.id})`;
 
   return accountAddress;
 };

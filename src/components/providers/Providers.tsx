@@ -12,7 +12,7 @@ import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { http } from "viem";
 import { mainnet } from "viem/chains";
 import { injected } from "wagmi/connectors";
-import { activeChain } from "@/utils/chain";
+import { activeChain, alchemyApiUrl } from "@/utils/chain";
 import { ellipsizeText } from "@/utils/general";
 import theme from "@/utils/theme";
 import { SmartAccountClientContextProvider } from "./SmartAccountClientContext";
@@ -30,15 +30,12 @@ export const handleError = (error: Error | undefined) => {
   );
 };
 
-const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "";
-
 export const wagmiConfig = createConfig({
   chains: [activeChain],
   connectors: [injected()],
   transports: {
-    [activeChain.id]: http(
-      `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}`,
-    ),
+    8453: http(alchemyApiUrl),
+    84532: http(alchemyApiUrl),
   },
 });
 
