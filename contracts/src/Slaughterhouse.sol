@@ -33,6 +33,7 @@ contract Slaughterhouse is Ownable2Step {
     error InvalidBasisPoints(uint256 totalBasisPoints, uint256 providedBasisPoints);
     error ZeroBalance();
     error EthTransferFailed();
+    error IndexOutOfBounds();
 
     event BeefPackaged(address indexed beef, address indexed owner, address indexed challenger);
     event RewardBasisPointsChanged(uint256 newProtocolRewardBasisPoints, uint256 newArbitersRewardBasisPoints);
@@ -52,6 +53,31 @@ contract Slaughterhouse is Ownable2Step {
         uniswapV2Router = _uniswapV2Router;
         protocolRewardBasisPoints = _protocolRewardBasisPoints;
         arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
+    }
+
+    function getBeefsSlice(uint256 from, uint256 to) external view returns(address[] memory) {
+        if (from > to || to > beefs.length) {
+            revert IndexOutOfBounds();
+        }
+
+        uint256 sliceSize = to - from;
+        address[] memory beefSlice = new address[](sliceSize);
+
+        uint256 beefIndex = from;
+        for (uint256 i; i < sliceSize; ) {
+            beefSlice[i] = beefs[beefIndex];
+
+            unchecked {
+                ++i;
+                ++beefIndex;
+            }
+        }
+
+        return beefSlice;
+    }
+
+    function getBeefLength() external view returns (uint256) {
+        return beefs.length;
     }
 
     // @notice Get all beefs

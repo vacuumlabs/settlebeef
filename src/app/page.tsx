@@ -15,7 +15,7 @@ import Link from "next/link";
 import BeefList from "@/components/BeefList";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { ShowMyBeefs } from "@/components/ShowMyBeefs";
-import { useGetBeefs } from "@/hooks/queries";
+import { useGetInfiniteBeefs } from "@/hooks/queries";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,18 +48,26 @@ function a11yProps(index: number) {
 
 export default function Home() {
   const { connectedAddress } = useContext(SmartAccountClientContext);
-  const { data: beefs, isLoading: isLoadingBeefs } = useGetBeefs();
+  const {
+    data: beefs,
+    isLoading: isLoadingBeefs,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetInfiniteBeefs();
   const [tabIndex, setTabIndex] = useState(0);
 
   const beefsListData =
-    beefs?.map((beef) => ({
-      title: beef.params.title,
-      address: beef.address,
-      wager: beef.params.wager,
-      owner: beef.params.owner,
-      challenger: beef.params.challenger,
-      arbiters: beef.params.arbiters,
-    })) ?? [];
+    beefs?.pages?.flatMap(
+      (beefs) =>
+        beefs?.map((beef) => ({
+          title: beef.params.title,
+          address: beef.address,
+          wager: beef.params.wager,
+          owner: beef.params.owner,
+          challenger: beef.params.challenger,
+          arbiters: beef.params.arbiters,
+        })) ?? [],
+    ) ?? [];
 
   const handleChangeTabIndex = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -108,6 +116,12 @@ export default function Home() {
             ) : (
               <BeefList beefs={beefsListData} />
             )}
+            <Button
+              disabled={!hasNextPage}
+              onClick={() => void fetchNextPage()}
+            >
+              More beef
+            </Button>
           </Stack>
         </Paper>
       </CustomTabPanel>
