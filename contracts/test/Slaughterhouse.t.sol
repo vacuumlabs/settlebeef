@@ -53,4 +53,38 @@ contract SlaughterhouseTest is Test {
         assertEq(beef.arbitersRewardBasisPoints(), slaughterhouse.arbitersRewardBasisPoints(), "Beef arbitersRewardsBasisPoints mismatch");
         assertEq(beef.totalBasisPoints(), slaughterhouse.totalBasisPoints(), "Beef totalBasisPoints mismatch");
     }
+
+    function testFuzz_SliceBeef(uint8 from, uint8 to) public {
+        vm.assume(to < 50);
+        vm.assume(from < to);
+
+        for (uint256 i ;  i < to; ) {
+            address[] memory arbiters = new address[](3);
+            arbiters[0] = address(0x1);
+            arbiters[1] = address(0x2);
+            arbiters[2] = address(0x3);
+            Beef.ConstructorParams memory params = Beef.ConstructorParams({
+                owner: address(this),
+            // NOTE: Match the wager with the index for easy assert (i.e. use the wager as Beef ID)
+                wager: i,
+                challenger: address(0),
+                settleStart: block.timestamp + 30 days,
+                title: "Test Beef",
+                description: "This is a test beef.",
+                arbiters: arbiters,
+                joinDeadline: block.timestamp + 7 days,
+                staking: false
+            });
+            slaughterhouse.packageBeef{value: params.wager}(params, 0);
+
+            unchecked {++i;}
+        }
+
+        console.log(slaughterhouse.getBeefs().length);
+
+        address[] memory slice = slaughterhouse.getBeefsSlice(from, to);
+
+        assertEq(slice[0].balance, from, "Unexpected first element in the slice");
+        assertEq(slice[slice.length - 1].balance, to - 1, "Unexpected last element in the slice");
+    }
 }

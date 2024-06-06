@@ -1,8 +1,13 @@
 import { useContext } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Address, isAddress } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
-import { getBalance, getEnsName } from "wagmi/actions";
+import {
+  getBalance,
+  getEnsName,
+  readContract,
+  readContracts,
+} from "wagmi/actions";
 import { beefAbi } from "@/abi/beef";
 import { slaughterhouseAbi } from "@/abi/slaughterhouse";
 import { ensConfig, wagmiConfig } from "@/components/providers/Providers";
@@ -74,43 +79,76 @@ export const useBeef = (
     : null;
 };
 
-const useGetBeefsArray = () => {
-  return useReadContract({
+const getBeefSlice = async (from: number, to: number) => {
+  return await readContract(wagmiConfig, {
     abi: slaughterhouseAbi,
     address: SLAUGHTERHOUSE_ADDRESS,
-    functionName: "getBeefs",
+    functionName: "getBeefsSlice",
+    args: [BigInt(from), BigInt(to)],
   });
 };
 
-export const useGetBeefs = () => {
-  const { data: beefAddresses } = useGetBeefsArray();
+// Gets total number of beefs in the contract
+export const useBeefCount = () => {
+  return useReadContract({
+    abi: slaughterhouseAbi,
+    address: SLAUGHTERHOUSE_ADDRESS,
+    functionName: "getBeefLength",
+    query: { select: (data) => Number(data) },
+  });
+};
 
-  const beefContractCalls =
-    beefAddresses?.map((address) => {
+const PAGE_SIZE = 10;
+
+export const useGetInfiniteBeefs = () => {
+  const { data: beefLength } = useBeefCount();
+
+  const fetchBeefs = async ({ pageParam: page }: { pageParam: number }) => {
+    if (beefLength === undefined) return null;
+
+    const to = beefLength - page * PAGE_SIZE;
+    const from = Math.max(0, to - PAGE_SIZE);
+
+    if (to <= 0) return null;
+
+    const addresses = await getBeefSlice(from, to);
+
+    const contractCalls = addresses.map((address) => {
       return {
         abi: beefAbi,
         address,
         functionName: "getInfo",
       } as const;
-    }) ?? [];
+    });
 
-  const query = useReadContracts({
-    contracts: beefContractCalls,
-    query: { enabled: !!beefAddresses },
-    allowFailure: false,
-  });
+    const data = await readContracts(wagmiConfig, {
+      allowFailure: false,
+      contracts: contractCalls,
+    });
 
-  const dataWithAddress =
-    beefAddresses &&
-    query.data?.map((beef, index) => ({
+    const dataWithAddress = data.map((beef, index) => ({
       ...beef,
-      address: beefAddresses[index]!,
+      address: addresses[index]!,
     }));
 
-  return {
-    ...query,
-    data: dataWithAddress,
+    // We want to display the most recent beefs first
+    return dataWithAddress.toReversed();
   };
+
+  return useInfiniteQuery({
+    enabled: beefLength !== undefined,
+    maxPages: beefLength ? Math.ceil(beefLength / PAGE_SIZE) : 0,
+    initialPageParam: 0,
+    getNextPageParam: (_1, _2, lastPageParam) => {
+      const nextPageParam = lastPageParam + 1;
+      if (beefLength === undefined || nextPageParam * PAGE_SIZE >= beefLength)
+        return null;
+
+      return nextPageParam;
+    },
+    queryFn: fetchBeefs,
+    queryKey: [queryKeys.infiniteBeefs],
+  });
 };
 
 export type ArbiterStatus = {
