@@ -4,7 +4,7 @@ import { sql } from "@vercel/postgres";
 import { getContract } from "viem";
 import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
-import { UserDetailsResponseType } from "@/app/api/twitter-smart-account/route";
+import { UserDetailsResponseType } from "@/app/api/generated-smart-account/route";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 import { publicClient } from "@/utils/chain";
 
@@ -14,9 +14,9 @@ const getLightAccountAddress = getContract({
   abi: lightAccountFactoryAbi,
 }).read.getAddress;
 
-export const generateAddressFromTwitterHandle = async (xHandle: string) => {
+export const generateAddressForEmail = async (email: string) => {
   const { rows } =
-    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE x_handle = ${xHandle} `;
+    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE email = ${email} `;
 
   if (rows[0]) {
     // Already generated
@@ -27,8 +27,8 @@ export const generateAddressFromTwitterHandle = async (xHandle: string) => {
   const signerAddress = privateKeyToAddress(privateKey);
   const accountAddress = await getLightAccountAddress([signerAddress, 0n]);
 
-  await sql`INSERT INTO user_details (x_handle, temporary_private_key, smart_account_address) 
-      values (${xHandle}, ${privateKey}, ${accountAddress})`;
+  await sql`INSERT INTO user_details (email, temporary_private_key, smart_account_address) 
+      values (${email}, ${privateKey}, ${accountAddress})`;
 
   return accountAddress;
 };
