@@ -14,7 +14,7 @@ import {
   WETH_ADDRESS,
   WSTETH_ADDRESS,
 } from "@/constants";
-import { useBeefCount } from "@/hooks/queries";
+import { useBeefsLength } from "@/hooks/queries";
 import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
 import { ArbiterAccount } from "@/types";
 import { parseIsoDateToTimestamp } from "@/utils/general";
@@ -137,7 +137,7 @@ export const useAddBeef = () => {
     SmartAccountClientContext,
   );
   const queryClient = useQueryClient();
-  const { queryKey: beefLengthQueryKey } = useBeefCount();
+  const { queryKey: beefsLengthQueryKey } = useBeefsLength();
 
   const addBeef = async ({
     arbiters,
@@ -207,7 +207,7 @@ export const useAddBeef = () => {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
 
       // Await so we are sure `infiniteBeefs` are invalidated while having fresh beef count
-      await queryClient.invalidateQueries({ queryKey: beefLengthQueryKey });
+      await queryClient.invalidateQueries({ queryKey: beefsLengthQueryKey });
 
       void queryClient.invalidateQueries({
         queryKey: [queryKeys.infiniteBeefs],

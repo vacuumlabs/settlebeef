@@ -64,16 +64,16 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
-    name: "getBeefLength",
+    name: "getBeefs",
     inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
-    name: "getBeefs",
+    name: "getBeefsLength",
     inputs: [],
-    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
