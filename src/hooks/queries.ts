@@ -79,7 +79,7 @@ export const useBeef = (
     : null;
 };
 
-const getBeefSlice = async (from: number, to: number) => {
+const getBeefsSlice = async (from: number, to: number) => {
   return await readContract(wagmiConfig, {
     abi: slaughterhouseAbi,
     address: SLAUGHTERHOUSE_ADDRESS,
@@ -89,29 +89,27 @@ const getBeefSlice = async (from: number, to: number) => {
 };
 
 // Gets total number of beefs in the contract
-export const useBeefCount = () => {
+export const useBeefsLength = () => {
   return useReadContract({
     abi: slaughterhouseAbi,
     address: SLAUGHTERHOUSE_ADDRESS,
-    functionName: "getBeefLength",
+    functionName: "getBeefsLength",
     query: { select: (data) => Number(data) },
   });
 };
 
-const PAGE_SIZE = 10;
-
-export const useGetInfiniteBeefs = () => {
-  const { data: beefLength } = useBeefCount();
+export const useGetInfiniteBeefs = (pageSize: number) => {
+  const { data: beefsLength } = useBeefsLength();
 
   const fetchBeefs = async ({ pageParam: page }: { pageParam: number }) => {
-    if (beefLength === undefined) return null;
+    if (beefsLength === undefined) return null;
 
-    const to = beefLength - page * PAGE_SIZE;
-    const from = Math.max(0, to - PAGE_SIZE);
+    const to = beefsLength - page * pageSize;
+    const from = Math.max(0, to - pageSize);
 
     if (to <= 0) return null;
 
-    const addresses = await getBeefSlice(from, to);
+    const addresses = await getBeefsSlice(from, to);
 
     const contractCalls = addresses.map((address) => {
       return {
@@ -136,12 +134,13 @@ export const useGetInfiniteBeefs = () => {
   };
 
   return useInfiniteQuery({
-    enabled: beefLength !== undefined,
-    maxPages: beefLength ? Math.ceil(beefLength / PAGE_SIZE) : 0,
+    enabled: beefsLength !== undefined,
+    maxPages: beefsLength ? Math.ceil(beefsLength / pageSize) : 0,
     initialPageParam: 0,
     getNextPageParam: (_1, _2, lastPageParam) => {
       const nextPageParam = lastPageParam + 1;
-      if (beefLength === undefined || nextPageParam * PAGE_SIZE >= beefLength)
+
+      if (beefsLength === undefined || nextPageParam * pageSize >= beefsLength)
         return null;
 
       return nextPageParam;

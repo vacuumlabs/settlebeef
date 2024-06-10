@@ -76,7 +76,7 @@ contract Slaughterhouse is Ownable2Step {
         return beefSlice;
     }
 
-    function getBeefLength() external view returns (uint256) {
+    function getBeefsLength() external view returns (uint256) {
         return beefs.length;
     }
 

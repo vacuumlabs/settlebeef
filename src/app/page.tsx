@@ -46,18 +46,20 @@ function a11yProps(index: number) {
   };
 }
 
+const PAGE_SIZE = 10;
+
 export default function Home() {
   const { connectedAddress } = useContext(SmartAccountClientContext);
   const {
-    data: beefs,
+    data: beefPages,
     isLoading: isLoadingBeefs,
     fetchNextPage,
     hasNextPage,
-  } = useGetInfiniteBeefs();
+  } = useGetInfiniteBeefs(PAGE_SIZE);
   const [tabIndex, setTabIndex] = useState(0);
 
   const beefsListData =
-    beefs?.pages?.flatMap(
+    beefPages?.pages?.flatMap(
       (beefs) =>
         beefs?.map((beef) => ({
           title: beef.params.title,
@@ -109,7 +111,7 @@ export default function Home() {
                 </Button>
               </Link>
             </Stack>
-            {isLoadingBeefs || beefs === undefined ? (
+            {isLoadingBeefs || beefPages === undefined ? (
               "Loading beef list"
             ) : beefsListData.length === 0 ? (
               "No beef!"
