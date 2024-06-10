@@ -13,14 +13,14 @@ import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
 import { activeChainAlchemy, publicClient } from "@/utils/chain";
 
-export type GetTwitterSmartAccountAddressResponse = {
+export type GetGeneratedSmartAccountAddressResponse = {
   address: Address | undefined;
 };
 
 export const GET = async (
   _: NextRequest,
-): Promise<NextResponse<GetTwitterSmartAccountAddressResponse>> => {
-  const address = await getTwitterSmartAccountAddress();
+): Promise<NextResponse<GetGeneratedSmartAccountAddressResponse>> => {
+  const address = await getSmartAccountAddress();
 
   return NextResponse.json({ address });
 };
@@ -42,7 +42,7 @@ export type UserDetailsResponseType = {
   temporary_private_key?: Address;
 };
 
-const getTwitterSmartAccountAddress = async () => {
+const getSmartAccountAddress = async () => {
   const authToken = cookies().get("privy-token")?.value;
 
   if (authToken === undefined) {
@@ -62,14 +62,21 @@ const getTwitterSmartAccountAddress = async () => {
   }
 
   const xHandle = user.twitter?.username;
+  const email = user.email?.address;
 
-  if (!xHandle) {
-    console.error(`User ${user.id} does not have a X / Twitter connected`);
+  if (!xHandle && email === undefined) {
+    console.error(
+      `User ${user.id} does not have a X / Twitter or Email connected`,
+    );
+
     return undefined;
   }
 
-  const { rows } =
-    await sql<UserDetailsResponseType>`SELECT smart_account_address, temporary_private_key, owner FROM user_details WHERE x_handle = ${xHandle} `;
+  const { rows } = await sql<UserDetailsResponseType>`
+    SELECT smart_account_address, temporary_private_key, owner 
+    FROM user_details
+    WHERE (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
+    `;
 
   if (rows[0]) {
     const { smart_account_address, temporary_private_key, owner } = rows[0];
@@ -102,7 +109,11 @@ const getTwitterSmartAccountAddress = async () => {
         chain: activeChainAlchemy,
       });
 
-      await sql`UPDATE user_details SET owner = ${walletAddress}, temporary_private_key = NULL WHERE x_handle = ${xHandle}`;
+      await sql`
+      UPDATE user_details 
+      SET owner = ${walletAddress}, temporary_private_key = NULL 
+      WHERE (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
+      `;
 
       return smart_account_address;
     }
@@ -110,8 +121,8 @@ const getTwitterSmartAccountAddress = async () => {
     // No wallet is pre-generated. We can just create a default one from the embedded wallet's address
     const accountAddress = await getLightAccountAddress([walletAddress, 0n]);
 
-    await sql`INSERT INTO user_details (x_handle, smart_account_address, owner) 
-      values (${xHandle}, ${accountAddress}, ${walletAddress})`;
+    await sql`INSERT INTO user_details (x_handle, email, smart_account_address, owner) 
+      values (${xHandle}, ${email}, ${accountAddress}, ${walletAddress})`;
 
     return accountAddress;
   }
