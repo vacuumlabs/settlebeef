@@ -37,3 +37,14 @@ export const ellipsizeText = (text: string, maxLength: number) => {
     ? trimmedText
     : `${trimmedText.slice(0, maxLength)}...`;
 };
+
+export const copyTextToClipboard = async (text: string) => {
+  if ("clipboard" in navigator) {
+    return await navigator.clipboard.writeText(text).then(
+      () => true,
+      () => false,
+    );
+  } else {
+    return document.execCommand("copy", true, text);
+  }
+};
