@@ -61,10 +61,10 @@ const getSmartAccountAddress = async () => {
     return undefined;
   }
 
-  const xHandle = user.twitter?.username;
+  const xHandle = user.twitter?.username ?? undefined;
   const email = user.email?.address;
 
-  if (!xHandle && email === undefined) {
+  if (xHandle === undefined && email === undefined) {
     console.error(
       `User ${user.id} does not have a X / Twitter or Email connected`,
     );
