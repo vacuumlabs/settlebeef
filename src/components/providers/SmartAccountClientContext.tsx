@@ -7,16 +7,38 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
-import { WalletClientSigner } from "@alchemy/aa-core";
+import { createLightAccount, LightAccount } from "@alchemy/aa-accounts";
+import {
+  createSmartAccountClient,
+  getEntryPoint,
+  resolveProperties,
+  SmartAccountClient as AlchemySmartAccountClient,
+  UserOperationStruct_v6,
+  WalletClientSigner,
+} from "@alchemy/aa-core";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { Address, createWalletClient, custom } from "viem";
+import {
+  Address,
+  Chain,
+  createWalletClient,
+  custom,
+  http,
+  Transport,
+} from "viem";
 import { useSendTransaction } from "wagmi";
 import { GetGeneratedSmartAccountAddressResponse } from "@/app/api/generated-smart-account/route";
-import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
+import {
+  activeChain,
+  activeChainAlchemy,
+  baseApiUrl,
+  publicClient,
+} from "@/utils/chain";
+import { sponsorUserOperation } from "@/utils/userOperation";
 
-export type SmartAccountClient = Awaited<
-  ReturnType<typeof createLightAccountAlchemyClient>
+export type SmartAccountClient = AlchemySmartAccountClient<
+  Transport,
+  Chain,
+  LightAccount
 >;
 
 type SendTransactionParams = {
@@ -57,6 +79,7 @@ export const SmartAccountClientContextProvider = ({
           value: params.value,
           data: params.data,
         };
+
         const { hash } = await client.sendUserOperation({ uo });
 
         await client.waitForUserOperationTransaction({ hash });
@@ -98,17 +121,41 @@ export const SmartAccountClientContextProvider = ({
 
     const accountAddress = await getAccountAddress;
 
-    const smartAccountClient = await createLightAccountAlchemyClient({
+    const account = await createLightAccount({
       signer: privySigner,
-      chain: activeChainAlchemy,
-      apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
       accountAddress,
-      gasManagerConfig: {
-        policyId: process.env.NEXT_PUBLIC_GAS_POLICY_ID!,
+      transport: http(baseApiUrl),
+      chain: activeChainAlchemy,
+      entryPoint: getEntryPoint(activeChainAlchemy, { version: "0.6.0" }),
+    });
+
+    const client = createSmartAccountClient({
+      transport: http(baseApiUrl),
+      account,
+      chain: activeChainAlchemy,
+      gasEstimator: async (struct) => ({
+        ...struct,
+        callGasLimit: 0n,
+        preVerificationGas: 0n,
+        verificationGasLimit: 0n,
+      }),
+      paymasterAndData: {
+        // @ts-expect-error Type inference utterly fails to infer the entrypoint version
+        paymasterAndData: async (userOp) => {
+          // UserOp truly is UserOperationStruct_v6, however the type inference Alchemy is hoping for is truly a stretch
+          const resolvedUserOp = (await resolveProperties(
+            userOp,
+          )) as UserOperationStruct_v6;
+          // request sponsorship
+          const updatedUserOp = await sponsorUserOperation(resolvedUserOp);
+
+          return updatedUserOp;
+        },
+        dummyPaymasterAndData: () => "0x",
       },
     });
 
-    setClient(smartAccountClient);
+    setClient(client);
   }, [embeddedWallet, user]);
 
   const value = useMemo(
