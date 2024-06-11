@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { http } from "viem";
-import { mainnet } from "viem/chains";
+import { base, baseSepolia, mainnet } from "viem/chains";
 import { injected } from "wagmi/connectors";
 import { activeChain, alchemyApiUrl } from "@/utils/chain";
 import { ellipsizeText } from "@/utils/general";
@@ -34,8 +34,8 @@ export const wagmiConfig = createConfig({
   chains: [activeChain],
   connectors: [injected()],
   transports: {
-    8453: http(alchemyApiUrl),
-    84532: http(alchemyApiUrl),
+    [base.id]: http(alchemyApiUrl),
+    [baseSepolia.id]: http(alchemyApiUrl),
   },
 });
 
