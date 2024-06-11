@@ -71,6 +71,23 @@ export const slaughterhouseAbi = [
   },
   {
     type: "function",
+    name: "getBeefsLength",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getBeefsSlice",
+    inputs: [
+      { name: "from", type: "uint256", internalType: "uint256" },
+      { name: "to", type: "uint256", internalType: "uint256" },
+    ],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "owner",
     inputs: [],
     outputs: [{ name: "", type: "address", internalType: "address" }],
@@ -260,6 +277,7 @@ export const slaughterhouseAbi = [
   },
   { type: "error", name: "ERC1167FailedCreateClone", inputs: [] },
   { type: "error", name: "EthTransferFailed", inputs: [] },
+  { type: "error", name: "IndexOutOfBounds", inputs: [] },
   {
     type: "error",
     name: "InvalidBasisPoints",

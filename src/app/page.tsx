@@ -15,7 +15,7 @@ import Link from "next/link";
 import BeefList from "@/components/BeefList";
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
 import { ShowMyBeefs } from "@/components/ShowMyBeefs";
-import { useGetBeefs } from "@/hooks/queries";
+import { useGetInfiniteBeefs } from "@/hooks/queries";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,20 +46,30 @@ function a11yProps(index: number) {
   };
 }
 
+const PAGE_SIZE = 10;
+
 export default function Home() {
   const { connectedAddress } = useContext(SmartAccountClientContext);
-  const { data: beefs, isLoading: isLoadingBeefs } = useGetBeefs();
+  const {
+    data: beefPages,
+    isLoading: isLoadingBeefs,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetInfiniteBeefs(PAGE_SIZE);
   const [tabIndex, setTabIndex] = useState(0);
 
   const beefsListData =
-    beefs?.map((beef) => ({
-      title: beef.params.title,
-      address: beef.address,
-      wager: beef.params.wager,
-      owner: beef.params.owner,
-      challenger: beef.params.challenger,
-      arbiters: beef.params.arbiters,
-    })) ?? [];
+    beefPages?.pages?.flatMap(
+      (beefs) =>
+        beefs?.map((beef) => ({
+          title: beef.params.title,
+          address: beef.address,
+          wager: beef.params.wager,
+          owner: beef.params.owner,
+          challenger: beef.params.challenger,
+          arbiters: beef.params.arbiters,
+        })) ?? [],
+    ) ?? [];
 
   const handleChangeTabIndex = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -101,13 +111,19 @@ export default function Home() {
                 </Button>
               </Link>
             </Stack>
-            {isLoadingBeefs || beefs === undefined ? (
+            {isLoadingBeefs || beefPages === undefined ? (
               "Loading beef list"
             ) : beefsListData.length === 0 ? (
               "No beef!"
             ) : (
               <BeefList beefs={beefsListData} />
             )}
+            <Button
+              disabled={!hasNextPage}
+              onClick={() => void fetchNextPage()}
+            >
+              More beef
+            </Button>
           </Stack>
         </Paper>
       </CustomTabPanel>
