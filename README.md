@@ -1,3 +1,5 @@
+# Development moved to [https://github.com/vacuumlabs/ethba-settlebeef/]()
+
 # ETH BA Hackathon - SettleBeef
 
 On-chain wager / bet settlement protocol with social consensus. Gas-sponsored, account abstracted, yield generating collateral enabled protocol to end all Twitter beef. 🔥🧑‍⚖️
