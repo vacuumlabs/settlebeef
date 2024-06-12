@@ -15,7 +15,8 @@ import {
   WSTETH_ADDRESS,
 } from "@/constants";
 import { useBeefsLength } from "@/hooks/queries";
-import { generateAddressFromTwitterHandle } from "@/server/actions/generateAddressFromTwitterHandle";
+import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail";
+import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle";
 import { ArbiterAccount } from "@/types";
 import { parseIsoDateToTimestamp } from "@/utils/general";
 import { subtractSlippage } from "@/utils/slippage";
@@ -158,7 +159,9 @@ export const useAddBeef = () => {
 
     const addressPromises = arbiters.map(({ type, value }) => {
       if (type === ArbiterAccount.TWITTER) {
-        return generateAddressFromTwitterHandle(value);
+        return generateAddressForHandle(value);
+      } else if (type === ArbiterAccount.EMAIL) {
+        return generateAddressForEmail(value);
       } else {
         return value as Address;
       }
