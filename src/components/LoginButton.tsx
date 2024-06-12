@@ -44,7 +44,7 @@ const LoginButton = () => {
             <Skeleton height={15} width={200} />
           ) : (
             <Typography component="span">
-              {formatBigint(balance?.value, 5)}&nbsp;Ξ
+              {formatBigint(balance, 5)}&nbsp;Ξ
             </Typography>
           )}
           <QueryGuard {...ensNameQuery}>

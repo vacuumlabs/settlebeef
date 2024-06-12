@@ -155,7 +155,7 @@ const NewBeefPage = () => {
       return arbiter;
     });
 
-    if ((values.wager ?? 0n) > (balance?.value ?? 0n)) {
+    if ((values.wager ?? 0n) > (balance ?? 0n)) {
       setError("wager", { message: "Not enough balance!" });
       return;
     }

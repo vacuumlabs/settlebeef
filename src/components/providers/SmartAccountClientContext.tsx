@@ -76,13 +76,13 @@ export const SmartAccountClientContextProvider = ({
   );
 
   const createClient = useCallback(async () => {
-    if (!embeddedWallet) {
+    if (embeddedWallet === undefined || user === null) {
       return;
     }
 
     // For some (invited by socials) users, we use a different smart wallet than the default one.
     const getAccountAddress =
-      user?.twitter !== undefined || user?.email !== undefined
+      user.twitter !== undefined || user.email !== undefined
         ? getGeneratedSmartAccountAddress()
         : undefined;
 
@@ -109,20 +109,21 @@ export const SmartAccountClientContextProvider = ({
     });
 
     setClient(smartAccountClient);
-  }, [embeddedWallet, user?.twitter]);
+  }, [embeddedWallet, user]);
 
   const value = useMemo(
     () => ({
-      // Connecting twitter's smart account take a little longer, and we don't want to display the embedded address
       connectedAddress:
-        client?.account.address ??
-        (user?.twitter ? undefined : (wallets[0]?.address as Address)),
+        // Show EOA wallet address if present
+        embeddedWallet === undefined && user !== null
+          ? (wallets[0]?.address as Address | undefined)
+          : client?.account.address,
       client,
       setClient,
       createClient,
       sendTransaction,
     }),
-    [client, createClient, sendTransaction, user?.twitter, wallets],
+    [client, createClient, sendTransaction, user, wallets, embeddedWallet],
   );
 
   useEffect(() => {
