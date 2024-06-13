@@ -27,6 +27,7 @@ export enum ArbiterAccount {
   TWITTER = "TWITTER",
   ENS = "ENS",
   EMAIL = "EMAIL",
+  FARCASTER = "FARCASTER",
 }
 
 export enum ChallengerAccount {

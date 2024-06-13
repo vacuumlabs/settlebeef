@@ -1,5 +1,6 @@
 "use client";
 
+import { getFarcasterUserAddress } from "@coinbase/onchainkit/farcaster";
 import {
   Button,
   Checkbox,
@@ -90,20 +91,35 @@ const NewBeefPage = () => {
 
   const addBeef = handleSubmit(async (values) => {
     // Validate submitted arbiter ens names
-    const submittedEnsNames = values.arbiters.map((arbiter) =>
-      arbiter.type === ArbiterAccount.ENS
-        ? getEnsAddress(ensConfig, { name: normalize(arbiter.value) })
-        : Promise.resolve(null),
-    );
+    const submittedEnsNames = values.arbiters.map(async (arbiter) => {
+      if (arbiter.type === ArbiterAccount.ENS) {
+        return getEnsAddress(ensConfig, { name: normalize(arbiter.value) });
+      } else if (arbiter.type === ArbiterAccount.FARCASTER) {
+        const response = await getFarcasterUserAddress(Number(arbiter.value), {
+          hasVerifiedAddresses: false,
+        });
+        // Coalesce to null to keep the falsey type unified
+        return response?.custodyAddress ?? null;
+      } else {
+        return Promise.resolve(null);
+      }
+    });
 
     const validatedEnsNames = await Promise.all(submittedEnsNames);
 
     validatedEnsNames.forEach((resolvedEnsName, index) => {
-      if (
-        resolvedEnsName === null &&
-        values.arbiters[index]!.type === ArbiterAccount.ENS
-      ) {
-        setError(`arbiters.${index}.value`, { message: "ENS name not found" });
+      if (resolvedEnsName === null) {
+        const type = values.arbiters[index]?.type;
+
+        if (type === ArbiterAccount.ENS) {
+          setError(`arbiters.${index}.value`, {
+            message: "ENS name not found",
+          });
+        } else if (type === ArbiterAccount.FARCASTER) {
+          setError(`arbiters.${index}.value`, {
+            message: "Farcaster ID not found",
+          });
+        }
       }
     });
 
@@ -136,20 +152,22 @@ const NewBeefPage = () => {
       };
     }
 
-    // If any ens name is invalid, return
+    // If any ens name / farcaster id is invalid, return
     if (
       validatedEnsNames.some(
         (ensName, index) =>
           ensName === null &&
-          values.arbiters[index]!.type === ArbiterAccount.ENS,
+          (values.arbiters[index]!.type === ArbiterAccount.ENS ||
+            values.arbiters[index]!.type === ArbiterAccount.FARCASTER),
       )
     ) {
       return;
     }
 
     values.arbiters = values.arbiters.map((arbiter, index) => {
-      const resolvedAddress = validatedEnsNames[index];
-      if (arbiter.type === ArbiterAccount.ENS && resolvedAddress != null) {
+      const resolvedAddress = validatedEnsNames[index] ?? null;
+
+      if (arbiter.type === ArbiterAccount.ENS && resolvedAddress !== null) {
         return { type: ArbiterAccount.ADDRESS, value: resolvedAddress };
       }
       return arbiter;
@@ -215,11 +233,11 @@ const NewBeefPage = () => {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} sx={{ width: 200 }}>
-                    <MenuItem value={ArbiterAccount.ADDRESS}>
+                    <MenuItem value={ChallengerAccount.ADDRESS}>
                       Wallet address
                     </MenuItem>
-                    <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
-                    <MenuItem value={ArbiterAccount.TWITTER}>
+                    <MenuItem value={ChallengerAccount.ENS}>ENS Name</MenuItem>
+                    <MenuItem value={ChallengerAccount.TWITTER}>
                       X / Twitter
                     </MenuItem>
                   </Select>
@@ -358,6 +376,9 @@ const NewBeefPage = () => {
                         Wallet address
                       </MenuItem>
                       <MenuItem value={ArbiterAccount.ENS}>ENS Name</MenuItem>
+                      <MenuItem value={ArbiterAccount.FARCASTER}>
+                        Farcaster ID
+                      </MenuItem>
                     </Select>
                   )}
                 />
@@ -373,6 +394,11 @@ const NewBeefPage = () => {
                         return isAddress(value) || "Address not valid";
                       } else if (type === ArbiterAccount.EMAIL) {
                         return isValidEmail(value) || "Email not valid";
+                      } else if (type === ArbiterAccount.FARCASTER) {
+                        return (
+                          !Number.isNaN(Number(value)) ||
+                          "Farcaster ID must be a number"
+                        );
                       }
 
                       return true;
@@ -396,6 +422,8 @@ const NewBeefPage = () => {
                             return "Email address";
                           case ArbiterAccount.ADDRESS:
                             return "Wallet address";
+                          case ArbiterAccount.FARCASTER:
+                            return "Farcaster ID";
                         }
                       })()}
                     />

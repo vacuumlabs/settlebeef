@@ -89,7 +89,9 @@ export const SmartAccountClientContextProvider = ({
 
     // For some (invited by socials) users, we use a different smart wallet than the default one.
     const getAccountAddress =
-      user.twitter !== undefined || user.email !== undefined
+      user.twitter !== undefined ||
+      user.email !== undefined ||
+      user.farcaster !== undefined
         ? getGeneratedSmartAccountAddress()
         : undefined;
 
