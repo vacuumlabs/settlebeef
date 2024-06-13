@@ -7,33 +7,17 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { createLightAccount, LightAccount } from "@alchemy/aa-accounts";
+import { LightAccount } from "@alchemy/aa-accounts";
 import {
-  createSmartAccountClient,
-  getEntryPoint,
-  resolveProperties,
   SmartAccountClient as AlchemySmartAccountClient,
-  UserOperationStruct_v6,
   WalletClientSigner,
 } from "@alchemy/aa-core";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import {
-  Address,
-  Chain,
-  createWalletClient,
-  custom,
-  http,
-  Transport,
-} from "viem";
+import { Address, Chain, createWalletClient, custom, Transport } from "viem";
 import { useSendTransaction } from "wagmi";
 import { GetGeneratedSmartAccountAddressResponse } from "@/app/api/generated-smart-account/route";
-import {
-  activeChain,
-  activeChainAlchemy,
-  baseApiUrl,
-  publicClient,
-} from "@/utils/chain";
-import { sponsorUserOperation } from "@/utils/userOperation";
+import { activeChain, publicClient } from "@/utils/chain";
+import { createSmartAccountClient } from "@/utils/userOperation";
 
 export type SmartAccountClient = AlchemySmartAccountClient<
   Transport,
@@ -121,39 +105,7 @@ export const SmartAccountClientContextProvider = ({
 
     const accountAddress = await getAccountAddress;
 
-    const account = await createLightAccount({
-      signer: privySigner,
-      accountAddress,
-      transport: http(baseApiUrl),
-      chain: activeChainAlchemy,
-      entryPoint: getEntryPoint(activeChainAlchemy, { version: "0.6.0" }),
-    });
-
-    const client = createSmartAccountClient({
-      transport: http(baseApiUrl),
-      account,
-      chain: activeChainAlchemy,
-      gasEstimator: async (struct) => ({
-        ...struct,
-        callGasLimit: 0n,
-        preVerificationGas: 0n,
-        verificationGasLimit: 0n,
-      }),
-      paymasterAndData: {
-        // @ts-expect-error Type inference utterly fails to infer the entrypoint version
-        paymasterAndData: async (userOp) => {
-          // UserOp truly is UserOperationStruct_v6, however the type inference Alchemy is hoping for is truly a stretch
-          const resolvedUserOp = (await resolveProperties(
-            userOp,
-          )) as UserOperationStruct_v6;
-          // request sponsorship
-          const updatedUserOp = await sponsorUserOperation(resolvedUserOp);
-
-          return updatedUserOp;
-        },
-        dummyPaymasterAndData: () => "0x",
-      },
-    });
+    const client = await createSmartAccountClient(privySigner, accountAddress);
 
     setClient(client);
   }, [embeddedWallet, user]);
