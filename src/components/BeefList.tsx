@@ -1,10 +1,10 @@
-import React from "react";
-import { Stack } from "@mui/material";
-import BeefRow, { BeefRowProps } from "./BeefRow";
+import React from "react"
+import { Stack } from "@mui/material"
+import BeefRow, { BeefRowProps } from "./BeefRow"
 
 type BeefListProps = {
-  beefs: BeefRowProps[];
-};
+  beefs: BeefRowProps[]
+}
 
 const BeefList = ({ beefs }: BeefListProps) => {
   return (
@@ -13,7 +13,7 @@ const BeefList = ({ beefs }: BeefListProps) => {
         <BeefRow key={beef.address} {...beef} />
       ))}
     </Stack>
-  );
-};
+  )
+}
 
-export default BeefList;
+export default BeefList

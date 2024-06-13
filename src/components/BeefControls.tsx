@@ -1,40 +1,35 @@
-import React, { useContext } from "react";
-import { Button, CircularProgress, Stack } from "@mui/material";
-import { Address, isAddressEqual } from "viem";
-import { BeefActions } from "@/app/beef/[id]/page";
-import {
-  useArbiterAttend,
-  useJoinBeef,
-  useSettleBeef,
-  useWithdrawBeef,
-} from "@/hooks/mutations";
-import { ArbiterStatus } from "@/hooks/queries";
-import type { Beef } from "@/types";
-import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
+import React, { useContext } from "react"
+import { Button, CircularProgress, Stack } from "@mui/material"
+import { Address, isAddressEqual } from "viem"
+import { BeefActions } from "@/app/beef/[id]/page"
+import { useArbiterAttend, useJoinBeef, useSettleBeef, useWithdrawBeef } from "@/hooks/mutations"
+import { ArbiterStatus } from "@/hooks/queries"
+import type { Beef } from "@/types"
+import { SmartAccountClientContext } from "./providers/SmartAccountClientContext"
 
 type ButtonProps = {
-  beefAddress: Address;
-  refetch: () => void;
-};
+  beefAddress: Address
+  refetch: () => void
+}
 
 const WithdrawButton = ({
   beefAddress,
   refetch,
   type,
 }: ButtonProps & { type: "withdrawRaw" | "withdrawRotten" | "serveBeef" }) => {
-  const { mutate, isPending, isSuccess } = useWithdrawBeef(beefAddress, type);
+  const { mutate, isPending, isSuccess } = useWithdrawBeef(beefAddress, type)
 
   const selectText = () => {
     if (type === "withdrawRaw") {
-      return "Withdraw Raw Beef";
+      return "Withdraw Raw Beef"
     } else if (type === "withdrawRotten") {
-      return "Withdraw Rotten Beef";
+      return "Withdraw Rotten Beef"
     } else {
-      return "Serve Beef";
+      return "Serve Beef"
     }
-  };
+  }
 
-  const text = selectText();
+  const text = selectText()
 
   return (
     <Button
@@ -43,32 +38,26 @@ const WithdrawButton = ({
       variant="contained"
     >
       {text}
-      {(isPending || isSuccess) && (
-        <CircularProgress size={20} sx={{ ml: 2 }} />
-      )}
+      {(isPending || isSuccess) && <CircularProgress size={20} sx={{ ml: 2 }} />}
     </Button>
-  );
-};
+  )
+}
 
-const ArbiterButton = ({
-  beefAddress,
-  actionType,
-  refetch,
-}: ButtonProps & { actionType: "attend" | "vote" }) => {
+const ArbiterButton = ({ beefAddress, actionType, refetch }: ButtonProps & { actionType: "attend" | "vote" }) => {
   const {
     mutate: settleMutation,
     isPending: isSettlePending,
     isSuccess: isSettleSuccess,
     variables,
-  } = useSettleBeef(beefAddress);
+  } = useSettleBeef(beefAddress)
   const {
     mutate: attendMutation,
     isPending: isAttendPending,
     isSuccess: isAttendSuccess,
-  } = useArbiterAttend(beefAddress);
+  } = useArbiterAttend(beefAddress)
 
-  const isSettleLoading = isSettlePending || isSettleSuccess;
-  const isAttendLoading = isAttendPending || isAttendSuccess;
+  const isSettleLoading = isSettlePending || isSettleSuccess
+  const isAttendLoading = isAttendPending || isAttendSuccess
 
   return actionType === "attend" ? (
     <Button
@@ -76,8 +65,7 @@ const ArbiterButton = ({
       disabled={isAttendLoading}
       onClick={() => attendMutation(undefined, { onSuccess: refetch })}
     >
-      Attend ✋
-      {isAttendLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+      Attend ✋{isAttendLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
     </Button>
   ) : (
     <Stack direction="row" spacing={2}>
@@ -87,9 +75,7 @@ const ArbiterButton = ({
         onClick={() => settleMutation(true, { onSuccess: refetch })}
       >
         Settle In Favour 👍
-        {isSettleLoading && variables === true && (
-          <CircularProgress size={20} sx={{ ml: 2 }} />
-        )}
+        {isSettleLoading && variables === true && <CircularProgress size={20} sx={{ ml: 2 }} />}
       </Button>
       <Button
         variant="contained"
@@ -97,20 +83,14 @@ const ArbiterButton = ({
         onClick={() => settleMutation(false, { onSuccess: refetch })}
       >
         Settle Against 👎
-        {isSettleLoading && variables === false && (
-          <CircularProgress size={20} sx={{ ml: 2 }} />
-        )}
+        {isSettleLoading && variables === false && <CircularProgress size={20} sx={{ ml: 2 }} />}
       </Button>
     </Stack>
-  );
-};
+  )
+}
 
-const ChallengerButton = ({
-  beefAddress,
-  value,
-  refetch,
-}: ButtonProps & { value: bigint }) => {
-  const { mutate, isPending, isSuccess } = useJoinBeef(beefAddress, value);
+const ChallengerButton = ({ beefAddress, value, refetch }: ButtonProps & { value: bigint }) => {
+  const { mutate, isPending, isSuccess } = useJoinBeef(beefAddress, value)
 
   return (
     <Button
@@ -119,76 +99,45 @@ const ChallengerButton = ({
       onClick={() => mutate(undefined, { onSuccess: refetch })}
     >
       Join Beef
-      {(isPending || isSuccess) && (
-        <CircularProgress size={20} sx={{ ml: 2 }} />
-      )}
+      {(isPending || isSuccess) && <CircularProgress size={20} sx={{ ml: 2 }} />}
     </Button>
-  );
-};
+  )
+}
 
 type BeefControlsProps = {
-  beef: Beef;
-  beefActions: BeefActions;
-  arbiterStatuses: ArbiterStatus[];
-  refetch: () => void;
-};
+  beef: Beef
+  beefActions: BeefActions
+  arbiterStatuses: ArbiterStatus[]
+  refetch: () => void
+}
 
-const BeefControls = ({
-  beef,
-  beefActions,
-  arbiterStatuses,
-  refetch,
-}: BeefControlsProps) => {
-  const { connectedAddress } = useContext(SmartAccountClientContext);
+const BeefControls = ({ beef, beefActions, arbiterStatuses, refetch }: BeefControlsProps) => {
+  const { connectedAddress } = useContext(SmartAccountClientContext)
 
   if (connectedAddress === undefined) {
-    return null;
+    return null
   }
 
-  const { action, type } = decideAction(
-    beef.owner,
-    beef.challenger,
-    beefActions,
-    arbiterStatuses,
-    connectedAddress,
-  );
+  const { action, type } = decideAction(beef.owner, beef.challenger, beefActions, arbiterStatuses, connectedAddress)
 
   // User is not a part of the beef - don't show anything
   if (action === undefined) {
-    return null;
+    return null
   }
 
   return (
     <>
-      {action === "arbiter" && (
-        <ArbiterButton
-          refetch={refetch}
-          beefAddress={beef.address}
-          actionType={type}
-        />
-      )}
-      {action === "withdrawal" && (
-        <WithdrawButton
-          refetch={refetch}
-          beefAddress={beef.address}
-          type={type}
-        />
-      )}
-      {action === "joinBeef" && (
-        <ChallengerButton
-          refetch={refetch}
-          beefAddress={beef.address}
-          value={beef.wager}
-        />
-      )}
+      {action === "arbiter" && <ArbiterButton refetch={refetch} beefAddress={beef.address} actionType={type} />}
+      {action === "withdrawal" && <WithdrawButton refetch={refetch} beefAddress={beef.address} type={type} />}
+      {action === "joinBeef" && <ChallengerButton refetch={refetch} beefAddress={beef.address} value={beef.wager} />}
       {action === "noAction" && (
         <Button disabled variant="outlined">
           Nothing to do
         </Button>
       )}
     </>
-  );
-};
+  )
+}
 
 const decideAction = (
   owner: Address,
@@ -197,73 +146,71 @@ const decideAction = (
   arbiterStatuses: ArbiterStatus[],
   userAddress: Address,
 ) => {
-  const isUserChallenger = isAddressEqual(challenger, userAddress);
-  const isUserOwner = isAddressEqual(owner, userAddress);
+  const isUserChallenger = isAddressEqual(challenger, userAddress)
+  const isUserOwner = isAddressEqual(owner, userAddress)
 
   // Responsibility for the status presence is delegated to the parent
-  const userArbiter = arbiterStatuses.find(({ address }) =>
-    isAddressEqual(address, userAddress),
-  );
+  const userArbiter = arbiterStatuses.find(({ address }) => isAddressEqual(address, userAddress))
 
   // The user is not a part of the beef
   if (!isUserOwner && !isUserChallenger && userArbiter === undefined) {
     return {
       action: undefined,
       type: undefined,
-    };
+    }
   }
 
   const noAction = {
     action: "noAction",
     type: undefined,
-  } as const;
+  } as const
 
   if (isUserOwner) {
-    if (beefActions.owner === undefined) return noAction;
+    if (beefActions.owner === undefined) return noAction
 
     return {
       action: "withdrawal",
       type: beefActions.owner,
-    } as const;
+    } as const
   }
 
   if (isUserChallenger) {
-    if (beefActions.challenger === undefined) return noAction;
+    if (beefActions.challenger === undefined) return noAction
 
     if (beefActions.challenger === "joinBeef") {
       return {
         action: "joinBeef",
         type: undefined,
-      } as const;
+      } as const
     } else {
       return {
         action: "withdrawal",
         type: beefActions.challenger,
-      } as const;
+      } as const
     }
   }
 
   if (userArbiter?.status !== undefined) {
-    const { hasAttended, hasSettled } = userArbiter.status;
+    const { hasAttended, hasSettled } = userArbiter.status
 
     if (beefActions.arbiter === "attend" && !hasAttended) {
       return {
         action: "arbiter",
         type: "attend",
-      } as const;
+      } as const
     }
 
     if (beefActions.arbiter === "vote" && hasSettled === 0n) {
       return {
         action: "arbiter",
         type: "vote",
-      } as const;
+      } as const
     }
 
-    return noAction;
+    return noAction
   }
 
-  return noAction;
-};
+  return noAction
+}
 
-export default BeefControls;
+export default BeefControls

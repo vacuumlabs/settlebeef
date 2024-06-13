@@ -1,8 +1,8 @@
-import { Address } from "viem";
+import { Address } from "viem"
 
 const truncateAddress = (address: Address) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
 
 export const getAddressOrEnsName = (
   address: Address | undefined,
@@ -10,7 +10,7 @@ export const getAddressOrEnsName = (
   truncate = true,
 ) => {
   if (ensNameOrUndefined != null) {
-    return ensNameOrUndefined;
+    return ensNameOrUndefined
   }
-  return truncate ? (address ? truncateAddress(address) : "-") : address;
-};
+  return truncate ? (address ? truncateAddress(address) : "-") : address
+}

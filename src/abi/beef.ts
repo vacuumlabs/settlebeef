@@ -192,9 +192,7 @@ export const beefAbi = [
   {
     type: "function",
     name: "joinBeef",
-    inputs: [
-      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
-    ],
+    inputs: [{ name: "amountOutMin", type: "uint256", internalType: "uint256" }],
     outputs: [],
     stateMutability: "payable",
   },
@@ -243,9 +241,7 @@ export const beefAbi = [
   {
     type: "function",
     name: "serveBeef",
-    inputs: [
-      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
-    ],
+    inputs: [{ name: "amountOutMin", type: "uint256", internalType: "uint256" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -274,9 +270,7 @@ export const beefAbi = [
     type: "function",
     name: "slaughterhouse",
     inputs: [],
-    outputs: [
-      { name: "", type: "address", internalType: "contract Slaughterhouse" },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "contract Slaughterhouse" }],
     stateMutability: "view",
   },
   {
@@ -330,18 +324,14 @@ export const beefAbi = [
   {
     type: "function",
     name: "withdrawRaw",
-    inputs: [
-      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
-    ],
+    inputs: [{ name: "amountOutMin", type: "uint256", internalType: "uint256" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "withdrawRotten",
-    inputs: [
-      { name: "amountOutMin", type: "uint256", internalType: "uint256" },
-    ],
+    inputs: [{ name: "amountOutMin", type: "uint256", internalType: "uint256" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -593,4 +583,4 @@ export const beefAbi = [
     inputs: [{ name: "account", type: "address", internalType: "address" }],
   },
   { type: "error", name: "OwnershipTransferDisabled", inputs: [] },
-] as const;
+] as const

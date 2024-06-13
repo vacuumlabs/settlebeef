@@ -1,6 +1,6 @@
-"use server";
+"use server"
 
-import { createTransport } from "nodemailer";
+import { createTransport } from "nodemailer"
 
 export const sendBeefRequestEmail = async (to: string) => {
   const transporter = createTransport({
@@ -13,7 +13,7 @@ export const sendBeefRequestEmail = async (to: string) => {
       user: "decobieapp@gmail.com",
       pass: process.env.SMTP_PASSWORD,
     },
-  });
+  })
 
   // FIXME: The <a> tag doesn't work
   await transporter.sendMail({
@@ -33,5 +33,5 @@ export const sendBeefRequestEmail = async (to: string) => {
     <a href="${process.env.VERCEL_URL || "localhost:3000"}">👏Settle👏Your👏Beef👏 <br />🐄🐄🐄🔥🔥🔥</a>
   </div>
   `,
-  });
-};
+  })
+}

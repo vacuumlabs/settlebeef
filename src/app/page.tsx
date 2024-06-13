@@ -1,30 +1,21 @@
-"use client";
+"use client"
 
-import { useContext, useState } from "react";
-import {
-  Box,
-  Button,
-  Container,
-  Paper,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-} from "@mui/material";
-import Link from "next/link";
-import BeefList from "@/components/BeefList";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
-import { ShowMyBeefs } from "@/components/ShowMyBeefs";
-import { useGetInfiniteBeefs } from "@/hooks/queries";
+import { useContext, useState } from "react"
+import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import Link from "next/link"
+import BeefList from "@/components/BeefList"
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
+import { ShowMyBeefs } from "@/components/ShowMyBeefs"
+import { useGetInfiniteBeefs } from "@/hooks/queries"
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+  children?: React.ReactNode
+  index: number
+  value: number
 }
 
 function CustomTabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, ...other } = props
 
   return (
     <div
@@ -36,27 +27,22 @@ function CustomTabPanel(props: TabPanelProps) {
     >
       {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
-  );
+  )
 }
 
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
     "aria-controls": `simple-tabpanel-${index}`,
-  };
+  }
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 export default function Home() {
-  const { connectedAddress } = useContext(SmartAccountClientContext);
-  const {
-    data: beefPages,
-    isLoading: isLoadingBeefs,
-    fetchNextPage,
-    hasNextPage,
-  } = useGetInfiniteBeefs(PAGE_SIZE);
-  const [tabIndex, setTabIndex] = useState(0);
+  const { connectedAddress } = useContext(SmartAccountClientContext)
+  const { data: beefPages, isLoading: isLoadingBeefs, fetchNextPage, hasNextPage } = useGetInfiniteBeefs(PAGE_SIZE)
+  const [tabIndex, setTabIndex] = useState(0)
 
   const beefsListData =
     beefPages?.pages?.flatMap(
@@ -69,20 +55,15 @@ export default function Home() {
           challenger: beef.params.challenger,
           arbiters: beef.params.arbiters,
         })) ?? [],
-    ) ?? [];
+    ) ?? []
 
   const handleChangeTabIndex = (_: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-  };
+    setTabIndex(newValue)
+  }
 
   return (
     <Container>
-      <Tabs
-        value={tabIndex}
-        onChange={handleChangeTabIndex}
-        aria-label="Beef tabs"
-        centered
-      >
+      <Tabs value={tabIndex} onChange={handleChangeTabIndex} aria-label="Beef tabs" centered>
         <Tab
           label={
             <Typography variant="h5" px={2}>
@@ -118,10 +99,7 @@ export default function Home() {
             ) : (
               <BeefList beefs={beefsListData} />
             )}
-            <Button
-              disabled={!hasNextPage}
-              onClick={() => void fetchNextPage()}
-            >
+            <Button disabled={!hasNextPage} onClick={() => void fetchNextPage()}>
               More beef
             </Button>
           </Stack>
@@ -130,13 +108,9 @@ export default function Home() {
       <CustomTabPanel value={tabIndex} index={1}>
         {/* My beefs */}
         {connectedAddress && (
-          <ShowMyBeefs
-            beefs={beefsListData}
-            isLoadingBeefs={isLoadingBeefs}
-            address={connectedAddress}
-          />
+          <ShowMyBeefs beefs={beefsListData} isLoadingBeefs={isLoadingBeefs} address={connectedAddress} />
         )}
       </CustomTabPanel>
     </Container>
-  );
+  )
 }
