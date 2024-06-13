@@ -12,20 +12,6 @@ import type { Beef } from "@/types"
 import { publicClient } from "@/utils/chain"
 import { queryKeys } from "./queryKeys"
 
-export const useEnsName = (address: Address | undefined) => {
-  return useQuery({
-    queryKey: ["ensName", address],
-    queryFn: async () => {
-      if (!address) {
-        return null
-      }
-
-      return getEnsName(ensConfig, { address })
-    },
-    enabled: !!address,
-  })
-}
-
 export const useEnsNames = (addresses: (Address | undefined)[]) => {
   return useQuery({
     queryKey: ["ensName", ...addresses],
