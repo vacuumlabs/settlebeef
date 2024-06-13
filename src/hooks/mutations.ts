@@ -16,6 +16,7 @@ import {
 } from "@/constants";
 import { useBeefsLength } from "@/hooks/queries";
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail";
+import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster";
 import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle";
 import { ArbiterAccount } from "@/types";
 import { parseIsoDateToTimestamp } from "@/utils/general";
@@ -162,6 +163,8 @@ export const useAddBeef = () => {
         return generateAddressForHandle(value);
       } else if (type === ArbiterAccount.EMAIL) {
         return generateAddressForEmail(value);
+      } else if (type === ArbiterAccount.FARCASTER) {
+        return generateAddressForFarcaster(value);
       } else {
         return value as Address;
       }
