@@ -1,5 +1,6 @@
 "use client";
 
+import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { ThemeProvider } from "@mui/material";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider, createConfig } from "@privy-io/wagmi";
@@ -81,7 +82,13 @@ const Providers = ({ children }: ProvidersProps) => {
         <WagmiProvider config={wagmiConfig}>
           <SmartAccountClientContextProvider>
             <ThemeProvider theme={theme}>
-              {children}
+              <OnchainKitProvider
+                // @ts-expect-error Viem version issue
+                chain={activeChain}
+                apiKey={process.env.NEXT_PUBLIC_BASE_API_KEY}
+              >
+                {children}
+              </OnchainKitProvider>
               <SnackbarProvider />
             </ThemeProvider>
           </SmartAccountClientContextProvider>

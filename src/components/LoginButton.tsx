@@ -1,21 +1,19 @@
 "use client";
 
 import { useContext } from "react";
-import { Button, Skeleton, Stack, Typography } from "@mui/material";
+import { Avatar, Name } from "@coinbase/onchainkit/identity";
+import { Button, Skeleton, Stack, SvgIcon, Typography } from "@mui/material";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { enqueueSnackbar } from "notistack";
 import { useDisconnect } from "wagmi";
 import { CopyIcon } from "@/components/CopyIcon";
-import { useBalance, useEnsName } from "@/hooks/queries";
-import { QueryGuard } from "@/hooks/QueryGuard";
-import { getAddressOrEnsName } from "@/utils";
+import { useBalance } from "@/hooks/queries";
 import { copyTextToClipboard, formatBigint } from "@/utils/general";
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext";
 
 const LoginButton = () => {
   const { authenticated, ready } = usePrivy();
   const { connectedAddress, setClient } = useContext(SmartAccountClientContext);
-  const ensNameQuery = useEnsName(connectedAddress);
   const { disconnect } = useDisconnect();
 
   const { login } = useLogin();
@@ -67,26 +65,31 @@ const LoginButton = () => {
               {formatBigint(balance, 5)}&nbsp;Ξ
             </Typography>
           )}
-          <Stack direction="row" alignItems="center" gap={0.5}>
-            <QueryGuard {...ensNameQuery}>
-              {(ensName) => (
-                <Typography component="span">
-                  {getAddressOrEnsName(connectedAddress, ensName)}
+          {connectedAddress && (
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Name address={connectedAddress} />
+              <Avatar
+                address={connectedAddress}
+                loadingComponent={<span>&nbsp;</span>}
+                defaultComponent={<span>&nbsp;</span>}
+              />
+              <Button
+                onClick={handleCopyAddress}
+                aria-label="copy"
+                variant="contained"
+                size="small"
+                startIcon={
+                  <SvgIcon width={18} height={18}>
+                    <CopyIcon />
+                  </SvgIcon>
+                }
+              >
+                <Typography variant="button" fontSize={12}>
+                  Copy Address
                 </Typography>
-              )}
-            </QueryGuard>
-            <Button
-              onClick={handleCopyAddress}
-              aria-label="copy"
-              variant="contained"
-              size="small"
-              startIcon={<CopyIcon />}
-            >
-              <Typography variant="button" fontSize={12}>
-                Copy
-              </Typography>
-            </Button>
-          </Stack>
+              </Button>
+            </Stack>
+          )}
         </Stack>
       ) : (
         <Skeleton variant="circular" />
