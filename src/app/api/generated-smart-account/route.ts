@@ -1,4 +1,3 @@
-import { createLightAccountAlchemyClient } from "@alchemy/aa-alchemy";
 import { LocalAccountSigner } from "@alchemy/aa-core";
 import {
   LinkedAccountWithMetadata,
@@ -11,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Address, getContract } from "viem";
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory";
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants";
-import { activeChain, activeChainAlchemy, publicClient } from "@/utils/chain";
+import { activeChain, publicClient } from "@/utils/chain";
+import { createSmartAccountClient } from "@/utils/userOperation";
 
 export type GetGeneratedSmartAccountAddressResponse = {
   address: Address | undefined;
@@ -90,23 +90,19 @@ const getSmartAccountAddress = async () => {
         temporary_private_key!,
       );
 
-      const smartAccountClient = await createLightAccountAlchemyClient({
+      const smartAccountClient = await createSmartAccountClient(
         signer,
-        accountAddress: smart_account_address,
-        chain: activeChainAlchemy,
-        apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-        gasManagerConfig: {
-          policyId: process.env.NEXT_PUBLIC_GAS_POLICY_ID!,
-        },
-      });
+        smart_account_address,
+      );
 
       const transferData =
         smartAccountClient.account.encodeTransferOwnership(walletAddress);
 
-      await smartAccountClient.sendTransaction({
-        to: smart_account_address,
-        data: transferData,
-        chain: activeChainAlchemy,
+      await smartAccountClient.sendUserOperation({
+        uo: {
+          target: smart_account_address,
+          data: transferData,
+        },
       });
 
       await sql`
