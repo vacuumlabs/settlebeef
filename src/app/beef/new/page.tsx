@@ -89,7 +89,35 @@ const NewBeefPage = () => {
 
   const { watch, control, handleSubmit, setError } = form;
 
+  // TODO: Perform all validations before aborting the submit
   const addBeef = handleSubmit(async (values) => {
+    const indexedArbiters = values.arbiters.map(
+      (arbiter, index) => [arbiter, index] as const,
+    );
+
+    const arbitersGrouped = Object.groupBy(indexedArbiters, ([arbiter]) =>
+      JSON.stringify(arbiter),
+    );
+
+    if (JSON.stringify(values.challenger) in arbitersGrouped) {
+      setError("challenger.value", {
+        message: "Challenger should not also be an arbiter!",
+      });
+
+      return;
+    }
+    const arbiterGroups = Object.values(arbitersGrouped);
+
+    arbiterGroups.forEach((arbiters) => {
+      if (arbiters !== undefined && arbiters.length > 1) {
+        arbiters.forEach(([, index]) =>
+          setError(`arbiters.${index}.value`, { message: "Duplicate arbiter" }),
+        );
+      }
+    });
+
+    if (arbiterGroups.length !== values.arbiters.length) return;
+
     // Validate submitted arbiter ens names
     const submittedEnsNames = values.arbiters.map(async (arbiter) => {
       if (arbiter.type === ArbiterAccount.ENS) {
