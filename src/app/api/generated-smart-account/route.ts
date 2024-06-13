@@ -63,19 +63,32 @@ const getSmartAccountAddress = async () => {
 
   const xHandle = user.twitter?.username ?? undefined;
   const email = user.email?.address;
+  const farcasterID = user.farcaster?.fid?.toString();
 
-  if (xHandle === undefined && email === undefined) {
+  if (
+    xHandle === undefined &&
+    email === undefined &&
+    farcasterID === undefined
+  ) {
     console.error(
-      `User ${user.id} does not have a X / Twitter or Email connected`,
+      `User ${user.id} does not have a X / Twitter or Email or Farcaster connected`,
     );
 
     return undefined;
   }
 
   const { rows } = await sql<UserDetailsResponseType>`
-    SELECT smart_account_address, temporary_private_key, owner 
+    SELECT smart_account_address,
+           temporary_private_key,
+           OWNER
     FROM user_details
-    WHERE chain_id = ${activeChain.id} AND (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
+    WHERE chain_id = ${activeChain.id}
+      AND (x_handle = ${xHandle}
+           AND x_handle IS NOT NULL)
+      OR (email = ${email}
+          AND email IS NOT NULL)
+      OR (farcaster_id = ${farcasterID}
+          AND farcaster_id IS NOT NULL);
     `;
 
   if (rows[0]) {
@@ -108,7 +121,7 @@ const getSmartAccountAddress = async () => {
       await sql`
       UPDATE user_details 
       SET owner = ${walletAddress}, temporary_private_key = NULL 
-      WHERE (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL);
+      WHERE (x_handle = ${xHandle} AND x_handle IS NOT NULL) OR (email = ${email} AND email IS NOT NULL) OR (farcaster_id = ${farcasterID} AND farcaster_id IS NOT NULL);
       `;
 
       return smart_account_address;
@@ -117,8 +130,8 @@ const getSmartAccountAddress = async () => {
     // No wallet is pre-generated. We can just create a default one from the embedded wallet's address
     const accountAddress = await getLightAccountAddress([walletAddress, 0n]);
 
-    await sql`INSERT INTO user_details (x_handle, email, smart_account_address, owner, chain_id) 
-      values (${xHandle}, ${email}, ${accountAddress}, ${walletAddress}, ${activeChain.id})`;
+    await sql`INSERT INTO user_details (x_handle, email, farcaster_id, smart_account_address, owner, chain_id) 
+      values (${xHandle}, ${email}, ${farcasterID}, ${accountAddress}, ${walletAddress}, ${activeChain.id})`;
 
     return accountAddress;
   }
