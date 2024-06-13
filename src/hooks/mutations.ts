@@ -13,6 +13,7 @@ import { useBeefsLength } from "@/hooks/queries"
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
 import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster"
 import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle"
+import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail"
 import { ArbiterAccount } from "@/types"
 import { parseIsoDateToTimestamp } from "@/utils/general"
 import { subtractSlippage } from "@/utils/slippage"
@@ -148,6 +149,12 @@ export const useAddBeef = () => {
     if (!challenger || !isAddress(challenger.value) || !wager) {
       throw new Error("Invalid request")
     }
+
+    arbiters.forEach((arbiter) => {
+      if (arbiter.type === ArbiterAccount.EMAIL) {
+        void sendBeefRequestEmail(arbiter.value)
+      }
+    })
 
     const addressPromises = arbiters.map(({ type, value }) => {
       if (type === ArbiterAccount.TWITTER) {
