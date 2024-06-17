@@ -3,6 +3,7 @@
 import { useContext, useState } from "react"
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
 import Link from "next/link"
+import AboutTabContent from "@/components/AboutTabContent"
 import BeefList from "@/components/BeefList"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { ShowMyBeefs } from "@/components/ShowMyBeefs"
@@ -80,6 +81,14 @@ export default function Home() {
           }
           {...a11yProps(1)}
         />
+        <Tab
+          label={
+            <Typography variant="h5" px={2}>
+              How to Beef 🥩📝
+            </Typography>
+          }
+          {...a11yProps(1)}
+        />
       </Tabs>
       <CustomTabPanel value={tabIndex} index={0}>
         <Paper elevation={2} sx={{ mb: 5 }}>
@@ -110,6 +119,10 @@ export default function Home() {
         {connectedAddress && (
           <ShowMyBeefs beefs={beefsListData} isLoadingBeefs={isLoadingBeefs} address={connectedAddress} />
         )}
+      </CustomTabPanel>
+      <CustomTabPanel value={tabIndex} index={2}>
+        {/* How to / About */}
+        {connectedAddress && <AboutTabContent />}
       </CustomTabPanel>
     </Container>
   )
