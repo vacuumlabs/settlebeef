@@ -6,7 +6,7 @@ type ChainAddressMap = Record<typeof activeChain.id, Address>;
 
 const slaughterhouseAddresses: ChainAddressMap = {
   [baseSepolia.id]: "0x680C811Af29ab31d79e5eDb1b81A862fCF7d28DD",
-  [base.id]: "0xc16809833E080A640F98d65c0561b156DC3348ad",
+  [base.id]: "0xCBe8eC1e650f1B0eECC264B5B6E4127c18bC1D6C",
 };
 
 const wethAddresses: ChainAddressMap = {
