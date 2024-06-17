@@ -26,9 +26,9 @@ const AboutTabContent = () => {
         </Typography>
         <Typography variant="body1">
           Before starting beef using Settlebeef, agree on a title and a set of
-          arbiters with the person you're challenging. Then, create a new beef
-          on the website using the 'New Beef' button in the Beef List or My Beef
-          List tab.
+          arbiters with the person you&apos;re challenging. Then, create a new
+          beef on the website using the &apos;New Beef&apos; button in the Beef
+          List or My Beef List tab.
         </Typography>
         <Typography variant="h5" sx={{ mt: 1 }}>
           Inviting Challenger and Arbiters
@@ -41,7 +41,7 @@ const AboutTabContent = () => {
           automatically create a smart contract wallet for them and pay for
           their gas 🚀 <br />
           This is the most useful for arbiters, who can arbitrate over disputes
-          without needing to have a funded crypto wallet already. If you're
+          without needing to have a funded crypto wallet already. If you&apos;re
           inviting a challenger via E-mail or X / Twitter, do note that they
           will have to deposit funds into the smart contract wallet we generate
           for them in order to accept your challenge.
@@ -51,7 +51,7 @@ const AboutTabContent = () => {
         </Typography>
         <Typography variant="body1">
           Beef can be staked on Settlebeef to earn standard ETH staking rewards
-          while the dispute hasn't been settled. This is currently done by
+          while the dispute hasn&apos;t been settled. This is currently done by
           swapping the deposited ETH for wstETH in a Uniswap V2 Pool. We are in
           the process of upgrading to a more sophisticated order router for
           these swaps.
