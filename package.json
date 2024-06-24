@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0 --ext .ts,.tsx,.js,.jsx",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate-schema": "drizzle-kit generate"
   },
   "dependencies": {
     "@alchemy/aa-accounts": "^3.16.0",
@@ -24,6 +25,7 @@
     "@privy-io/wagmi": "^0.2.4",
     "@tanstack/react-query": "^5.35.1",
     "@vercel/postgres": "^0.8.0",
+    "drizzle-orm": "^0.31.2",
     "graphql": "14",
     "graphql-request": "6",
     "luxon": "^3.4.4",
@@ -45,6 +47,7 @@
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
+    "drizzle-kit": "^0.22.7",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3",
     "eslint-config-prettier": "^9.1.0",

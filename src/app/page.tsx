@@ -4,6 +4,7 @@ import { useContext, useState } from "react"
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
 import Link from "next/link"
 import BeefList from "@/components/BeefList"
+import { BEEF_SORT_OPTIONS, BeefSortDropdown } from "@/components/BeefSortDropdown"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { ShowMyBeefs } from "@/components/ShowMyBeefs"
 import { useGetInfiniteBeefs } from "@/hooks/queries"
@@ -41,21 +42,18 @@ const PAGE_SIZE = 10
 
 export default function Home() {
   const { connectedAddress } = useContext(SmartAccountClientContext)
-  const { data: beefPages, isLoading: isLoadingBeefs, fetchNextPage, hasNextPage } = useGetInfiniteBeefs(PAGE_SIZE)
+
+  const [sortOption, setSortOption] = useState(BEEF_SORT_OPTIONS[0]!)
+  const {
+    data: beefPages,
+    isLoading: isLoadingBeefs,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetInfiniteBeefs(PAGE_SIZE, sortOption.sort)
+
   const [tabIndex, setTabIndex] = useState(0)
 
-  const beefsListData =
-    beefPages?.pages?.flatMap(
-      (beefs) =>
-        beefs?.map((beef) => ({
-          title: beef.params.title,
-          address: beef.address,
-          wager: beef.params.wager,
-          owner: beef.params.owner,
-          challenger: beef.params.challenger,
-          arbiters: beef.params.arbiters,
-        })) ?? [],
-    ) ?? []
+  const beefsListData = beefPages?.pages.flat() ?? []
 
   const handleChangeTabIndex = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue)
@@ -86,11 +84,14 @@ export default function Home() {
           <Stack p={4} gap={2}>
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="h3">Beef List 🥩📝</Typography>
-              <Link href="/beef/new" style={{ textDecoration: "none" }}>
-                <Button variant="contained" color="secondary">
-                  Start beef
-                </Button>
-              </Link>
+              <Stack direction="row" gap={2}>
+                <BeefSortDropdown sortOption={sortOption} setSortOption={setSortOption} />
+                <Link href="/beef/new" style={{ textDecoration: "none" }}>
+                  <Button variant="contained" color="secondary">
+                    Start beef
+                  </Button>
+                </Link>
+              </Stack>
             </Stack>
             {isLoadingBeefs || beefPages === undefined ? (
               "Loading beef list"
@@ -108,7 +109,7 @@ export default function Home() {
       <CustomTabPanel value={tabIndex} index={1}>
         {/* My beefs */}
         {connectedAddress && (
-          <ShowMyBeefs beefs={beefsListData} isLoadingBeefs={isLoadingBeefs} address={connectedAddress} />
+          <ShowMyBeefs beefs={beefsListData} isLoadingBeefs={isLoadingBeefs} connectedAddress={connectedAddress} />
         )}
       </CustomTabPanel>
     </Container>

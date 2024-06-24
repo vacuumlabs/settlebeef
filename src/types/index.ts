@@ -12,14 +12,17 @@ export type Beef = {
   settleStart: UnixTimestamp
   title: string
   description: string
-  arbiters: readonly Address[]
+  arbiters: ArbiterType[]
   joinDeadline: UnixTimestamp
   staking: boolean
   isCooking: boolean
-  resultYes: bigint
-  resultNo: bigint
-  attendCount: bigint
   beefGone: boolean
+  createdAt: bigint
+}
+
+export type ArbiterType = {
+  address: Address
+  status: "none" | "attended" | "voted_yes" | "voted_no"
 }
 
 export enum ArbiterAccount {
