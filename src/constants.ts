@@ -30,3 +30,5 @@ export const WSTETH_ADDRESS = wsethAddresses[activeChain.id]
 export const UNISWAP_ROUTER_ADDRESS = uniswapRouterAddresses[activeChain.id]
 
 export const LIGHT_ACCOUNT_FACTORY_ADDRESS = "0x00004EC70002a32400f8ae005A26081065620D20"
+
+export const MULTICALL_CONTRACT_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11"

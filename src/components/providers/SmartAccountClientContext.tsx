@@ -2,9 +2,9 @@ import React, { Dispatch, SetStateAction, createContext, useCallback, useEffect,
 import { LightAccount } from "@alchemy/aa-accounts"
 import { SmartAccountClient as AlchemySmartAccountClient, WalletClientSigner } from "@alchemy/aa-core"
 import { usePrivy, useWallets } from "@privy-io/react-auth"
-import { Address, Chain, createWalletClient, custom, Transport } from "viem"
+import { Address, Chain, createWalletClient, custom, TransactionReceipt, Transport } from "viem"
 import { useSendTransaction } from "wagmi"
-import { GetGeneratedSmartAccountAddressResponse } from "@/app/api/generated-smart-account/route"
+import { getGeneratedSmartAccount } from "@/server/actions/getGeneratedSmartAccount"
 import { activeChain, publicClient } from "@/utils/chain"
 import { createSmartAccountClient } from "@/utils/userOperation"
 
@@ -21,7 +21,7 @@ type SmartAccountClientContext = {
   client: SmartAccountClient | undefined
   setClient: Dispatch<SetStateAction<SmartAccountClient | undefined>>
   createClient: () => Promise<void>
-  sendTransaction: (params: SendTransactionParams) => Promise<`0x${string}`>
+  sendTransaction: (params: SendTransactionParams) => Promise<TransactionReceipt>
 }
 
 export const SmartAccountClientContext = createContext({} as SmartAccountClientContext)
@@ -45,15 +45,19 @@ export const SmartAccountClientContextProvider = ({ children }: SmartAccountClie
           data: params.data,
         }
 
-        const { hash } = await client.sendUserOperation({ uo })
+        const { hash: uoHash } = await client.sendUserOperation({ uo })
 
-        await client.waitForUserOperationTransaction({ hash })
-        return hash
+        const txHash = await client.waitForUserOperationTransaction({ hash: uoHash })
+
+        const receipt = await publicClient.getTransactionReceipt({ hash: txHash })
+
+        return receipt
       } else {
         const hash = await sendTransactionAsync(params)
 
-        await publicClient.waitForTransactionReceipt({ hash })
-        return hash
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+        return receipt
       }
     },
     [client, sendTransactionAsync],
@@ -114,9 +118,7 @@ export const SmartAccountClientContextProvider = ({ children }: SmartAccountClie
 }
 
 const getGeneratedSmartAccountAddress = async () => {
-  const response = await fetch("/api/generated-smart-account")
-
-  const { address } = (await response.json()) as GetGeneratedSmartAccountAddressResponse
+  const address = await getGeneratedSmartAccount()
 
   if (address === undefined) throw new Error("Error getting smart account address from twitter / x")
 

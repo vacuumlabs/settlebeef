@@ -10,18 +10,18 @@ import {
   Stack,
   Step,
   StepConnector,
+  stepConnectorClasses,
   StepIconProps,
   StepLabel,
   Stepper,
-  Typography,
-  stepConnectorClasses,
   styled,
+  Typography,
 } from "@mui/material"
 import { redirect } from "next/navigation"
-import { Address, formatEther, zeroAddress } from "viem"
+import { Address, formatEther } from "viem"
 import BeefControls from "@/components/BeefControls"
 import { Countdown } from "@/components/Countdown"
-import { useBeef, useEnsNames, useGetArbiterStatuses } from "@/hooks/queries"
+import { useBeef, useEnsNames } from "@/hooks/queries"
 import { getAddressOrEnsName } from "@/utils"
 
 type BeefDetailPageProps = {
@@ -106,29 +106,24 @@ const DEFAULT_STEPS = [
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { id } = params
-  const beef = useBeef(id as Address)
-
-  const { data: arbiterStatuses, refetch: refetchArbiters } = useGetArbiterStatuses(
-    beef?.address ?? zeroAddress,
-    beef?.arbiters ?? [],
-  )
+  const { data: beef, refetch, isLoading } = useBeef(id as Address)
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
     beef?.challenger,
-    ...(beef?.arbiters ?? []),
+    ...(beef?.arbiters?.map((it) => it.address) ?? []),
   ])
 
-  if (beef === undefined) {
-    redirect("/not-found")
-  }
-
-  if (beef === null || ensNamesLoading) {
+  if (isLoading || beef === undefined || ensNamesLoading) {
     return (
       <Container sx={{ pb: 6 }}>
         <Skeleton height={600} />
       </Container>
     )
+  }
+
+  if (beef === null) {
+    redirect("/not-found")
   }
 
   const {
@@ -139,14 +134,10 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     wager,
     joinDeadline: joinDeadlineTimestamp,
     arbiters,
-    resultYes,
-    resultNo,
-    attendCount,
     isCooking,
     settleStart: settleStartTimestamp,
     staking,
     beefGone,
-    refetch,
   } = beef
 
   const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000)
@@ -156,8 +147,19 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const settleDuration = BigInt(60 * 60 * 24 * 30)
   const settleDeadline = new Date(Number((settleStartTimestamp + settleDuration) * 1000n))
 
+  const [resultYes, resultNo] = arbiters.reduce(
+    ([yes, no], { status }) =>
+      status === "voted_yes"
+        ? ([yes + 1, no] as const)
+        : status === "voted_no"
+          ? ([yes, no + 1] as const)
+          : ([yes, no] as const),
+    [0, 0] as readonly [number, number],
+  )
+
   const getBeefState = (): BeefState => {
     const now = new Date()
+    const attendCount = arbiters.reduce((acc, { status }) => (status !== "none" ? acc + 1 : acc), 0)
 
     // Arbiters have not joined yet
     if (attendCount < arbiters.length) {
@@ -358,7 +360,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               </Typography>
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
-            {arbiterStatuses.map(({ address, status }, index) => (
+            {arbiters.map(({ address, status }, index) => (
               <Stack direction={"row"} key={address} gap={1} justifyContent={"space-between"} alignItems="center">
                 <Typography variant="subtitle2">
                   {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
@@ -367,12 +369,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 {status && (
                   <Typography>
                     {step < 4
-                      ? status.hasAttended
+                      ? status === "attended"
                         ? "✅"
                         : "⌛"
-                      : status.hasSettled === 1n
+                      : status === "voted_yes"
                         ? "👍🏽"
-                        : status.hasSettled === 2n
+                        : status === "voted_no"
                           ? "👎🏽"
                           : "⌛"}
                   </Typography>
@@ -384,11 +386,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             {...{
               beef,
               beefActions: actions,
-              arbiterStatuses,
-              refetch: () => {
-                void refetch()
-                void refetchArbiters?.()
-              },
+              refetch,
             }}
           />
         </Stack>
