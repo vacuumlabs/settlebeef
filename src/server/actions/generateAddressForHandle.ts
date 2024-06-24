@@ -1,11 +1,10 @@
 "use server"
 
-import { sql } from "@vercel/postgres"
 import { getContract } from "viem"
 import { generatePrivateKey, privateKeyToAddress } from "viem/accounts"
 import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory"
-import { UserDetailsResponseType } from "@/app/api/generated-smart-account/route"
 import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants"
+import { db, schema } from "@/server/db/db"
 import { activeChain, publicClient } from "@/utils/chain"
 
 const getLightAccountAddress = getContract({
@@ -15,20 +14,29 @@ const getLightAccountAddress = getContract({
 }).read.getAddress
 
 export const generateAddressForHandle = async (xHandle: string) => {
-  const { rows } =
-    await sql<UserDetailsResponseType>`SELECT smart_account_address FROM user_details WHERE x_handle = ${xHandle}  AND chain_id = ${activeChain.id}`
+  const userDetails = await db.query.userDetails.findFirst({
+    where: (userDetails, { eq, and }) => and(eq(userDetails.xHandle, xHandle), eq(userDetails.chainId, activeChain.id)),
+    columns: { smartAccountAddress: true },
+  })
 
-  if (rows[0]) {
+  if (userDetails !== undefined) {
     // Already generated
-    return rows[0].smart_account_address
+    return userDetails.smartAccountAddress
   }
 
   const privateKey = generatePrivateKey()
   const signerAddress = privateKeyToAddress(privateKey)
   const accountAddress = await getLightAccountAddress([signerAddress, 0n])
 
-  await sql`INSERT INTO user_details (x_handle, temporary_private_key, smart_account_address, chain_id) 
-      values (${xHandle}, ${privateKey}, ${accountAddress}, ${activeChain.id})`
+  await db
+    .insert(schema.userDetails)
+    .values({
+      xHandle,
+      temporaryPrivateKey: privateKey,
+      smartAccountAddress: accountAddress,
+      chainId: activeChain.id,
+    })
+    .execute()
 
   return accountAddress
 }

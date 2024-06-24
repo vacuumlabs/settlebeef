@@ -3,8 +3,7 @@ import { Button, CircularProgress, Stack } from "@mui/material"
 import { Address, isAddressEqual } from "viem"
 import { BeefActions } from "@/app/beef/[id]/page"
 import { useArbiterAttend, useJoinBeef, useSettleBeef, useWithdrawBeef } from "@/hooks/mutations"
-import { ArbiterStatus } from "@/hooks/queries"
-import type { Beef } from "@/types"
+import type { ArbiterType, Beef } from "@/types"
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext"
 
 type ButtonProps = {
@@ -107,18 +106,17 @@ const ChallengerButton = ({ beefAddress, value, refetch }: ButtonProps & { value
 type BeefControlsProps = {
   beef: Beef
   beefActions: BeefActions
-  arbiterStatuses: ArbiterStatus[]
   refetch: () => void
 }
 
-const BeefControls = ({ beef, beefActions, arbiterStatuses, refetch }: BeefControlsProps) => {
+const BeefControls = ({ beef, beefActions, refetch }: BeefControlsProps) => {
   const { connectedAddress } = useContext(SmartAccountClientContext)
 
   if (connectedAddress === undefined) {
     return null
   }
 
-  const { action, type } = decideAction(beef.owner, beef.challenger, beefActions, arbiterStatuses, connectedAddress)
+  const { action, type } = decideAction(beef.owner, beef.challenger, beef.arbiters, beefActions, connectedAddress)
 
   // User is not a part of the beef - don't show anything
   if (action === undefined) {
@@ -142,15 +140,15 @@ const BeefControls = ({ beef, beefActions, arbiterStatuses, refetch }: BeefContr
 const decideAction = (
   owner: Address,
   challenger: Address,
+  arbiters: ArbiterType[],
   beefActions: BeefActions,
-  arbiterStatuses: ArbiterStatus[],
   userAddress: Address,
 ) => {
   const isUserChallenger = isAddressEqual(challenger, userAddress)
   const isUserOwner = isAddressEqual(owner, userAddress)
 
   // Responsibility for the status presence is delegated to the parent
-  const userArbiter = arbiterStatuses.find(({ address }) => isAddressEqual(address, userAddress))
+  const userArbiter = arbiters.find(({ address }) => isAddressEqual(address, userAddress))
 
   // The user is not a part of the beef
   if (!isUserOwner && !isUserChallenger && userArbiter === undefined) {
@@ -191,16 +189,16 @@ const decideAction = (
   }
 
   if (userArbiter?.status !== undefined) {
-    const { hasAttended, hasSettled } = userArbiter.status
+    const status = userArbiter.status
 
-    if (beefActions.arbiter === "attend" && !hasAttended) {
+    if (beefActions.arbiter === "attend" && status === "none") {
       return {
         action: "arbiter",
         type: "attend",
       } as const
     }
 
-    if (beefActions.arbiter === "vote" && hasSettled === 0n) {
+    if (beefActions.arbiter === "vote" && status === "attended") {
       return {
         action: "arbiter",
         type: "vote",
