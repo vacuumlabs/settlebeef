@@ -32,9 +32,9 @@ export const useBeef = (address: Address) => {
   })
 }
 
-export const useGetInfiniteBeefs = (pageSize: number, sort: BeefSortType) => {
+export const useGetInfiniteBeefs = (pageSize: number, sort: BeefSortType, searchTitle?: string) => {
   const fetchBeefs = async ({ pageParam: page }: { pageParam: number }) => {
-    const beefs = await BeefApi.getBeefs(pageSize, pageSize * page, sort)
+    const beefs = await BeefApi.getBeefs(pageSize, pageSize * page, sort, searchTitle)
 
     return beefs
   }
@@ -49,7 +49,7 @@ export const useGetInfiniteBeefs = (pageSize: number, sort: BeefSortType) => {
       return nextPageParam
     },
     queryFn: fetchBeefs,
-    queryKey: [queryKeys.infiniteBeefs, sort],
+    queryKey: [queryKeys.infiniteBeefs, sort, searchTitle],
   })
 }
 

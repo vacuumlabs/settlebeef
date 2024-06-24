@@ -1,13 +1,14 @@
 "use client"
 
 import { useContext, useState } from "react"
-import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { Box, Button, Container, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material"
 import Link from "next/link"
 import BeefList from "@/components/BeefList"
 import { BEEF_SORT_OPTIONS, BeefSortDropdown } from "@/components/BeefSortDropdown"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { ShowMyBeefs } from "@/components/ShowMyBeefs"
 import { useGetInfiniteBeefs } from "@/hooks/queries"
+import { useDebounce } from "@/hooks/useDebounce"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -43,13 +44,17 @@ const PAGE_SIZE = 10
 export default function Home() {
   const { connectedAddress } = useContext(SmartAccountClientContext)
 
+  const [searchTitleFilter, setSearchTitleFilter] = useState<string | undefined>()
+
+  const debouncedSearchTitle = useDebounce(searchTitleFilter)
+
   const [sortOption, setSortOption] = useState(BEEF_SORT_OPTIONS[0]!)
   const {
     data: beefPages,
     isLoading: isLoadingBeefs,
     fetchNextPage,
     hasNextPage,
-  } = useGetInfiniteBeefs(PAGE_SIZE, sortOption.sort)
+  } = useGetInfiniteBeefs(PAGE_SIZE, sortOption.sort, debouncedSearchTitle)
 
   const [tabIndex, setTabIndex] = useState(0)
 
@@ -84,7 +89,12 @@ export default function Home() {
           <Stack p={4} gap={2}>
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="h3">Beef List 🥩📝</Typography>
-              <Stack direction="row" gap={2}>
+              <Stack direction="row" gap={2} alignItems="center">
+                <TextField
+                  label="Search beefs"
+                  value={searchTitleFilter}
+                  onChange={(event) => setSearchTitleFilter(event.target.value)}
+                />
                 <BeefSortDropdown sortOption={sortOption} setSortOption={setSortOption} />
                 <Link href="/beef/new" style={{ textDecoration: "none" }}>
                   <Button variant="contained" color="secondary">
