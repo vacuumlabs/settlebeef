@@ -5,18 +5,18 @@ import BeefList from "@/components/BeefList"
 import { Beef } from "@/types"
 
 type ShowMyBeefsProps = {
-  address: Address
+  connectedAddress: Address
   beefs: Pick<Beef, "address" | "title" | "wager" | "owner" | "challenger" | "arbiters">[]
   isLoadingBeefs: boolean
 }
 
-export const ShowMyBeefs = ({ address, beefs, isLoadingBeefs }: ShowMyBeefsProps) => {
-  const myBeefsOwner = beefs.filter(({ owner }) => isAddressEqual(owner, address))
+export const ShowMyBeefs = ({ connectedAddress, beefs, isLoadingBeefs }: ShowMyBeefsProps) => {
+  const myBeefsOwner = beefs.filter(({ owner }) => isAddressEqual(owner, connectedAddress))
 
-  const myBeefsChallenger = beefs.filter(({ challenger }) => isAddressEqual(challenger, address))
+  const myBeefsChallenger = beefs.filter(({ challenger }) => isAddressEqual(challenger, connectedAddress))
 
   const myBeefsArbiter = beefs.filter(({ arbiters }) =>
-    arbiters.some((arbiterAddress) => isAddressEqual(arbiterAddress, address)),
+    arbiters.some(({ address }) => isAddressEqual(address, connectedAddress)),
   )
 
   return (

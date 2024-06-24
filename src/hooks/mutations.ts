@@ -9,12 +9,13 @@ import { NewBeefFormValues } from "@/app/beef/new/page"
 import { wagmiConfig } from "@/components/providers/Providers"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { SLAUGHTERHOUSE_ADDRESS, UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
-import { useBeefsLength } from "@/hooks/queries"
+import { BeefApi } from "@/server/actions/beef/beefApi"
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
 import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster"
 import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle"
 import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail"
 import { ArbiterAccount } from "@/types"
+import { publicClient } from "@/utils/chain"
 import { parseIsoDateToTimestamp } from "@/utils/general"
 import { subtractSlippage } from "@/utils/slippage"
 import { queryKeys } from "./queryKeys"
@@ -33,7 +34,7 @@ export const useArbiterAttend = (beefId: Address) => {
   return useMutation({
     mutationKey: [mutationKeys.arbiterAttend, connectedAddress, beefId],
     mutationFn: async () => {
-      const txHash = await sendTransaction({
+      const { transactionHash } = await sendTransaction({
         to: beefId,
         data: encodeFunctionData({
           abi: beefAbi,
@@ -42,7 +43,9 @@ export const useArbiterAttend = (beefId: Address) => {
         }),
       })
 
-      return txHash
+      await BeefApi.refreshArbiters(beefId)
+
+      return transactionHash
     },
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
@@ -51,13 +54,13 @@ export const useArbiterAttend = (beefId: Address) => {
 }
 
 export const useSettleBeef = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext)
+  const { sendTransaction, connectedAddress } = useContext(SmartAccountClientContext)
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: [mutationKeys.settleBeef, beefId],
+    mutationKey: [mutationKeys.settleBeef, beefId, connectedAddress],
     mutationFn: async (verdict: boolean) => {
-      const txHash = await sendTransaction({
+      const { transactionHash } = await sendTransaction({
         to: beefId,
         data: encodeFunctionData({
           abi: beefAbi,
@@ -66,7 +69,9 @@ export const useSettleBeef = (beefId: Address) => {
         }),
       })
 
-      return txHash
+      await BeefApi.refreshArbiters(beefId)
+
+      return transactionHash
     },
     onSuccess() {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
@@ -79,21 +84,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
   const queryClient = useQueryClient()
 
   const joinBeef = async () => {
-    const [wager, staking] = await readContracts(wagmiConfig, {
-      allowFailure: false,
-      contracts: [
-        {
-          abi: beefAbi,
-          address: beefId,
-          functionName: "wager",
-        },
-        {
-          abi: beefAbi,
-          address: beefId,
-          functionName: "staking",
-        },
-      ],
-    })
+    const { wager, staking } = (await BeefApi.getBeef(beefId))!
 
     const amountOut = staking
       ? (
@@ -106,7 +97,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
         )[1]!
       : BigInt(0)
 
-    const txHash = await sendTransaction({
+    const { transactionHash } = await sendTransaction({
       to: beefId,
       value,
       data: encodeFunctionData({
@@ -116,7 +107,9 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
       }),
     })
 
-    return txHash
+    await BeefApi.refreshBeefState(beefId)
+
+    return transactionHash
   }
 
   return useMutation({
@@ -131,7 +124,6 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
 export const useAddBeef = () => {
   const { sendTransaction, connectedAddress } = useContext(SmartAccountClientContext)
   const queryClient = useQueryClient()
-  const { queryKey: beefsLengthQueryKey } = useBeefsLength()
 
   const addBeef = async ({
     arbiters,
@@ -181,7 +173,7 @@ export const useAddBeef = () => {
         )[1]!
       : BigInt(0)
 
-    return sendTransaction({
+    const { blockHash, transactionHash } = await sendTransaction({
       to: SLAUGHTERHOUSE_ADDRESS,
       value: wager,
       data: encodeFunctionData({
@@ -203,15 +195,25 @@ export const useAddBeef = () => {
         ],
       }),
     })
+
+    const [beefPackagedEvent] = await publicClient.getContractEvents({
+      blockHash,
+      address: SLAUGHTERHOUSE_ADDRESS,
+      abi: slaughterhouseAbi,
+      eventName: "BeefPackaged",
+    })
+
+    const beefAddress = beefPackagedEvent!.args.beef!
+
+    await BeefApi.addBeef(beefAddress)
+
+    return transactionHash
   }
 
   return useMutation({
     mutationFn: addBeef,
     onSuccess: async () => {
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
-
-      // Await so we are sure `infiniteBeefs` are invalidated while having fresh beef count
-      await queryClient.invalidateQueries({ queryKey: beefsLengthQueryKey })
 
       void queryClient.invalidateQueries({
         queryKey: [queryKeys.infiniteBeefs],
@@ -259,7 +261,7 @@ export const useWithdrawBeef = (beefId: Address, withdrawType: "withdrawRaw" | "
   const executeMutation = async () => {
     const amountOut = await getWithdrawAmountOut(beefId)
 
-    const txHash = await sendTransaction({
+    const { transactionHash } = await sendTransaction({
       to: beefId,
       data: encodeFunctionData({
         abi: beefAbi,
@@ -268,7 +270,9 @@ export const useWithdrawBeef = (beefId: Address, withdrawType: "withdrawRaw" | "
       }),
     })
 
-    return txHash
+    await BeefApi.refreshBeefState(beefId)
+
+    return transactionHash
   }
 
   return useMutation({
