@@ -9,9 +9,14 @@ export const getBeefsAction = async (
   limit: number,
   offset: number,
   { orderDirection, orderBy }: BeefSortType,
+  searchTitle?: string,
 ): Promise<Beef[]> => {
   const beefs = await db.query.Beefs.findMany({
-    where: (Beefs, { eq }) => eq(Beefs.chainId, activeChain.id),
+    where: (Beefs, { eq, and, ilike }) => {
+      const searchPredicate = searchTitle ? ilike(Beefs.title, `%${searchTitle}%`) : undefined
+
+      return and(eq(Beefs.chainId, activeChain.id), searchPredicate)
+    },
     orderBy: (Beefs, { asc, desc }) => {
       const orderFn = orderDirection === "asc" ? asc : desc
       const column = orderBy === "createdAt" ? Beefs.createdAt : Beefs.wager
