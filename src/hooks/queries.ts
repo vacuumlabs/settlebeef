@@ -50,6 +50,7 @@ export const useGetInfiniteBeefs = (pageSize: number, sort: BeefSortType, search
     },
     queryFn: fetchBeefs,
     queryKey: [queryKeys.infiniteBeefs, sort, searchTitle],
+    placeholderData: (previousData) => previousData,
   })
 }
 
