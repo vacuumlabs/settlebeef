@@ -19,7 +19,7 @@ export const formatBigint = (value: bigint | null | undefined, decimalsDisplay =
   })
 }
 
-export const parseIsoDateToTimestamp = (value: string) => BigInt(Math.round(DateTime.fromISO(value).toMillis() / 1000))
+export const parseIsoDateToTimestamp = (value: string) => BigInt(Math.round(DateTime.fromISO(value).toSeconds()))
 
 export const ellipsizeText = (text: string, maxLength: number) => {
   const trimmedText = text.trim()

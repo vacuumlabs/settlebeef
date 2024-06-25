@@ -88,8 +88,8 @@ const ArbiterButton = ({ beefAddress, actionType, refetch }: ButtonProps & { act
   )
 }
 
-const ChallengerButton = ({ beefAddress, value, refetch }: ButtonProps & { value: bigint }) => {
-  const { mutate, isPending, isSuccess } = useJoinBeef(beefAddress, value)
+const ChallengerButton = ({ beefAddress, refetch }: ButtonProps) => {
+  const { mutate, isPending, isSuccess } = useJoinBeef(beefAddress)
 
   return (
     <Button
@@ -127,7 +127,7 @@ const BeefControls = ({ beef, beefActions, refetch }: BeefControlsProps) => {
     <>
       {action === "arbiter" && <ArbiterButton refetch={refetch} beefAddress={beef.address} actionType={type} />}
       {action === "withdrawal" && <WithdrawButton refetch={refetch} beefAddress={beef.address} type={type} />}
-      {action === "joinBeef" && <ChallengerButton refetch={refetch} beefAddress={beef.address} value={beef.wager} />}
+      {action === "joinBeef" && <ChallengerButton refetch={refetch} beefAddress={beef.address} />}
       {action === "noAction" && (
         <Button disabled variant="outlined">
           Nothing to do
