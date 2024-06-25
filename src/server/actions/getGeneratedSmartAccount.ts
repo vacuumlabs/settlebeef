@@ -5,20 +5,13 @@ import { LinkedAccountWithMetadata, PrivyClient, WalletWithMetadata } from "@pri
 import { eq, isNotNull, or } from "drizzle-orm"
 import { and } from "drizzle-orm/sql/expressions/conditions"
 import { cookies } from "next/headers"
-import { Address, getContract, Hex } from "viem"
-import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory"
-import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants"
+import { Address, Hex } from "viem"
+import { getLightAccountAddress } from "@/server/actions/lib/lightAccount"
 import { db, schema } from "@/server/db/db"
-import { activeChain, publicClient } from "@/utils/chain"
+import { activeChain } from "@/utils/chain"
 import { createSmartAccountClient } from "@/utils/userOperation"
 
 const privy = new PrivyClient(process.env.NEXT_PUBLIC_PRIVY_APP_ID!, process.env.PRIVY_APP_SECRET!)
-
-const getLightAccountAddress = getContract({
-  client: publicClient,
-  address: LIGHT_ACCOUNT_FACTORY_ADDRESS,
-  abi: lightAccountFactoryAbi,
-}).read.getAddress
 
 const isWalletWithMetadata = (account: LinkedAccountWithMetadata): account is WalletWithMetadata =>
   account.type === "wallet" && account.walletClientType === "privy"
