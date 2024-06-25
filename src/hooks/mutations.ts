@@ -1,6 +1,6 @@
 import { useContext } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem"
+import { Address, encodeFunctionData, erc20Abi, formatEther, isAddress } from "viem"
 import { readContract, readContracts } from "wagmi/actions"
 import { beefAbi } from "@/abi/beef"
 import { slaughterhouseAbi } from "@/abi/slaughterhouse"
@@ -9,6 +9,7 @@ import { NewBeefFormValues } from "@/app/beef/new/page"
 import { wagmiConfig } from "@/components/providers/Providers"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { SLAUGHTERHOUSE_ADDRESS, UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
+import { useBalance } from "@/hooks/queries"
 import { BeefApi } from "@/server/actions/beef/beefApi"
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
 import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster"
@@ -79,12 +80,21 @@ export const useSettleBeef = (beefId: Address) => {
   })
 }
 
-export const useJoinBeef = (beefId: Address, value: bigint) => {
+export const useJoinBeef = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext)
+  const { data: balance } = useBalance()
   const queryClient = useQueryClient()
 
   const joinBeef = async () => {
     const { wager, staking } = (await BeefApi.getBeef(beefId))!
+
+    if (balance === undefined) {
+      throw new Error("Could not get balance")
+    }
+
+    if (balance < wager) {
+      throw new Error(`Not enough funds to join beef! ${formatEther(wager)} ETH needed!`)
+    }
 
     const amountOut = staking
       ? (
@@ -99,7 +109,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
 
     const { transactionHash } = await sendTransaction({
       to: beefId,
-      value,
+      value: wager,
       data: encodeFunctionData({
         abi: beefAbi,
         functionName: "joinBeef",
