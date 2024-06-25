@@ -13,17 +13,17 @@ type SortOptionType = {
 
 export const BEEF_SORT_OPTIONS: SortOptionType[] = [
   {
-    label: "Oldest to Newest",
-    sort: {
-      orderBy: "createdAt",
-      orderDirection: "asc",
-    },
-  },
-  {
     label: "Newest to Oldest",
     sort: {
       orderBy: "createdAt",
       orderDirection: "desc",
+    },
+  },
+  {
+    label: "Oldest to Newest",
+    sort: {
+      orderBy: "createdAt",
+      orderDirection: "asc",
     },
   },
   {
