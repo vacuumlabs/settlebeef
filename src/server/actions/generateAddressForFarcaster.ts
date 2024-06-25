@@ -1,17 +1,9 @@
 "use server"
 
-import { getContract } from "viem"
 import { generatePrivateKey, privateKeyToAddress } from "viem/accounts"
-import { lightAccountFactoryAbi } from "@/abi/lightAccountFactory"
-import { LIGHT_ACCOUNT_FACTORY_ADDRESS } from "@/constants"
+import { getLightAccountAddress } from "@/server/actions/lib/lightAccount"
 import { db, schema } from "@/server/db/db"
-import { activeChain, publicClient } from "@/utils/chain"
-
-const getLightAccountAddress = getContract({
-  client: publicClient,
-  address: LIGHT_ACCOUNT_FACTORY_ADDRESS,
-  abi: lightAccountFactoryAbi,
-}).read.getAddress
+import { activeChain } from "@/utils/chain"
 
 export const generateAddressForFarcaster = async (id: string) => {
   const userDetails = await db.query.userDetails.findFirst({
