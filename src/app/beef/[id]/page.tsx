@@ -21,8 +21,8 @@ import { redirect } from "next/navigation"
 import { Address, formatEther } from "viem"
 import BeefControls from "@/components/BeefControls"
 import { Countdown } from "@/components/Countdown"
-import { useBeef, useEnsNames } from "@/hooks/queries"
-import { getAddressOrEnsName } from "@/utils"
+import { useBeef, useGetUsernames } from "@/hooks/queries"
+import { truncateString } from "@/utils"
 
 type BeefDetailPageProps = {
   params: {
@@ -108,13 +108,13 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
   const { id } = params
   const { data: beef, refetch, isLoading } = useBeef(id as Address)
 
-  const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
-    beef?.owner,
-    beef?.challenger,
-    ...(beef?.arbiters?.map((it) => it.address) ?? []),
-  ])
+  const { data: usernames } = useGetUsernames(beef ?? undefined)
 
-  if (isLoading || beef === undefined || ensNamesLoading) {
+  if (beef === null) {
+    redirect("/not-found")
+  }
+
+  if (isLoading || beef === undefined || usernames === undefined) {
     return (
       <Container sx={{ pb: 6 }}>
         <Skeleton height={600} />
@@ -122,15 +122,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     )
   }
 
-  if (beef === null) {
-    redirect("/not-found")
-  }
-
   const {
     title,
     description,
-    owner,
-    challenger,
     wager,
     joinDeadline: joinDeadlineTimestamp,
     arbiters,
@@ -311,7 +305,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           </Stack>
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
-            {getAddressOrEnsName(owner, ensNames?.at(0))} 🥊 vs 🥊 {getAddressOrEnsName(challenger, ensNames?.at(1))}
+            {truncateString(usernames.owner)} 🥊 vs 🥊 {truncateString(usernames.challenger)}
           </Typography>
 
           <Stepper activeStep={step} alternativeLabel sx={{ width: "100%" }} connector={<BeefStepConnector />}>
@@ -362,10 +356,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
             {arbiters.map(({ address, status }, index) => (
               <Stack direction={"row"} key={address} gap={1} justifyContent={"space-between"} alignItems="center">
-                <Typography variant="subtitle2">
-                  {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
-                </Typography>
-
+                <Typography variant="subtitle2">{usernames.arbiters[index]}</Typography>
                 {status && (
                   <Typography>
                     {step < 4

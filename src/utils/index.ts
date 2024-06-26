@@ -1,16 +1,14 @@
 import { Address } from "viem"
 
-const truncateAddress = (address: Address) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
+export const truncateString = (value: string, keepStart: number = 6, keepEnd: number = 4) => {
+  if (value.length <= keepStart + keepEnd) return value
+
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
 }
 
-export const getAddressOrEnsName = (
-  address: Address | undefined,
-  ensNameOrUndefined: string | undefined | null,
-  truncate = true,
-) => {
-  if (ensNameOrUndefined != null) {
-    return ensNameOrUndefined
+export const getAddressOrEnsName = (address: Address, ensName: string | undefined | null, truncate = true) => {
+  if (ensName != null) {
+    return ensName
   }
-  return truncate ? (address ? truncateAddress(address) : "-") : address
+  return truncate ? truncateString(address) : address
 }
