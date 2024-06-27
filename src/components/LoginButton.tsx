@@ -2,7 +2,7 @@
 
 import { useContext } from "react"
 import { Avatar, Name } from "@coinbase/onchainkit/identity"
-import { Button, Skeleton, Stack, SvgIcon, Typography } from "@mui/material"
+import { Button, Skeleton, Stack, SvgIcon, Tooltip, Typography } from "@mui/material"
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth"
 import { enqueueSnackbar } from "notistack"
 import { useDisconnect } from "wagmi"
@@ -42,10 +42,12 @@ const LoginButton = () => {
   if (!isConnected) {
     return (
       <Stack direction="row" gap={2}>
-        <Button sx={{ gap: 1 }} variant="contained" onClick={connectCoinbase}>
-          <CoinbaseWalletLogo />
-          <Typography fontWeight="bold"> Create Smart Account</Typography>
-        </Button>
+        <Tooltip title="Smart wallets live in your browser, no extensions or app installs needed. Use passkeys for signing, with enterprise-grade security without complex seed phrases.">
+          <Button sx={{ gap: 1 }} variant="contained" onClick={connectCoinbase}>
+            <CoinbaseWalletLogo />
+            <Typography fontWeight="bold">Coinbase Smart Wallet</Typography>
+          </Button>
+        </Tooltip>
         <Button variant="contained" color="primary" onClick={login}>
           Login
         </Button>
