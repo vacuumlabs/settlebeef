@@ -1,14 +1,14 @@
 import { useContext } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Address, encodeFunctionData, erc20Abi, formatEther, isAddress } from "viem"
-import { readContract, readContracts } from "wagmi/actions"
+import { readContracts } from "wagmi/actions"
 import { beefAbi } from "@/abi/beef"
+import { quoterAbi } from "@/abi/quoterAbi"
 import { slaughterhouseAbi } from "@/abi/slaughterhouse"
-import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router"
 import { NewBeefFormValues } from "@/app/beef/new/page"
 import { wagmiConfig } from "@/components/providers/Providers"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
-import { SLAUGHTERHOUSE_ADDRESS, UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
+import { QUOTER_ADDRESS, SLAUGHTERHOUSE_ADDRESS, STAKING_POOL_FEE, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
 import { useBalance } from "@/hooks/queries"
 import { BeefApi } from "@/server/actions/beef/beefApi"
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
@@ -96,16 +96,7 @@ export const useJoinBeef = (beefId: Address) => {
       throw new Error(`Not enough funds to join beef! ${formatEther(wager)} ETH needed!`)
     }
 
-    const amountOut = staking
-      ? (
-          await readContract(wagmiConfig, {
-            address: UNISWAP_ROUTER_ADDRESS,
-            abi: uniswapV2RouterAbi,
-            functionName: "getAmountsOut",
-            args: [wager, [WETH_ADDRESS, WSTETH_ADDRESS]],
-          })
-        )[1]!
-      : BigInt(0)
+    const amountOut = staking ? await getAmountOut(wager, WETH_ADDRESS, WSTETH_ADDRESS) : 0n
 
     const { transactionHash } = await sendTransaction({
       to: beefId,
@@ -113,7 +104,7 @@ export const useJoinBeef = (beefId: Address) => {
       data: encodeFunctionData({
         abi: beefAbi,
         functionName: "joinBeef",
-        args: [subtractSlippage(amountOut)],
+        args: [amountOut],
       }),
     })
 
@@ -172,16 +163,7 @@ export const useAddBeef = () => {
 
     const arbitersAddresses = await Promise.all(addressPromises)
 
-    const amountOut = staking
-      ? (
-          await readContract(wagmiConfig, {
-            address: UNISWAP_ROUTER_ADDRESS,
-            abi: uniswapV2RouterAbi,
-            functionName: "getAmountsOut",
-            args: [wager, [WETH_ADDRESS, WSTETH_ADDRESS]],
-          })
-        )[1]!
-      : BigInt(0)
+    const amountOut = staking ? await getAmountOut(wager, WETH_ADDRESS, WSTETH_ADDRESS) : 0n
 
     const { blockHash, transactionHash } = await sendTransaction({
       to: SLAUGHTERHOUSE_ADDRESS,
@@ -201,7 +183,7 @@ export const useAddBeef = () => {
             arbiters: arbitersAddresses,
             staking,
           },
-          subtractSlippage(amountOut),
+          amountOut,
         ],
       }),
     })
@@ -250,18 +232,9 @@ const getWithdrawAmountOut = async (beefAddress: Address) => {
     ],
   })
 
-  const amountOut = staking
-    ? (
-        await readContract(wagmiConfig, {
-          address: UNISWAP_ROUTER_ADDRESS,
-          abi: uniswapV2RouterAbi,
-          functionName: "getAmountsOut",
-          args: [wstEthBalance, [WSTETH_ADDRESS, WETH_ADDRESS]],
-        })
-      )[1]!
-    : BigInt(0)
+  const amountOut = staking ? await getAmountOut(wstEthBalance, WSTETH_ADDRESS, WETH_ADDRESS) : 0n
 
-  return subtractSlippage(amountOut)
+  return amountOut
 }
 
 export const useWithdrawBeef = (beefId: Address, withdrawType: "withdrawRaw" | "withdrawRotten" | "serveBeef") => {
@@ -292,4 +265,23 @@ export const useWithdrawBeef = (beefId: Address, withdrawType: "withdrawRaw" | "
       void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
     },
   })
+}
+
+const getAmountOut = async (amountIn: bigint, tokenIn: Address, tokenOut: Address) => {
+  const { result } = await publicClient.simulateContract({
+    address: QUOTER_ADDRESS,
+    abi: quoterAbi,
+    functionName: "quoteExactInputSingle",
+    args: [
+      {
+        tokenIn,
+        tokenOut,
+        fee: STAKING_POOL_FEE,
+        amountIn,
+        sqrtPriceLimitX96: 0n,
+      },
+    ],
+  })
+
+  return subtractSlippage(result[0])
 }

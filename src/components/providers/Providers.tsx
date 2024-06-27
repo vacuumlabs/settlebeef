@@ -31,6 +31,7 @@ export const wagmiConfig = createConfig({
     [base.id]: http(alchemyApiUrl),
     [baseSepolia.id]: http(alchemyApiUrl),
   },
+  ssr: true,
 })
 
 export const ensConfig = createConfig({

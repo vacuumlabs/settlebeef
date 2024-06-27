@@ -5,8 +5,18 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import "@uniswap/swap-router-contracts/contracts/interfaces/IV3SwapRouter.sol";
 import {Slaughterhouse} from "./Slaughterhouse.sol";
+
+/// @title Interface for WETH9
+interface IWETH9 is IERC20 {
+    /// @notice Deposit ether to get wrapped ether
+    function deposit() external payable;
+
+    /// @notice Withdraw wrapped ether to get ether
+    function withdraw(uint256) external;
+}
 
 contract Beef is OwnableUpgradeable {
     using Address for address;
@@ -67,9 +77,9 @@ contract Beef is OwnableUpgradeable {
 
     // @notice Flag indicating if the beef is staking - the underlying ETH had been staked for wstETH and is earning staking yield.
     bool public staking;
-    // @notice Address of the Uniswap V2 Router.
-    IUniswapV2Router02 public uniswapV2Router;
-    IERC20 public WETH;
+    // @notice Address of the Uniswap V3 Router.
+    IV3SwapRouter public swapRouter;
+    IWETH9 public WETH9;
     IERC20 public WSTETH;
 
     uint128 public resultYes;
@@ -152,7 +162,7 @@ contract Beef is OwnableUpgradeable {
         uint256 amountOutMin,
         address _weth,
         address _wsteth,
-        address _uniswapV2Router,
+        address _swapRouter,
         address payable _slaughterhouse,
         uint256 _protocolRewardBasisPoints,
         uint256 _arbitersRewardBasisPoints
@@ -171,9 +181,9 @@ contract Beef is OwnableUpgradeable {
         arbiters = params.arbiters;
         joinDeadline = params.joinDeadline;
         staking = params.staking;
-        WETH = IERC20(_weth);
+        WETH9 = IWETH9(_weth);
         WSTETH = IERC20(_wsteth);
-        uniswapV2Router = IUniswapV2Router02(_uniswapV2Router);
+        swapRouter = IV3SwapRouter(_swapRouter);
         slaughterhouse = Slaughterhouse(_slaughterhouse);
         protocolRewardBasisPoints = _protocolRewardBasisPoints;
         arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
@@ -370,23 +380,46 @@ contract Beef is OwnableUpgradeable {
     }
 
     function _stakeBeef(uint256 amountOutMin) internal {
-        address[] memory path;
-        path = new address[](2);
-        path[0] = address(WETH);
-        path[1] = address(WSTETH);
-        uniswapV2Router.swapExactETHForTokens{value: address(this).balance}(
-            amountOutMin, path, address(this), block.timestamp
-        );
+        WETH9.deposit{value: address(this).balance}();
+
+        uint256 wethBalance = WETH9.balanceOf(address(this));
+
+        TransferHelper.safeApprove(address(WETH9), address(swapRouter), wethBalance);
+
+        IV3SwapRouter.ExactInputSingleParams memory params =
+            IV3SwapRouter.ExactInputSingleParams({
+                tokenIn: address(WETH9),
+                tokenOut: address(WSTETH),
+                fee: 100, // 0.01%
+                recipient: address(this),
+                amountIn: wethBalance,
+                amountOutMinimum: amountOutMin,
+                sqrtPriceLimitX96: 0
+            });
+
+       swapRouter.exactInputSingle(params);
     }
 
     function _unstakeBeef(uint256 amountOutMin) internal {
-        address[] memory path;
-        path = new address[](2);
-        path[0] = address(WSTETH);
-        path[1] = address(WETH);
-        uint256 amountIn = IERC20(WSTETH).balanceOf(address(this));
-        WSTETH.approve(address(uniswapV2Router), amountIn);
-        uniswapV2Router.swapExactTokensForETH(amountIn, amountOutMin, path, address(this), block.timestamp);
+        uint256 wstethBalance = WSTETH.balanceOf(address(this));
+
+        TransferHelper.safeApprove(address(WSTETH), address(swapRouter), wstethBalance);
+
+        IV3SwapRouter.ExactInputSingleParams memory params = IV3SwapRouter.ExactInputSingleParams({
+                tokenIn: address(WSTETH),
+                tokenOut: address(WETH9),
+                fee: 100, // 0.01%
+                recipient: address(this),
+                amountIn: wstethBalance,
+                amountOutMinimum: amountOutMin,
+                sqrtPriceLimitX96: 0
+            });
+
+        swapRouter.exactInputSingle(params);
+
+        uint256 wethBalance = WETH9.balanceOf(address(this));
+
+        WETH9.withdraw(wethBalance);
     }
 
     function _transferEth(address recipient, uint256 amount) internal {

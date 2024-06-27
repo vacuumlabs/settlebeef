@@ -6,7 +6,7 @@ type ChainAddressMap = Record<typeof activeChain.id, Address>
 
 const slaughterhouseAddresses: ChainAddressMap = {
   [baseSepolia.id]: "0x680C811Af29ab31d79e5eDb1b81A862fCF7d28DD",
-  [base.id]: "0xCBe8eC1e650f1B0eECC264B5B6E4127c18bC1D6C",
+  [base.id]: "0x18ec7cEEA296E94c601eCb44b222a854C4FfC0b2",
 }
 
 const wethAddresses: ChainAddressMap = {
@@ -24,10 +24,18 @@ const uniswapRouterAddresses: ChainAddressMap = {
   [base.id]: "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
 }
 
+const uniswapQuoterV2Addresses: ChainAddressMap = {
+  [baseSepolia.id]: "0x0",
+  [base.id]: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+}
+
 export const SLAUGHTERHOUSE_ADDRESS = slaughterhouseAddresses[activeChain.id]
 export const WETH_ADDRESS = wethAddresses[activeChain.id]
 export const WSTETH_ADDRESS = wsethAddresses[activeChain.id]
 export const UNISWAP_ROUTER_ADDRESS = uniswapRouterAddresses[activeChain.id]
+export const QUOTER_ADDRESS = uniswapQuoterV2Addresses[activeChain.id]
+
+export const STAKING_POOL_FEE = 100
 
 export const LIGHT_ACCOUNT_FACTORY_ADDRESS = "0x00004EC70002a32400f8ae005A26081065620D20"
 

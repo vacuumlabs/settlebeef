@@ -31,6 +31,7 @@ import { useAddBeef } from "@/hooks/mutations"
 import { useBalance } from "@/hooks/queries"
 import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle"
 import { ArbiterAccount, ChallengerAccount } from "@/types"
+import { useTestChain } from "@/utils/chain"
 import { isValidEmail } from "@/utils/validations"
 
 const NUMBER_OF_ARBITERS = 3
@@ -84,7 +85,8 @@ const NewBeefPage = () => {
         type: ChallengerAccount.TWITTER,
         value: "",
       },
-      staking: true,
+      // Disable staking on testnet, since it doesn't support uniswap V3
+      staking: !useTestChain,
     },
   })
 
@@ -438,7 +440,7 @@ const NewBeefPage = () => {
             render={({ field }) => (
               <FormControlLabel
                 sx={{ mt: 4 }}
-                control={<Checkbox checked={field.value} onChange={field.onChange} />}
+                control={<Checkbox disabled={useTestChain} checked={field.value} onChange={field.onChange} />}
                 label={
                   <Stack>
                     <Typography variant="h6">Let the beef drip!</Typography>
@@ -449,7 +451,7 @@ const NewBeefPage = () => {
                       <Tooltip
                         title={
                           <Typography>
-                            Your and your challenger&apos;s ETH will be swapped to Liquid Staking Derivative token
+                            Your and your challenger&apos;s ETH will be swapped to the Liquid Staking Derivative token
                             wstETH for the duration of the beef, earning ETH staking yield paid out to the winner when
                             the beef is served&nbsp;📈
                           </Typography>
