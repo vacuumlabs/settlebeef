@@ -122,7 +122,7 @@ export default function Home() {
       </CustomTabPanel>
       <CustomTabPanel value={tabIndex} index={2}>
         {/* How to / About */}
-        {connectedAddress && <AboutTabContent />}
+        {<AboutTabContent />}
       </CustomTabPanel>
     </Container>
   )

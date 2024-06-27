@@ -1,7 +1,7 @@
 import React from "react";
 import { Paper, Stack, Typography } from "@mui/material";
 
-const AboutTabContent = () => {
+export const AboutTabContent = () => {
   return (
     <Paper elevation={2}>
       <Stack p={4} gap={1}>
@@ -79,5 +79,3 @@ const AboutTabContent = () => {
     </Paper>
   );
 };
-
-export default AboutTabContent;
