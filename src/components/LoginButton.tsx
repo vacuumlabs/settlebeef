@@ -6,19 +6,22 @@ import { Button, Skeleton, Stack, SvgIcon, Typography } from "@mui/material"
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth"
 import { enqueueSnackbar } from "notistack"
 import { useDisconnect } from "wagmi"
+import { CoinbaseWalletLogo } from "@/components/CoinbaseWalletLogo"
 import { CopyIcon } from "@/components/CopyIcon"
 import { useBalance } from "@/hooks/queries"
 import { copyTextToClipboard, formatBigint } from "@/utils/general"
 import { SmartAccountClientContext } from "./providers/SmartAccountClientContext"
 
 const LoginButton = () => {
-  const { authenticated, ready } = usePrivy()
-  const { connectedAddress, setClient } = useContext(SmartAccountClientContext)
+  const { authenticated } = usePrivy()
+
+  const { connectedAddress, setClient, connectCoinbase, isConnected, disconnectCoinbase } =
+    useContext(SmartAccountClientContext)
   const { disconnect } = useDisconnect()
 
   const { login } = useLogin()
 
-  const { logout } = useLogout({
+  const { logout: privyLogout } = useLogout({
     onSuccess: () => {
       setClient(undefined)
       // Manually disconnect wagmi to clean up state in wagmi hooks
@@ -26,13 +29,27 @@ const LoginButton = () => {
     },
   })
 
+  const handleLogoutWallet = () => {
+    if (authenticated) {
+      void privyLogout()
+    } else {
+      disconnectCoinbase()
+    }
+  }
+
   const { data: balance, isLoading } = useBalance()
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
-      <Button variant="contained" color="primary" onClick={login}>
-        Login
-      </Button>
+      <Stack direction="row" gap={2}>
+        <Button sx={{ gap: 1 }} variant="contained" onClick={connectCoinbase}>
+          <CoinbaseWalletLogo />
+          <Typography fontWeight="bold"> Create Smart Account</Typography>
+        </Button>
+        <Button variant="contained" color="primary" onClick={login}>
+          Login
+        </Button>
+      </Stack>
     )
   }
 
@@ -56,7 +73,7 @@ const LoginButton = () => {
 
   return (
     <Stack direction="row" alignItems="center" gap={3}>
-      {ready ? (
+      {isConnected ? (
         <Stack direction="row" alignItems="center" gap={3}>
           {isLoading ? (
             <Skeleton height={15} width={200} />
@@ -92,7 +109,7 @@ const LoginButton = () => {
       ) : (
         <Skeleton variant="circular" />
       )}
-      <Button variant="contained" color="primary" onClick={logout}>
+      <Button variant="contained" color="primary" onClick={handleLogoutWallet}>
         Logout
       </Button>
     </Stack>
