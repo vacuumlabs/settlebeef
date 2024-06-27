@@ -2,7 +2,7 @@ import { base as baseAlchemy, baseSepolia as baseSepoliaAlchemy } from "@alchemy
 import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
 
-const useTestChain = process.env.NEXT_PUBLIC_USE_TEST_CHAIN === "true"
+export const useTestChain = process.env.NEXT_PUBLIC_USE_TEST_CHAIN === "true"
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? ""
 const baseApiKey = process.env.NEXT_PUBLIC_BASE_API_KEY ?? ""
 
@@ -19,5 +19,6 @@ export const baseApiUrl = useTestChain
   : `https://api.developer.coinbase.com/rpc/v1/base/${baseApiKey}`
 
 export const publicClient = createPublicClient({
+  chain: activeChain,
   transport: http(alchemyApiUrl),
 })

@@ -24,11 +24,11 @@ contract Slaughterhouse is Ownable2Step {
     uint256 public arbitersRewardBasisPoints;
 
     // @notice The address of Wrapped ETH
-    address public WETH;
+    address public WETH9;
     // @notice The address of Wrapped Staked ETH
     address public WSTETH;
-    // @notice The address of Uniswap V2 Router (for swapping WETH/WSTETH)
-    address public uniswapV2Router;
+    // @notice The address of Uniswap V3 Router (for swapping WETH9/WSTETH)
+    address public uniswapV3Router;
 
     error InvalidBasisPoints(uint256 totalBasisPoints, uint256 providedBasisPoints);
     error ZeroBalance();
@@ -42,15 +42,15 @@ contract Slaughterhouse is Ownable2Step {
     constructor(
         address _weth,
         address _wsteth,
-        address _uniswapV2Router,
+        address _uniswapV3Router,
         address initialOwner,
         uint256 _protocolRewardBasisPoints,
         uint256 _arbitersRewardBasisPoints
     ) Ownable(initialOwner) {
         beefImplementation = address(new Beef());
-        WETH = _weth;
+        WETH9 = _weth;
         WSTETH = _wsteth;
-        uniswapV2Router = _uniswapV2Router;
+        uniswapV3Router = _uniswapV3Router;
         protocolRewardBasisPoints = _protocolRewardBasisPoints;
         arbitersRewardBasisPoints = _arbitersRewardBasisPoints;
     }
@@ -94,7 +94,7 @@ contract Slaughterhouse is Ownable2Step {
         returns (address payable)
     {
         address payable beef = payable(Clones.clone(beefImplementation));
-        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH, WSTETH, uniswapV2Router, payable(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
+        Beef(beef).initialize{value: msg.value}(params, amountOutMin, WETH9, WSTETH, uniswapV3Router, payable(this), protocolRewardBasisPoints, arbitersRewardBasisPoints);
         beefs.push(beef);
         emit BeefPackaged(beef, params.owner, params.challenger);
         return beef;

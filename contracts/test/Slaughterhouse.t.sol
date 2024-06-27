@@ -52,9 +52,9 @@ contract SlaughterhouseTest is Test {
         assertEq(beef.arbiters(2), params.arbiters[2], "Beef arbiter 2 mismatch");
         assertEq(beef.joinDeadline(), params.joinDeadline, "Beef joinDeadline mismatch");
         assertEq(beef.staking(), params.staking, "Beef staking mismatch");
-        assertEq(address(beef.WETH()), WETH, "Beef WETH mismatch");
+        assertEq(address(beef.WETH9()), WETH, "Beef WETH mismatch");
         assertEq(address(beef.WSTETH()), WSTETH, "Beef WSTETH mismatch");
-        assertEq(address(beef.uniswapV2Router()), uniswapV2Router, "Beef uniswapV2Router mismatch");
+        assertEq(address(beef.swapRouter()), uniswapV2Router, "Beef uniswapV2Router mismatch");
         assertEq(beef.protocolRewardBasisPoints(), slaughterhouse.protocolRewardBasisPoints(), "Beef protocolRewardsBasisPoints mismatch");
         assertEq(beef.arbitersRewardBasisPoints(), slaughterhouse.arbitersRewardBasisPoints(), "Beef arbitersRewardsBasisPoints mismatch");
         assertEq(beef.totalBasisPoints(), slaughterhouse.totalBasisPoints(), "Beef totalBasisPoints mismatch");

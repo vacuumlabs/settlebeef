@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import {Beef} from "../src/Beef.sol";
 import {Slaughterhouse} from "../src/Slaughterhouse.sol";
