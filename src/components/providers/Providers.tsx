@@ -70,6 +70,11 @@ const Providers = ({ children }: ProvidersProps) => {
           loginMethods: ["wallet", "twitter", "email"],
           defaultChain: activeChain,
           supportedChains: [activeChain],
+          externalWallets: {
+            coinbaseWallet: {
+              connectionOptions: "smartWalletOnly",
+            },
+          },
         }}
       >
         <WagmiProvider config={wagmiConfig}>

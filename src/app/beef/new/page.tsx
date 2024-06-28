@@ -1,5 +1,6 @@
 "use client"
 
+import { useContext } from "react"
 import { getFarcasterUserAddress } from "@coinbase/onchainkit/farcaster"
 import {
   Button,
@@ -15,7 +16,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material"
-import { usePrivy } from "@privy-io/react-auth"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
@@ -26,6 +26,7 @@ import { getEnsAddress } from "wagmi/actions"
 import AmountInput from "@/components/AmountInput"
 import NotLoggedIn from "@/components/NotLoggedIn"
 import { ensConfig } from "@/components/providers/Providers"
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { useAddBeef } from "@/hooks/mutations"
 import { useBalance } from "@/hooks/queries"
 import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle"
@@ -58,7 +59,7 @@ export type NewBeefFormValues = {
 const NewBeefPage = () => {
   const { mutate, isPending } = useAddBeef()
   const router = useRouter()
-  const { authenticated } = usePrivy()
+  const { isConnected } = useContext(SmartAccountClientContext)
   const { data: balance } = useBalance()
 
   const form = useForm<NewBeefFormValues>({
@@ -206,7 +207,7 @@ const NewBeefPage = () => {
     })
   })
 
-  return authenticated ? (
+  return isConnected ? (
     <Container component="main" maxWidth="md">
       <Paper sx={{ p: 4, mb: 10 }}>
         <Typography variant="h3" component="h1">
