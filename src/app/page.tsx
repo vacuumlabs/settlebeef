@@ -3,7 +3,7 @@
 import { useContext, useState } from "react"
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
 import Link from "next/link"
-import AboutTabContent from "@/components/AboutTabContent"
+import { AboutTabContent } from "@/components/AboutTabContent"
 import BeefList from "@/components/BeefList"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { ShowMyBeefs } from "@/components/ShowMyBeefs"
