@@ -1,4 +1,4 @@
-# ETH BA Hackathon - SettleBeef
+# settlebeef
 
 On-chain wager / bet settlement protocol with social consensus. Gas-sponsored, account abstracted, yield generating collateral enabled protocol to end all Twitter beef. 🔥🧑‍⚖️
 
