@@ -373,4 +373,4 @@ export const uniswapV2PairAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
-] as const;
+] as const

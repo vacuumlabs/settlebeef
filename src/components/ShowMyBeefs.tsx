@@ -1,34 +1,23 @@
-import { Button, Paper, Stack, Typography } from "@mui/material";
-import Link from "next/link";
-import { Address, isAddressEqual } from "viem";
-import BeefList from "@/components/BeefList";
-import { Beef } from "@/types";
+import { Button, Paper, Stack, Typography } from "@mui/material"
+import Link from "next/link"
+import { Address, isAddressEqual } from "viem"
+import BeefList from "@/components/BeefList"
+import { Beef } from "@/types"
 
 type ShowMyBeefsProps = {
-  address: Address;
-  beefs: Pick<
-    Beef,
-    "address" | "title" | "wager" | "owner" | "challenger" | "arbiters"
-  >[];
-  isLoadingBeefs: boolean;
-};
+  address: Address
+  beefs: Pick<Beef, "address" | "title" | "wager" | "owner" | "challenger" | "arbiters">[]
+  isLoadingBeefs: boolean
+}
 
-export const ShowMyBeefs = ({
-  address,
-  beefs,
-  isLoadingBeefs,
-}: ShowMyBeefsProps) => {
-  const myBeefsOwner = beefs.filter(({ owner }) =>
-    isAddressEqual(owner, address),
-  );
+export const ShowMyBeefs = ({ address, beefs, isLoadingBeefs }: ShowMyBeefsProps) => {
+  const myBeefsOwner = beefs.filter(({ owner }) => isAddressEqual(owner, address))
 
-  const myBeefsChallenger = beefs.filter(({ challenger }) =>
-    isAddressEqual(challenger, address),
-  );
+  const myBeefsChallenger = beefs.filter(({ challenger }) => isAddressEqual(challenger, address))
 
   const myBeefsArbiter = beefs.filter(({ arbiters }) =>
     arbiters.some((arbiterAddress) => isAddressEqual(arbiterAddress, address)),
-  );
+  )
 
   return (
     <Paper elevation={2}>
@@ -79,5 +68,5 @@ export const ShowMyBeefs = ({
         </Stack>
       </Stack>
     </Paper>
-  );
-};
+  )
+}

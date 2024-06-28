@@ -63,14 +63,7 @@ module.exports = {
       "error",
       {
         "newlines-between": "never",
-        groups: [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "index",
-        ],
+        groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
         pathGroups: [
           {
             pattern: "react",
@@ -127,4 +120,4 @@ module.exports = {
     },
     react: { version: "detect" },
   },
-};
+}
