@@ -1,5 +1,5 @@
-import React from "react";
-import { Container, Stack, Typography } from "@mui/material";
+import React from "react"
+import { Container, Stack, Typography } from "@mui/material"
 
 const NotLoggedIn = () => {
   return (
@@ -13,7 +13,7 @@ const NotLoggedIn = () => {
         </Typography>
       </Stack>
     </Container>
-  );
-};
+  )
+}
 
-export default NotLoggedIn;
+export default NotLoggedIn

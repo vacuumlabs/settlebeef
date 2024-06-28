@@ -23,4 +23,4 @@ export const lightAccountFactoryAbi = [
     ],
     stateMutability: "view",
   },
-] as const;
+] as const

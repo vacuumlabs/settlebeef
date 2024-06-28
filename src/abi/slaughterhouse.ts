@@ -297,4 +297,4 @@ export const slaughterhouseAbi = [
     inputs: [{ name: "account", type: "address", internalType: "address" }],
   },
   { type: "error", name: "ZeroBalance", inputs: [] },
-] as const;
+] as const

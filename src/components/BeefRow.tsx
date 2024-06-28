@@ -1,10 +1,10 @@
-import React from "react";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
-import Link from "next/link";
-import { formatEther } from "viem";
-import { Beef } from "@/types";
+import React from "react"
+import { Card, CardContent, Stack, Typography } from "@mui/material"
+import Link from "next/link"
+import { formatEther } from "viem"
+import { Beef } from "@/types"
 
-export type BeefRowProps = Pick<Beef, "address" | "title" | "wager">;
+export type BeefRowProps = Pick<Beef, "address" | "title" | "wager">
 
 const BeefRow = ({ address, title, wager }: BeefRowProps) => {
   return (
@@ -38,7 +38,7 @@ const BeefRow = ({ address, title, wager }: BeefRowProps) => {
         </CardContent>
       </Card>
     </Link>
-  );
-};
+  )
+}
 
-export default BeefRow;
+export default BeefRow

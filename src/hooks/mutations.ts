@@ -1,40 +1,34 @@
-import { useContext } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
-import { readContract, readContracts } from "wagmi/actions";
-import { beefAbi } from "@/abi/beef";
-import { slaughterhouseAbi } from "@/abi/slaughterhouse";
-import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router";
-import { NewBeefFormValues } from "@/app/beef/new/page";
-import { wagmiConfig } from "@/components/providers/Providers";
-import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext";
-import {
-  SLAUGHTERHOUSE_ADDRESS,
-  UNISWAP_ROUTER_ADDRESS,
-  WETH_ADDRESS,
-  WSTETH_ADDRESS,
-} from "@/constants";
-import { useBeefsLength } from "@/hooks/queries";
-import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail";
-import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster";
-import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle";
-import { ArbiterAccount } from "@/types";
-import { parseIsoDateToTimestamp } from "@/utils/general";
-import { subtractSlippage } from "@/utils/slippage";
-import { queryKeys } from "./queryKeys";
+import { useContext } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem"
+import { readContract, readContracts } from "wagmi/actions"
+import { beefAbi } from "@/abi/beef"
+import { slaughterhouseAbi } from "@/abi/slaughterhouse"
+import { uniswapV2RouterAbi } from "@/abi/uniswapV2Router"
+import { NewBeefFormValues } from "@/app/beef/new/page"
+import { wagmiConfig } from "@/components/providers/Providers"
+import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
+import { SLAUGHTERHOUSE_ADDRESS, UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
+import { useBeefsLength } from "@/hooks/queries"
+import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
+import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster"
+import { generateAddressForHandle } from "@/server/actions/generateAddressForHandle"
+import { sendBeefRequestEmail } from "@/server/actions/sendBeefRequestEmail"
+import { ArbiterAccount } from "@/types"
+import { parseIsoDateToTimestamp } from "@/utils/general"
+import { subtractSlippage } from "@/utils/slippage"
+import { queryKeys } from "./queryKeys"
 
 const mutationKeys = {
   arbiterAttend: "arbiterAttend",
   withdrawBeef: "withdrawBeef",
   settleBeef: "settleBeef",
   joinBeef: "joinBeef",
-};
+}
 
 export const useArbiterAttend = (beefId: Address) => {
-  const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext,
-  );
-  const queryClient = useQueryClient();
+  const { sendTransaction, connectedAddress } = useContext(SmartAccountClientContext)
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: [mutationKeys.arbiterAttend, connectedAddress, beefId],
@@ -46,19 +40,19 @@ export const useArbiterAttend = (beefId: Address) => {
           functionName: "arbiterAttend",
           args: [],
         }),
-      });
+      })
 
-      return txHash;
+      return txHash
     },
     onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
     },
-  });
-};
+  })
+}
 
 export const useSettleBeef = (beefId: Address) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
+  const { sendTransaction } = useContext(SmartAccountClientContext)
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: [mutationKeys.settleBeef, beefId],
@@ -70,19 +64,19 @@ export const useSettleBeef = (beefId: Address) => {
           functionName: "settleBeef",
           args: [verdict],
         }),
-      });
+      })
 
-      return txHash;
+      return txHash
     },
     onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
     },
-  });
-};
+  })
+}
 
 export const useJoinBeef = (beefId: Address, value: bigint) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
+  const { sendTransaction } = useContext(SmartAccountClientContext)
+  const queryClient = useQueryClient()
 
   const joinBeef = async () => {
     const [wager, staking] = await readContracts(wagmiConfig, {
@@ -99,7 +93,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
           functionName: "staking",
         },
       ],
-    });
+    })
 
     const amountOut = staking
       ? (
@@ -110,7 +104,7 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
             args: [wager, [WETH_ADDRESS, WSTETH_ADDRESS]],
           })
         )[1]!
-      : BigInt(0);
+      : BigInt(0)
 
     const txHash = await sendTransaction({
       to: beefId,
@@ -120,26 +114,24 @@ export const useJoinBeef = (beefId: Address, value: bigint) => {
         functionName: "joinBeef",
         args: [subtractSlippage(amountOut)],
       }),
-    });
+    })
 
-    return txHash;
-  };
+    return txHash
+  }
 
   return useMutation({
     mutationKey: [mutationKeys.joinBeef, beefId],
     mutationFn: joinBeef,
     onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
     },
-  });
-};
+  })
+}
 
 export const useAddBeef = () => {
-  const { sendTransaction, connectedAddress } = useContext(
-    SmartAccountClientContext,
-  );
-  const queryClient = useQueryClient();
-  const { queryKey: beefsLengthQueryKey } = useBeefsLength();
+  const { sendTransaction, connectedAddress } = useContext(SmartAccountClientContext)
+  const queryClient = useQueryClient()
+  const { queryKey: beefsLengthQueryKey } = useBeefsLength()
 
   const addBeef = async ({
     arbiters,
@@ -152,25 +144,31 @@ export const useAddBeef = () => {
     staking,
   }: NewBeefFormValues) => {
     if (!connectedAddress) {
-      throw new Error("Wallet not connected");
+      throw new Error("Wallet not connected")
     }
     if (!challenger || !isAddress(challenger.value) || !wager) {
-      throw new Error("Invalid request");
+      throw new Error("Invalid request")
     }
+
+    arbiters.forEach((arbiter) => {
+      if (arbiter.type === ArbiterAccount.EMAIL) {
+        void sendBeefRequestEmail(arbiter.value)
+      }
+    })
 
     const addressPromises = arbiters.map(({ type, value }) => {
       if (type === ArbiterAccount.TWITTER) {
-        return generateAddressForHandle(value);
+        return generateAddressForHandle(value)
       } else if (type === ArbiterAccount.EMAIL) {
-        return generateAddressForEmail(value);
+        return generateAddressForEmail(value)
       } else if (type === ArbiterAccount.FARCASTER) {
-        return generateAddressForFarcaster(value);
+        return generateAddressForFarcaster(value)
       } else {
-        return value as Address;
+        return value as Address
       }
-    });
+    })
 
-    const arbitersAddresses = await Promise.all(addressPromises);
+    const arbitersAddresses = await Promise.all(addressPromises)
 
     const amountOut = staking
       ? (
@@ -181,7 +179,7 @@ export const useAddBeef = () => {
             args: [wager, [WETH_ADDRESS, WSTETH_ADDRESS]],
           })
         )[1]!
-      : BigInt(0);
+      : BigInt(0)
 
     return sendTransaction({
       to: SLAUGHTERHOUSE_ADDRESS,
@@ -204,23 +202,23 @@ export const useAddBeef = () => {
           subtractSlippage(amountOut),
         ],
       }),
-    });
-  };
+    })
+  }
 
   return useMutation({
     mutationFn: addBeef,
     onSuccess: async () => {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
 
       // Await so we are sure `infiniteBeefs` are invalidated while having fresh beef count
-      await queryClient.invalidateQueries({ queryKey: beefsLengthQueryKey });
+      await queryClient.invalidateQueries({ queryKey: beefsLengthQueryKey })
 
       void queryClient.invalidateQueries({
         queryKey: [queryKeys.infiniteBeefs],
-      });
+      })
     },
-  });
-};
+  })
+}
 
 const getWithdrawAmountOut = async (beefAddress: Address) => {
   const [wstEthBalance, staking] = await readContracts(wagmiConfig, {
@@ -238,7 +236,7 @@ const getWithdrawAmountOut = async (beefAddress: Address) => {
         functionName: "staking",
       },
     ],
-  });
+  })
 
   const amountOut = staking
     ? (
@@ -249,20 +247,17 @@ const getWithdrawAmountOut = async (beefAddress: Address) => {
           args: [wstEthBalance, [WSTETH_ADDRESS, WETH_ADDRESS]],
         })
       )[1]!
-    : BigInt(0);
+    : BigInt(0)
 
-  return subtractSlippage(amountOut);
-};
+  return subtractSlippage(amountOut)
+}
 
-export const useWithdrawBeef = (
-  beefId: Address,
-  withdrawType: "withdrawRaw" | "withdrawRotten" | "serveBeef",
-) => {
-  const { sendTransaction } = useContext(SmartAccountClientContext);
-  const queryClient = useQueryClient();
+export const useWithdrawBeef = (beefId: Address, withdrawType: "withdrawRaw" | "withdrawRotten" | "serveBeef") => {
+  const { sendTransaction } = useContext(SmartAccountClientContext)
+  const queryClient = useQueryClient()
 
   const executeMutation = async () => {
-    const amountOut = await getWithdrawAmountOut(beefId);
+    const amountOut = await getWithdrawAmountOut(beefId)
 
     const txHash = await sendTransaction({
       to: beefId,
@@ -271,16 +266,16 @@ export const useWithdrawBeef = (
         functionName: withdrawType,
         args: [amountOut],
       }),
-    });
+    })
 
-    return txHash;
-  };
+    return txHash
+  }
 
   return useMutation({
     mutationFn: executeMutation,
     mutationKey: [beefId, withdrawType],
     onSuccess() {
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.balance] })
     },
-  });
-};
+  })
+}

@@ -1,18 +1,18 @@
-"use client";
-import { createTheme } from "@mui/material";
-import { Open_Sans, Space_Mono } from "next/font/google";
+"use client"
+import { createTheme } from "@mui/material"
+import { Open_Sans, Space_Mono } from "next/font/google"
 
 const roboto = Open_Sans({
   weight: ["300", "400", "500", "700"],
   subsets: ["latin"],
   display: "swap",
-});
+})
 
 const spaceMono = Space_Mono({
   weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
-});
+})
 
 const theme = createTheme({
   typography: {
@@ -32,9 +32,9 @@ const theme = createTheme({
       dark: "#DD761C",
     },
   },
-});
+})
 
-theme.typography.subtitle2.fontFamily = spaceMono.style.fontFamily;
+theme.typography.subtitle2.fontFamily = spaceMono.style.fontFamily
 
 theme.components = {
   MuiPaper: {
@@ -125,6 +125,6 @@ theme.components = {
       },
     },
   },
-};
+}
 
-export default theme;
+export default theme

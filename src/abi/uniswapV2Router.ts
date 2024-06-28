@@ -87,9 +87,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "address[]", name: "path", type: "address[]" },
     ],
     name: "getAmountsIn",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",
   },
@@ -99,9 +97,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "address[]", name: "path", type: "address[]" },
     ],
     name: "getAmountsOut",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",
   },
@@ -234,9 +230,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapETHForExactTokens",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "payable",
     type: "function",
   },
@@ -248,9 +242,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapExactETHForTokens",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "payable",
     type: "function",
   },
@@ -275,9 +267,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapExactTokensForETH",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -303,9 +293,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapExactTokensForTokens",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -331,9 +319,7 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapTokensForExactETH",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -346,11 +332,9 @@ export const uniswapV2RouterAbi = [
       { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
     name: "swapTokensForExactTokens",
-    outputs: [
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
+    outputs: [{ internalType: "uint256[]", name: "amounts", type: "uint256[]" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   { stateMutability: "payable", type: "receive" },
-] as const;
+] as const

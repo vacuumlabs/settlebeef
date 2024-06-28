@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React from "react";
+import React from "react"
 import {
   Box,
   Chip,
@@ -16,19 +16,19 @@ import {
   Typography,
   stepConnectorClasses,
   styled,
-} from "@mui/material";
-import { redirect } from "next/navigation";
-import { Address, formatEther, zeroAddress } from "viem";
-import BeefControls from "@/components/BeefControls";
-import { Countdown } from "@/components/Countdown";
-import { useBeef, useEnsNames, useGetArbiterStatuses } from "@/hooks/queries";
-import { getAddressOrEnsName } from "@/utils";
+} from "@mui/material"
+import { redirect } from "next/navigation"
+import { Address, formatEther, zeroAddress } from "viem"
+import BeefControls from "@/components/BeefControls"
+import { Countdown } from "@/components/Countdown"
+import { useBeef, useEnsNames, useGetArbiterStatuses } from "@/hooks/queries"
+import { getAddressOrEnsName } from "@/utils"
 
 type BeefDetailPageProps = {
   params: {
-    id: string;
-  };
-};
+    id: string
+  }
+}
 
 const BeefStepConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -47,23 +47,18 @@ const BeefStepConnector = styled(StepConnector)(({ theme }) => ({
     },
   },
   [`& .${stepConnectorClasses.line}`]: {
-    borderColor:
-      theme.palette.mode === "dark"
-        ? theme.palette.grey[800]
-        : theme.palette.grey[400],
+    borderColor: theme.palette.mode === "dark" ? theme.palette.grey[800] : theme.palette.grey[400],
     borderTopWidth: 3,
     borderRadius: 1,
   },
-}));
+}))
 
 function StepIcon(props: StepIconProps) {
-  const { icon, completed } = props;
+  const { icon, completed } = props
   return (
     <Box
       sx={(theme) => ({
-        bgcolor: completed
-          ? theme.palette.primary.main
-          : theme.palette.grey[100],
+        bgcolor: completed ? theme.palette.primary.main : theme.palette.grey[100],
         width: 60,
         height: 60,
         borderRadius: "100%",
@@ -76,29 +71,28 @@ function StepIcon(props: StepIconProps) {
         sx={{
           justifyContent: "center",
           color: "white",
-          textShadow:
-            "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;",
+          textShadow: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;",
         }}
       >
         {icon}
       </Typography>
     </Box>
-  );
+  )
 }
 
 export type BeefActions = {
-  owner?: "withdrawRaw" | "withdrawRotten" | "serveBeef";
-  challenger?: "joinBeef" | "withdrawRotten" | "serveBeef";
-  arbiter?: "attend" | "vote";
-};
+  owner?: "withdrawRaw" | "withdrawRotten" | "serveBeef"
+  challenger?: "joinBeef" | "withdrawRotten" | "serveBeef"
+  arbiter?: "attend" | "vote"
+}
 
 type BeefState = {
-  step: number;
-  steps: { icon: string; text: string }[] | typeof DEFAULT_STEPS;
-  isRotten?: boolean;
-  deadline?: Date;
-  actions: BeefActions;
-};
+  step: number
+  steps: { icon: string; text: string }[] | typeof DEFAULT_STEPS
+  isRotten?: boolean
+  deadline?: Date
+  actions: BeefActions
+}
 
 const DEFAULT_STEPS = [
   { icon: "🥩", text: "Beef creation" },
@@ -108,23 +102,25 @@ const DEFAULT_STEPS = [
   { icon: "🧑‍⚖️", text: "Beef settling" },
   { icon: "🍽️", text: "Beef ready to serve" },
   { icon: "😋", text: "Beef served" },
-] as const;
+] as const
 
 const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
-  const { id } = params;
-  const beef = useBeef(id as Address);
+  const { id } = params
+  const beef = useBeef(id as Address)
 
-  const { data: arbiterStatuses, refetch: refetchArbiters } =
-    useGetArbiterStatuses(beef?.address ?? zeroAddress, beef?.arbiters ?? []);
+  const { data: arbiterStatuses, refetch: refetchArbiters } = useGetArbiterStatuses(
+    beef?.address ?? zeroAddress,
+    beef?.arbiters ?? [],
+  )
 
   const { isLoading: ensNamesLoading, data: ensNames } = useEnsNames([
     beef?.owner,
     beef?.challenger,
     ...(beef?.arbiters ?? []),
-  ]);
+  ])
 
   if (beef === undefined) {
-    redirect("/not-found");
+    redirect("/not-found")
   }
 
   if (beef === null || ensNamesLoading) {
@@ -132,7 +128,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
       <Container sx={{ pb: 6 }}>
         <Skeleton height={600} />
       </Container>
-    );
+    )
   }
 
   const {
@@ -151,19 +147,17 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
     staking,
     beefGone,
     refetch,
-  } = beef;
+  } = beef
 
-  const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000);
-  const settleStart = new Date(Number(settleStartTimestamp) * 1000);
+  const joinDeadline = new Date(Number(joinDeadlineTimestamp) * 1000)
+  const settleStart = new Date(Number(settleStartTimestamp) * 1000)
 
   // FIXME: this assumes constant settlingDuration of 30 days!
-  const settleDuration = BigInt(60 * 60 * 24 * 30);
-  const settleDeadline = new Date(
-    Number((settleStartTimestamp + settleDuration) * 1000n),
-  );
+  const settleDuration = BigInt(60 * 60 * 24 * 30)
+  const settleDeadline = new Date(Number((settleStartTimestamp + settleDuration) * 1000n))
 
   const getBeefState = (): BeefState => {
-    const now = new Date();
+    const now = new Date()
 
     // Arbiters have not joined yet
     if (attendCount < arbiters.length) {
@@ -176,7 +170,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           actions: {
             arbiter: "attend",
           },
-        };
+        }
       } else {
         // Arbiters failed to attend
         return {
@@ -191,7 +185,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           actions: {
             owner: beefGone ? undefined : "withdrawRaw",
           },
-        };
+        }
       }
     } else {
       if (isCooking) {
@@ -203,10 +197,9 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             step: 3,
             deadline: settleStart,
             actions: {},
-          };
+          }
         } else {
-          const majorityReached =
-            resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2;
+          const majorityReached = resultYes > arbiters.length / 2 || resultNo > arbiters.length / 2
 
           if (majorityReached) {
             // Beef is successfully decided
@@ -217,7 +210,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 owner: beefGone ? undefined : "serveBeef",
                 challenger: beefGone ? undefined : "serveBeef",
               },
-            };
+            }
           } else if (now > settleDeadline) {
             // Arbiters failed to vote and decide the beef
             return {
@@ -235,7 +228,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                 owner: beefGone ? undefined : "withdrawRotten",
                 challenger: beefGone ? undefined : "withdrawRotten",
               },
-            };
+            }
           } else {
             // Voting in progress until `settleDeadline`
             return {
@@ -245,7 +238,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               actions: {
                 arbiter: "vote",
               },
-            };
+            }
           }
         }
       } else {
@@ -259,7 +252,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             actions: {
               challenger: "joinBeef",
             },
-          };
+          }
         } else {
           // Challenger failed to join in time
           return {
@@ -274,19 +267,19 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
             actions: {
               owner: beefGone ? undefined : "withdrawRaw",
             },
-          };
+          }
         }
       }
     }
-  };
+  }
 
   const dateCases: Record<string, Date> = {
     "Challenger joining": joinDeadline,
     "Beef cooking": settleStart,
     "Beef settling": settleDeadline,
-  };
+  }
 
-  const { steps, step, isRotten, deadline, actions } = getBeefState();
+  const { steps, step, isRotten, deadline, actions } = getBeefState()
 
   return (
     <Container sx={{ pt: 4, pb: 6 }}>
@@ -301,9 +294,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           >
             <Typography variant="h2">🔥 {title}</Typography>
             <Stack alignItems="flex-end" gap={2}>
-              <Typography variant="h4">
-                💸&nbsp;{formatEther(wager)}&nbsp;Ξ
-              </Typography>
+              <Typography variant="h4">💸&nbsp;{formatEther(wager)}&nbsp;Ξ</Typography>
               {staking && (
                 <Chip
                   sx={{ backgroundColor: "primary.main" }}
@@ -318,18 +309,12 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
           </Stack>
           <Typography variant="h5">{description}</Typography>
           <Typography variant="h3" whiteSpace="pre-line" pb={4}>
-            {getAddressOrEnsName(owner, ensNames?.at(0))} 🥊 vs 🥊{" "}
-            {getAddressOrEnsName(challenger, ensNames?.at(1))}
+            {getAddressOrEnsName(owner, ensNames?.at(0))} 🥊 vs 🥊 {getAddressOrEnsName(challenger, ensNames?.at(1))}
           </Typography>
 
-          <Stepper
-            activeStep={step}
-            alternativeLabel
-            sx={{ width: "100%" }}
-            connector={<BeefStepConnector />}
-          >
+          <Stepper activeStep={step} alternativeLabel sx={{ width: "100%" }} connector={<BeefStepConnector />}>
             {steps.map((label, index) => {
-              const stepDate = dateCases[label.text]?.toDateString();
+              const stepDate = dateCases[label.text]?.toDateString()
 
               return (
                 <Step key={label.text}>
@@ -338,7 +323,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                       return StepIcon({
                         completed: step > index,
                         icon: label.icon,
-                      });
+                      })
                     }}
                   >
                     <Stack>
@@ -357,7 +342,7 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
                     </Stack>
                   </StepLabel>
                 </Step>
-              );
+              )
             })}
           </Stepper>
 
@@ -366,25 +351,15 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               Arbiters
             </Typography>
             {step >= 4 && (
-              <Typography
-                variant="h6"
-                whiteSpace="pre-line"
-                alignSelf={"center"}
-              >
-                {resultYes.toString()} vote{resultYes > 1n ? "s" : ""} for ⚔️{" "}
-                {resultNo.toString()} vote{resultNo > 1n ? "s " : " "}
+              <Typography variant="h6" whiteSpace="pre-line" alignSelf={"center"}>
+                {resultYes.toString()} vote{resultYes > 1n ? "s" : ""} for ⚔️ {resultNo.toString()} vote
+                {resultNo > 1n ? "s " : " "}
                 against
               </Typography>
             )}
             {/* TODO: We can fetch more complex info about arbiters (e.g. their social credit) and display it here */}
             {arbiterStatuses.map(({ address, status }, index) => (
-              <Stack
-                direction={"row"}
-                key={address}
-                gap={1}
-                justifyContent={"space-between"}
-                alignItems="center"
-              >
+              <Stack direction={"row"} key={address} gap={1} justifyContent={"space-between"} alignItems="center">
                 <Typography variant="subtitle2">
                   {getAddressOrEnsName(address, ensNames?.at(2 + index), false)}
                 </Typography>
@@ -411,15 +386,15 @@ const BeefDetailPage = ({ params }: BeefDetailPageProps) => {
               beefActions: actions,
               arbiterStatuses,
               refetch: () => {
-                void refetch();
-                void refetchArbiters?.();
+                void refetch()
+                void refetchArbiters?.()
               },
             }}
           />
         </Stack>
       </Paper>
     </Container>
-  );
-};
+  )
+}
 
-export default BeefDetailPage;
+export default BeefDetailPage
