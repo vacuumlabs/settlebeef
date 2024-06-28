@@ -13,7 +13,7 @@ import { createSmartAccountClient } from "@/utils/userOperation"
 
 const privy = new PrivyClient(process.env.NEXT_PUBLIC_PRIVY_APP_ID!, process.env.PRIVY_APP_SECRET!)
 
-const isWalletWithMetadata = (account: LinkedAccountWithMetadata): account is WalletWithMetadata =>
+const isEmbeddedWallet = (account: LinkedAccountWithMetadata): account is WalletWithMetadata =>
   account.type === "wallet" && account.walletClientType === "privy"
 
 export const getGeneratedSmartAccount = async () => {
@@ -27,7 +27,7 @@ export const getGeneratedSmartAccount = async () => {
   const claims = await privy.verifyAuthToken(authToken)
   const user = await privy.getUser(claims.userId)
 
-  const embeddedWallet = user.linkedAccounts.find(isWalletWithMetadata)
+  const embeddedWallet = user.linkedAccounts.find(isEmbeddedWallet)
 
   if (embeddedWallet === undefined) {
     console.error(`User ${user.id} does not have an embedded wallet`)
