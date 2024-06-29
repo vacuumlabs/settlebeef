@@ -1,5 +1,6 @@
 import { useContext } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { enqueueSnackbar } from "notistack"
 import { Address, encodeFunctionData, erc20Abi, formatEther, isAddress } from "viem"
 import { readContracts } from "wagmi/actions"
 import { beefAbi } from "@/abi/beef"
@@ -9,7 +10,7 @@ import { NewBeefFormValues } from "@/app/beef/new/page"
 import { wagmiConfig } from "@/components/providers/Providers"
 import { SmartAccountClientContext } from "@/components/providers/SmartAccountClientContext"
 import { QUOTER_ADDRESS, SLAUGHTERHOUSE_ADDRESS, STAKING_POOL_FEE, WETH_ADDRESS, WSTETH_ADDRESS } from "@/constants"
-import { useBalance } from "@/hooks/queries"
+import { useBalance, useBeef } from "@/hooks/queries"
 import { BeefApi } from "@/server/actions/beef/beefApi"
 import { generateAddressForEmail } from "@/server/actions/generateAddressForEmail"
 import { generateAddressForFarcaster } from "@/server/actions/generateAddressForFarcaster"
@@ -83,17 +84,20 @@ export const useSettleBeef = (beefId: Address) => {
 export const useJoinBeef = (beefId: Address) => {
   const { sendTransaction } = useContext(SmartAccountClientContext)
   const { data: balance } = useBalance()
+  const { data: beef } = useBeef(beefId)
+
   const queryClient = useQueryClient()
 
   const joinBeef = async () => {
-    const { wager, staking } = (await BeefApi.getBeef(beefId))!
+    const { wager, staking } = beef!
 
     if (balance === undefined) {
       throw new Error("Could not get balance")
     }
 
     if (balance < wager) {
-      throw new Error(`Not enough funds to join beef! ${formatEther(wager)} ETH needed!`)
+      enqueueSnackbar(`Not enough funds to join beef! ${formatEther(wager)} ETH needed!`, { variant: "error" })
+      return
     }
 
     const amountOut = staking ? await getAmountOut(wager, WETH_ADDRESS, WSTETH_ADDRESS) : 0n
