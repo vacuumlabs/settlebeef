@@ -78,12 +78,12 @@ export const useGetUsernames = (beef?: Beef) => {
     if (userDetails === undefined || beef === undefined) return undefined
 
     const addressToUsername = new Map(
-      userDetails.map((detail) => [detail.smartAccountAddress, extractUsername(detail)]),
+      userDetails.map((detail) => [detail.smartAccountAddress.toLowerCase(), extractUsername(detail)]),
     )
 
     // Null asserts, because compiler is not so smart :(
     const [owner, challenger, ...arbiters] = addresses!.map((address, index) => {
-      return addressToUsername.get(address) ?? getAddressOrEnsName(address, ensNames?.[index], false)
+      return addressToUsername.get(address.toLowerCase()) ?? getAddressOrEnsName(address, ensNames?.[index], false)
     })
 
     return {
