@@ -6,6 +6,7 @@ import { eq, isNotNull, or } from "drizzle-orm"
 import { and } from "drizzle-orm/sql/expressions/conditions"
 import { cookies } from "next/headers"
 import { Address, Hex } from "viem"
+import { normalizeHandle } from "@/server/actions/lib/general"
 import { getLightAccountAddress } from "@/server/actions/lib/lightAccount"
 import { db, schema } from "@/server/db/db"
 import { activeChain } from "@/utils/chain"
@@ -25,23 +26,23 @@ export const getGeneratedSmartAccount = async () => {
   }
 
   const claims = await privy.verifyAuthToken(authToken)
-  const user = await privy.getUser(claims.userId)
+  const { linkedAccounts, twitter, farcaster, email, id } = await privy.getUser(claims.userId)
 
-  const embeddedWallet = user.linkedAccounts.find(isEmbeddedWallet)
+  const embeddedWallet = linkedAccounts.find(isEmbeddedWallet)
 
   if (embeddedWallet === undefined) {
-    console.error(`User ${user.id} does not have an embedded wallet`)
+    console.error(`User ${id} does not have an embedded wallet`)
     return undefined
   }
 
   const walletAddress = embeddedWallet.address as Address
 
-  const xHandle = user.twitter?.username ?? undefined
-  const email = user.email?.address
-  const farcasterId = user.farcaster?.fid?.toString()
+  const xHandle = twitter?.username ? normalizeHandle(twitter.username) : undefined
+  const emailAddress = email?.address
+  const farcasterId = farcaster?.fid?.toString()
 
   if (xHandle === undefined && email === undefined && farcasterId === undefined) {
-    console.error(`User ${user.id} does not have a X / Twitter or Email or Farcaster connected`)
+    console.error(`User ${id} does not have a X / Twitter or Email or Farcaster connected`)
 
     return undefined
   }
@@ -50,7 +51,7 @@ export const getGeneratedSmartAccount = async () => {
 
   const userDetailCondition = or(
     xHandle !== undefined ? and(isNotNull(userDetails.xHandle), eq(userDetails.xHandle, xHandle)) : undefined,
-    email !== undefined ? and(isNotNull(userDetails.email), eq(userDetails.email, email)) : undefined,
+    emailAddress !== undefined ? and(isNotNull(userDetails.email), eq(userDetails.email, emailAddress)) : undefined,
     farcasterId !== undefined
       ? and(isNotNull(userDetails.farcasterId), eq(userDetails.farcasterId, farcasterId))
       : undefined,
@@ -105,7 +106,7 @@ export const getGeneratedSmartAccount = async () => {
       .insert(userDetails)
       .values({
         xHandle,
-        email,
+        email: emailAddress,
         farcasterId,
         smartAccountAddress: accountAddress,
         owner: walletAddress,
