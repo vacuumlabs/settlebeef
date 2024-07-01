@@ -3,16 +3,17 @@
 import { Address } from "viem"
 import { beefAbi } from "@/abi/beef"
 import { getArbiterStatuses, getBeefContractInfo } from "@/server/actions/lib/beef"
+import { serverPublicClient } from "@/server/actions/lib/serverPublicClient"
 import { db, schema } from "@/server/db/db"
 import { ArbiterType, Beef } from "@/types"
-import { activeChain, publicClient } from "@/utils/chain"
+import { activeChain } from "@/utils/chain"
 
 export const addBeefAction = async (address: Address) => {
   const { params, beefGone, cooking, attendCount, resultYes, resultNo } = await getBeefContractInfo(address)
 
   const { title, owner, challenger, description, joinDeadline, settleStart, staking, wager } = params
 
-  const [beefCreatedEvent] = await publicClient.getContractEvents({
+  const [beefCreatedEvent] = await serverPublicClient.getContractEvents({
     address,
     abi: beefAbi,
     fromBlock: 0n,
@@ -26,7 +27,7 @@ export const addBeefAction = async (address: Address) => {
 
   const blockHash = beefCreatedEvent.blockHash
 
-  const { timestamp } = await publicClient.getBlock({ blockHash })
+  const { timestamp } = await serverPublicClient.getBlock({ blockHash })
 
   const arbiters = await getArbiters(params.arbiters, resultYes, resultNo, attendCount, address)
 

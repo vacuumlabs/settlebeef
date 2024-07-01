@@ -1,11 +1,11 @@
 import { Address } from "viem"
 import { beefAbi } from "@/abi/beef"
 import { MULTICALL_CONTRACT_ADDRESS } from "@/constants"
+import { serverPublicClient } from "@/server/actions/lib/serverPublicClient"
 import { ArbiterType } from "@/types"
-import { publicClient } from "@/utils/chain"
 
 export const getBeefContractInfo = (address: Address) =>
-  publicClient.readContract({
+  serverPublicClient.readContract({
     address,
     abi: beefAbi,
     functionName: "getInfo",
@@ -30,7 +30,7 @@ export const getArbiterStatuses = async (arbiters: readonly Address[], beefAddre
       ] as const,
   )
 
-  const callResults = await publicClient.multicall({
+  const callResults = await serverPublicClient.multicall({
     allowFailure: false,
     contracts: contractCalls,
     multicallAddress: MULTICALL_CONTRACT_ADDRESS,
